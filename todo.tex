@@ -1,0 +1,12 @@
+\svnInfo $Id$
+
+\section{ToDo}
+\label{sec:todo}
+\subsection{Issues}
+\begin{description}
+	\item[CLK glitch] \hfil \\
+	CLK glitch potentially causes a node driving the bus at {\sc latch state} or
+	alternating {\sc drive1} and {\sc drive2}. The former may lead to improper
+	reset some nodes if CLKs arrive differently. The latter may stall the entire
+	transmission.
+\end{description}

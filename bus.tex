@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage[layout=letterpaper,margin=1in]{geometry}
+
+\usepackage{bold-extra} % for bf sc
+
+\usepackage{fancyhdr}
+\usepackage{xspace}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+\usepackage[colorlinks=true]{hyperref}
+
+\usepackage[all=normal,lists]{savetrees}
+
+\usepackage[endianness=big]{bytefield}
+\bytefieldsetup{boxformatting={\centering\footnotesize}}
+
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{nth}
+\usepackage{moresize}
+\usepackage{framed}
+
+\usepackage{
+  tikz,
+  tikz-timing,
+}
+\usetikzlibrary{positioning}
+
+\usepackage[nofancy]{svninfo}
+
+\newcommand{\colorbitbox}[3]{%
+\rlap{\bitbox{#2}{\color{#1}\rule{\width}{\height}}}%
+\bitbox{#2}{#3}}
+\definecolor{lightblue}{RGB}{0,204,255}
+\definecolor{lightcyan}{rgb}{0.84,1,1}
+\definecolor{lightgreen}{rgb}{0.64,1,0.71}
+\definecolor{lightergreen}{rgb}{0.84,1,0.87}
+\definecolor{lightred}{rgb}{1,0.7,0.71}
+
+\usepackage{enumitem}
+\setlistdepth{8}
+%\setlist[itemize,1]{label=$\bullet$}
+\setlist[itemize,1]{label=}
+\setlist[itemize,2]{label=--}
+\setlist[itemize,3]{label=$\circ$}
+\setlist[itemize,4]{label=$\rightarrow$}
+\setlist[itemize,5]{label=$\diamondsuit$}
+\setlist[itemize,6]{label=$\cdot$}
+\setlist[itemize,7]{label=$\star$}
+\setlist[itemize,8]{label=$\ast$}
+\renewlist{itemize}{itemize}{8}
+
+\newcommand{\bus}{ULPB\xspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\svnInfo $Id$ 
+
+\fancyfoot[L]{Revision 0.1 -- \today}
+\fancyfoot[R]{\footnotesize{\em (svn: \svnInfoFile::r\svnInfoRevision)}}
+\pagestyle{fancyplain}
+
+\title{Ultra Low Power Bus}
+\author{(Needs better name...)}
+\date{}
+\maketitle
+
+\tableofcontents
+\clearpage
+
+\input{requirements}
+\input{node_design}
+\input{bus_design}
+\input{specifications}
+
+\clearpage
+\input{todo}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Document Revision History}
+\label{sec:revisions}
+
+\begin{itemize}
+
+\item Revision 0.4 {\footnotesize(r2850)} -- Jan 22, 2012
+\subitem Begin to address Reset issues
+
+\item Revision 0.3 {\footnotesize(r2746)} -- Jan 10, 2012
+\subitem Commit to 4-pulse design, update accordingly
+\subitem Add TODO section of new considerations / issues
+
+\item Revision 0.2 {\footnotesize(r2697)} -- Jan 5, 2012
+\subitem Add skeleton of design considerations / requirements
+\subitem Add discussion of \bus states, state diagram
+\subitem Several clarifications
+
+\item Revision 0.1 {\footnotesize(r2653)} -- Dec 19, 2012
+\subitem Initial revision
+
+\end{itemize}
+
+\end{document}

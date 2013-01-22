@@ -1,0 +1,26 @@
+\svnInfo $Id$
+
+\section{Specifications}
+
+\subsection{Endianness}
+
+\subsubsection{Byte-Level}
+\bus sends from Byte 0{\ldots}Byte N.
+
+\subsubsection{Bit-Level}
+\bus sends bytes most siginificant bit first (bit 31{\ldots}0).
+
+\subsection{Retransmission}
+There is no hardware re-transmission primative. The hardware provides a
+transaction-level message acknowledgement, indicating whether the complete
+message was received or not. Retransmission of failed messages is left to
+software.
+
+\subsection{Buffer Overflow / Flow Control}
+There is no explicit flow control mechanism in \bus. If a receiving node does
+not have a large enough buffer to handle the incoming message, it should not
+acknowledge the message. As an optimization, a receiving node that overflows
+is also encouraged (but not required) to issue a Bus~Reset when the node
+overflows. This has two benefits: (i) it halts a transmission as soon as it
+becomes evident that it will not succeed, (ii) it indicates to the
+transmitting node the maximum buffer size of the receiving node.

@@ -1,0 +1,588 @@
+\svnInfo $Id$
+
+\section{Requirements \& Design Considerations}
+\label{sec:requirements}
+\label{sec:design}
+This section attempts to explain the design tradeoffs made in the \bus design.
+
+\paragraph{Define bus PHY, MAC and application logic interface}
+We take a vertical integration approach, controlling more of the complete
+stack in an effort to obtain every available ounce of energy efficiency within
+our further design constraints.
+
+\paragraph{Must be fully-synthesizable}
+In an effort to make \bus ubiquitous, it is important that other designers can
+easily add \bus to their systems/chips. In practice, this means a
+fully-synthesizable design, such that simple, pure verilog can be given to any
+individual wishing to implement \bus. The provides added advantages in
+pre-silicon testing and validation. One thought was using both {\tt CLK} edges
+to alternate {\sc drive} and {\sc latch} states to reduce the power draws by
+{\tt CLK} wire. However, using both edges requires a custom designed flip-flop
+which is not supported by commom standard cell library. Using single edge 
+trigger has worse energy-per-bit but retains better portability.
+
+\paragraph{Optimize for synthesis simplicity over speed}
+The synthesizability is paramount. While it is possible to build hardware the
+latches on both the rising and falling clock edge, it is harder to design this
+in Verilog. When faced with such tradeoffs, efficiency loses to simplicity /
+synthesizability.
+
+\paragraph{Must be low-power}
+The \bus was designed for the Michigan Micro Mote~(M3) project. The system is
+designed to run off a 0.5~$\mu$Ah battery. To serve as a feasible
+communication bus, the energy consumption must be on the order of $pW$. XXX:
+Ballpark expected transaction sizes, frequency, etc -- actual energy budget.
+
+\paragraph{Support Multi-master operation / bus arbitration / avoid race
+conditions}
+As every layer is capable of entering an extreme low-power state, any layer
+must be capable of waking the system. The waking layer must also be capable of
+communicating (i) who woke the system and (ii) why. While such a system could
+query (ii) given (i), determining who woke the system requires a complex
+dedicated controller, or for the waking layer to simply announce it. A
+multi-master bus greatly simplifies the software design and allows for things
+such as DMA from an imager chip to a radio chip, without necessarily requiring
+CPU intervention.
+
+Once multi-master is agreed upon, some form of arbitration scheme must be
+devised, as well as consideration for races as multiple layers attempt to
+acquire the bus.
+
+\paragraph{Minimize pins}
+\paragraph{Minimize gates}
+\paragraph{Limit to four I/O pads}
+The physical area of the M3 system is extremely constrained. There is only
+room for four I/O {\em pads} on each layer of the system (keep in mind that
+forming a net/bus still requires two {\em pads} when wirebonding).
+
+\paragraph{Minimize timing uncertainty/latency/jitter}
+
+\paragraph{Allow for wakeup that takes time}
+As the system supports extremely low-power sleep, the bus must tolerate /
+account for a lag in waking layers of the system up. In practice this is
+mostly a focus on the bus layer controller for each layer at first, followed
+by layer-specific concerns of how much local buffer should be necessary and
+when/how to wake the proper layer.
+
+\paragraph{Active vs sleep mode; want backward compatibility}
+The bus needs an idle state that consumes very little power. Ideally, each
+layer not participating in the current transaction also burns very little
+power.
+
+There should also be some consideration for future-proof design, that is the
+introduction of a newer protocol that can run on the bus that older
+controllers can silently ignore.
+
+\paragraph{Ensure that bus reset is possible}
+Stuff happens. It is important that there exists some kind of escape hatch to
+rescue / reset the bus.
+
+\paragraph{Support variable-length packet sizes}
+Short packet length limits (e.g. order 4~bytes) lead to unacceptably high
+protocol overheads for large (order 1~kB+) messages. An upper bound on
+packet-length leads to possibly complex software-level fragmentation schemes
+(or worse hardware-level if the bus packet length $<$ message buffer).
+
+A leading length field with a reasonably large upper bound would then be
+acceptable, although not ideal. The goal is to allow for true arbitrary length
+packets if possible.
+
+\paragraph{Consider automatic address space management protocol?}
+There is an extensibility / simplicity trade-off. I2C only allowed for 128
+addresses, which for an individual bus instance was seen as more than enough
+(still pretty true with the loading requirements, but repeaters / extenders
+make that less true). The real issue though is address space collisions
+between generic components. To build a plug 'n play bus of any arbitrary
+pieces requires the whole corpus of parts to have non-conflicting addresses.
+This motivates extensibility.
+
+Addressing has not yet been defined. It would be interesting to do the math
+and see what percentage of addresses a lost to a scheme such as `no legal
+address ends in 00', allowing easy, endless extensibility, but at XX\% cost?
+
+\paragraph{Allow interposing of the bus to read out / insert data from
+external source}
+Sniffing pretty much any bus design is easy, but adding devices post-hoc is a
+harder requirement. There is great motivation for transient connection of
+devices (programmer, debugger, etc), and also some motivation for the ability
+to permanently add new devices to an existing bus.
+
+A reasonable argument for the permanent addition is that the addition /
+removal is so infrequent that it can be an intrusive process; unless something
+like a pre-packaged IC had a \bus internally and there was desire to allow the
+possible addition of external components? In that case though, why not simply
+use a separate bus, or leverage the same mechanism as...
+
+Transient additions to the bus are much less negotiable. It's not immediately
+obvious if there are examples beyond a programmer / debugger, but those two
+are sufficiently critical as to motivate the need for some kind of external
+transient device.
+
+\paragraph{Must be uni-directional}
+Bi-Directional analog hardware is complex and not synthesizable.
+
+\paragraph{Endianness}
+\subparagraph{Byte-Level}
+No specific design consideration here per se. Given that \bus supports
+messages of an arbitrary length, it simply felt more logical to send bytes
+from 0{\ldots}N instead of N{\ldots}0.
+\subparagraph{Bit-Level}
+Again an arbitrary decision. The first test implementation elected to use MSB
+and the decision was made.
+
+\paragraph{Retransmission}
+Hardware retransmission carries risks of accidentally locking up the bus,
+endlessly retransmitting. While ideas such as a maximum retry count (SMBus)
+mitigate this, the added complexity and risk of a hardware retransmission tip
+the scales in favor of pushing the retransmission decisions to software.
+
+To provide the software layer with more information, we choose to require the
+indication of the number of bytes actually transmitted. While transient faults
+could certainly occur, it is reasonable that the software can infer different
+{\em probable} causes from the amount of the message that was transmitted.
+
+\paragraph{Flow Control}
+Any form of flow control requires communication {\em mid-transmission} between
+the transmitting and receiving node. This could be accomplished by
+periodically (e.g. every word) switching roles, but this introduces a large
+amount of complexity. Another solution is an open-collector style bus (e.g.
+I2C), but such designs were ruled out previously for power and
+synthesizability considerations.
+
+Our resulting selection trades simplicity for efficiency w.r.t.\ flow control.
+If a receiving node's RX buffer is overrun, it may (but is not required to)
+issue a Bus~Reset. Otherwise an entire message must be transmitted before any
+indication of failure or success is indicated.
+
+In practice, transmitting nodes should consider sending some form of {\em
+ping} message to a destination node to validate its presence before sending a
+large transmission to minimize waste if the destination node is not actually
+present. \bus is not designed for a changing topology, as such discovery of
+this nature need only be performed once and the amortized cost is considered
+negligible.
+
+\paragraph{Acknowledgement granularity}
+As \bus supports messages of arbitrary length, a natural question arises for
+the granularity of acknowledgements. At one extreme, designs such as I2C elect
+to acknowledge every byte. \bus takes the opposite approach, providing only a
+single acknowledgement at the end of a transmission in an all-or-nothing
+fashion. The rationale for this decision again returns to simplicity and
+efficiency in design. While a receiver-driven acknowledgement cycle could
+easily be added every \nth{33} bit, the relative merits of this are not great.
+Assuming a receiver exists on the bus, by not electing to issue a Bus~Rest, a
+receiver implicitly ACKs every bit sent. A receiver that has occasion to NAK a
+transmission may do so at any time during transmission. Transient faults, e.g.
+a missed clock edge, will cause the node to fall into reset
+(see~\ref{sec:design-reset}), in which case the message will not be ACK'd---a
+single data-bit error would require a node to miss four consecutive clock
+edges, which is considered extremely unlikely. The remaining consideration
+then is the absent receiver, which is a relative non-issue for a bus such as
+\bus with a static topology.
+
+\paragraph{Streaming}
+Some bus designs incorporate a ``streaming'' mode, which allows for a series
+of physical bus transactions to be considered one continguous message at the
+receiving layer. As \bus allows for arbitrary length messages, such a feature
+becomes largely unnecessary, and \bus defines no streaming primative.
+
+\paragraph{Avoid ratioed-logic, avoid timing constraints}
+
+\paragraph{Idle State Should Be High}
+We probably don't have to mention this, but it's important that they are high
+since we can pull down a node with minimum power consumption (vs pulling a
+node high). When a node pulls low, the pmu is still in standby mode so,
+there's not much power.  I'm not sure if we want to get into the power budgets
+of the nodes in different modes - it will depend on the pmu design...
+
+\paragraph{Consider Arbitration as DOUT and CLK low?}
+One more note on this time:  currently, the spec requires that the pmu resides
+with the ctr processor, since it's the only node that is definitely aware of a
+wakeup.  However, if the ctr instead pulls down right way on clk (not data),
+which does not take much power, then all nodes will know that a bus request
+has been detected and the pmu can reside on any node.  The ctr that would have
+to delay before raising the clk to allow the pmu to switch mode etc...
+
+\subsection{Reset Design}
+\label{sec:design-reset}
+The reset mechanism is the \bus escape hatch. Its reliability is a first
+order design constraint, and here we attempt to demonstrate how the reset
+mechanism can in all possible states reliably reset \bus.
+\begin{quote}
+\em n.b.\ this section assumes a knowledge of \bus design
+\end{quote}
+
+We first examine when a transaction occurs correctly, as designed, and then
+consider various failure modes.
+
+\subsubsection{An Ideal Transmission}
+~
+
+\begin{figure}[!h]
+%\noindent\makebox[\textwidth]{%
+\begin{subfigure}{\textwidth}
+    \scriptsize
+    \begin{tikztimingtable}[timing/slope=.3]
+      Din  & L1.4L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}0.6LL \\
+      Dout & L0.0L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}2.0LL \\
+      \\
+      Din  & L0.2L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.8LL \\
+      Dout & L0.4L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.6LL \\
+      \\
+      Din  & L0.6L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.4LL \\
+      Dout & L0.8L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.2LL \\
+      \\
+      Din  & L1.0L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.0LL \\
+      Dout & L1.2L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}0.8LL \\
+      CLK  & C40{2C}C \\
+           & \\
+      \extracode
+        \begin{pgfonlayer}{background}
+          \begin{scope}[semitransparent,semithick]
+            \vertlines{1,17,...,81}
+          \end{scope}
+          \begin{scope}[semitransparent,semithick,dashed]
+            \vertlines{9,25,...,81}
+          \end{scope}
+          \begin{scope}[semitransparent,semithick,dashed,color=red]
+            \vertlines{5,13,...,81}
+          \end{scope}
+          \begin{scope}[semitransparent]
+            % TX
+            \filldraw[yellow] ( 1,-0.5)  rectangle ( 5,-2.5);
+            \filldraw[yellow] (17,-0.5)  rectangle (21,-2.5);
+            \filldraw[yellow] (33,-0.5)  rectangle (37,-2.5);
+            \filldraw[yellow] (49,-0.5)  rectangle (53,-2.5);
+            \filldraw[yellow] (57,-0.5)  rectangle (61,-2.5);
+            \filldraw[yellow] (65,-0.5)  rectangle (69,-2.5);
+            \filldraw[yellow] (73,-0.5)  rectangle (77,-2.5);
+            % RX
+            \filldraw[yellow] (81,-6.5)  rectangle (82,-8.5);
+            % Clk
+            \filldraw[yellow] ( 0,-20.5) rectangle (82,-22.5);
+          \end{scope}
+        \end{pgfonlayer}
+        \begin{scope}
+          [font=\sffamily\small,shift={(-3.0em,-0.5)},anchor=east,color=blue]
+          \node at (  0,   0) {TX};
+          \node at (  0,  -6) {RX};
+          \node at (  0, -12) {Fwd};
+          \node at (  0, -19) {Ctl};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
+          \foreach \x [evaluate=\x] in {1,17,...,77}
+            \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+          \node[rotate=45] at (81,0) {Drive1};
+        \end{scope}
+        \begin{scope}
+          [font=\small,anchor=south,shift={(1,-17.5em)}]
+          \draw
+            (0,0) node[] (a) {}
+            (16,0) node[] (c) {}
+            (32,0) node[] (e) {}
+            (48,0) node[] (g) {}
+            (80,0) node[] (i) {}
+            (81,0) node[] (z) {\ldots};
+          \node[right=4 of a] (b) {Data 1};
+          \node[right=4 of c] (d) {Data 0};
+          \node[right=4 of e] (f) {Data 1};
+          \node[right=9 of g] (h) {End Sequence};
+          \draw[->] (b.west) -- (a.east);
+          \draw[<-] (c.west) -- (b.east);
+          \draw[->] (d.west) -- (c.east);
+          \draw[<-] (e.west) -- (d.east);
+          \draw[->] (f.west) -- (e.east);
+          \draw[<-] (g.west) -- (f.east);
+          \draw[->] (h.west) -- (g.east);
+          \draw[<-] (i.west) -- (h.east);
+          %\draw[<-] (i.east) -- (z.west);
+        \end{scope}
+    \end{tikztimingtable}
+    \begin{tikztimingtable}[timing/slope=.3]
+      Din  & L1.0L4{2L}8{2H}3{2L}1.0L0.2L4{2L}4{2H}4{2L}7{2H}1.8H4{2H} \\
+      Dout & L1.2L4{2L}8{2H}3{2L}0.8L0.4L4{2L}4{2H}4{2L}7{2H}1.6H4{2H} \\
+      \\
+      Din  & L1.4L4{2L}8{2H}3{2L}0.6L0.6L4{2L}4{2H}4{2L}7{2H}1.4H4{2H} \\
+      Dout & L0.0L4{2L}8{2H}3{2L}2.0L0.8L4{2L}4{2H}4{2L}7{2H}1.2H4{2H} \\
+      \\
+      Din  & L0.2L4{2L}8{2H}3{2L}1.8L1.0L4{2L}4{2H}4{2L}7{2H}1.0H4{2H} \\
+      Dout & L0.4L4{2L}8{2H}3{2L}1.6L1.2L4{2L}4{2H}4{2L}7{2H}0.8H4{2H} \\
+      \\
+      Din  & L0.6L4{2L}8{2H}3{2L}1.4L1.4L4{2L}4{2H}4{2L}7{2H}0.6H4{2H} \\
+      Dout & L0.8L4{2L}8{2H}3{2L}1.2L0.0L4{2L}4{2H}4{2L}7{2H}2.0H4{2H} \\
+      CLK  & C35{2C}{2H}4{2H} \\
+           & \\
+      \extracode
+        \begin{pgfonlayer}{background}
+          \begin{scope}[semitransparent,semithick]
+            \vertlines{1,17,...,73}
+          \end{scope}
+          \begin{scope}[semitransparent,semithick,dashed]
+            \vertlines{9,25,...,73}
+          \end{scope}
+          \begin{scope}[semitransparent,semithick,dashed,color=red]
+            \vertlines{5,13,...,73}
+          \end{scope}
+          \begin{scope}[semitransparent]
+            % TX
+            %\filldraw[yellow] ( 0,-0.5)  rectangle (1,-2.5);
+            % RX
+            \filldraw[yellow] ( 1,-6.5)  rectangle ( 5,-8.5);
+            \filldraw[yellow] ( 9,-6.5)  rectangle (13,-8.5);
+            \filldraw[yellow] (17,-6.5)  rectangle (21,-8.5);
+            \filldraw[yellow] (25,-6.5)  rectangle (29,-8.5);
+            % Clk
+            \filldraw[yellow] ( 0,-20.5) rectangle (73,-22.5);
+            % Reset
+            \filldraw[cyan]   (33,-18.5) rectangle (37,-20.5);
+            \filldraw[cyan]   (41,-18.5) rectangle (45,-20.5);
+            \filldraw[cyan]   (49,-18.5) rectangle (53,-20.5);
+            \filldraw[cyan]   (57,-18.5) rectangle (61,-20.5);
+            \draw[cyan,very thick]       (65,-18.5) rectangle (69,-20.5);
+          \end{scope}
+        \end{pgfonlayer}
+        \begin{scope}
+          [font=\sffamily\small,shift={(-3.0em,-0.5)},anchor=east,color=blue]
+          \node at (  0,   0) {TX};
+          \node at (  0,  -6) {RX};
+          \node at (  0, -12) {Fwd};
+          \node at (  0, -19) {Ctl};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
+          \foreach \x [evaluate=\x] in {1,17,...,29}
+            \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+          \node [rotate=45] at (33, 0) {Reset-S0-D};
+          \node [rotate=45] at (37, 0) {Reset-S0-L};
+          \node [rotate=45] at (41, 0) {Reset-S1-D};
+          \node [rotate=45] at (45, 0) {Reset-S1-L};
+          \node [rotate=45] at (49, 0) {Reset-S0-D};
+          \node [rotate=45] at (53, 0) {Reset-S0-L};
+          \node [rotate=45] at (57, 0) {Reset-R1-D};
+          \node [rotate=45] at (61, 0) {Reset-R1-L};
+          \node [rotate=45] at (65, 0) {Reset-R2-D};
+          \node [rotate=45] at (69, 0) {Reset-R2-L};
+          \node [rotate=45,color=black] at (73, 0) {Idle};
+        \end{scope}
+        \begin{scope}
+          [font=\small,anchor=south,shift={(1,-17.5em)}]
+          \draw
+            (-1,0) node[] (z) {\ldots}
+            (0,0) node[] (a) {}
+            (32,0) node[] (c) {}
+            (72,0) node[] (e) {};
+          \node[right=8 of a] (b) {Acknowledgement};
+          \node[right=16 of c] (d) {Reset};
+          %\draw[->] (z.east) -- (a.west);
+          \draw[->] (b.west) -- (a.east);
+          \draw[<-] (c.west) -- (b.east);
+          \draw[->] (d.west) -- (c.east);
+          \draw[<-] (e.west) -- (d.east);
+        \end{scope}
+    \end{tikztimingtable}
+\end{subfigure}
+  \label{fig:reset-normal}
+%}
+  \caption{A normal end sequence, showing the last three bits sent (1, 0, 1)
+  followed by a Message~End~Sequence and Message~Acknowledgement. Note the
+  last reset high bit is explicitly not driven as the bus should naturally
+  remain high.}
+\end{figure}
+
+\subsubsection{Phase Offsets}
+At some point, it is possible that a node may miss a clock edge. At that
+point, the node is considered out of phase. In order for the node to
+successfully communicate in the future, it is necessary for the node to
+re-align. We leverage the reset sequence to achieve this goal, and also
+include a brief discussion of the implications of whether the node that falls
+out of phase is a forwarding, transmitting, or receiving node.
+
+For the purposes of phase, the control node is defined to always be in phase.
+If a local clock glitch somehow occurs on the control node, then the entire
+bus is considered out of phase from the control node and the control node will
+reset the bus when it detects another node is out of phase.
+
+Transmitting the same bit twice in a row is uninteresting as there are no
+changes on the data lines. We examine then: TX~1$\rightarrow$0,
+TX~0$\rightarrow$1, TX~1$\rightarrow$Message~End~Sequence,
+the~Message~End~Sequence,
+Message~End~Sequence$\rightarrow$Message~Acknowledgement,
+Message~Acknowledgement$\rightarrow$Idle.
+
+\medskip
+\noindent
+\begin{framed}
+  \label{reset-assumption}
+  \textbf{One Critical Assumption:} When nodes are $1\phi$ or $3\phi$ out of
+  phase, for any member node it is non-deterministic if the new data or the
+  rising clock arrives first. For the {\em control} layer, however, we must
+  be able to assume that the control layer will sample its {\tt DIN} as it
+  raises the {\tt CLK} line, that is {\em before} a new value could possibly
+  have propogated.  This is necessary to resolve issues such as those discussed
+  in $1\phi-$TX$-0\rightarrow$1~(\ref{reset-phi1-tx-0-1}).
+\end{framed}
+
+\medskip
+\textbf{\textsc{Todo:}} The sample graphics do not include
+TX~0$\rightarrow$~Message~End~Sequence, Message~End~Sequence$\rightarrow$Idle,
+others? Does that matter?
+
+\paragraph{$1\phi$ Offset}
+A node that has missed one clock edge will be one phase behind:
+
+\begin{figure}[!h]
+\noindent\makebox[\textwidth]{%
+    \ssmall
+    \begin{tikztimingtable}[timing/slope=.3]
+      Din  & L7{2H}HHXL6{2L}LLXH6{2H}HHXL2{2L}LLXH6{2H}HHXL6{2L}LLXH2{2H}HHXL2{2L}LLXH7{2H}H \\
+      CLK  & C59{2C}{2H}H \\
+      \extracode
+        \begin{pgfonlayer}{background}
+          \begin{scope}[semitransparent,semithick,dashed,color=red]
+            \vertlines{1,9,...,121}
+          \end{scope}
+          \begin{scope}[semitransparent,semithick,dashed]
+            \vertlines{5,13,...,121}
+          \end{scope}
+          \begin{scope}[semitransparent]
+            % Reset
+            \filldraw[cyan,opacity=.25]   (81,-.5) rectangle (121,-2.5);
+          \end{scope}
+        \end{pgfonlayer}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=red]
+          \foreach \x [evaluate=\x] in {1,17,...,97}
+            \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+        \end{scope}
+    \end{tikztimingtable}
+}
+\end{figure}
+
+In all $1\phi$ cases, the result is non-deterministic as the node is sampling
+for its local {\sc latch2} cycle while the transmitting node is driving the
+new bit. Most likely the node will latch the value that was previously on the
+bus as the new bit will not have propagated to the local {\tt DIN}.  It is
+possible, however, that the previous node in the loop is transmitting, has a
+lower threshold for detecting the rise of {\tt CLK}, and a powerful {\tt DOUT}
+driver, in which case the node will latch the new value.
+
+\smallskip
+\noindent
+{\em Note:} A transmitting node that is $1\phi$ off is equivalent to the rest
+of the bus being $3\phi$ off, and thus need not be explicitly discussed here.
+
+\subparagraph{TX 1$\rightarrow$0}
+In the common case, the node will latch another 1, matching the previous bus
+value, deferring the issue to another possible state. If the node does catch
+the new 0, it will enter the Reset state, where it will remain until it
+catches the {\tt 101} phase realignment sequence.
+
+\subparagraph{TX 0$\rightarrow$1}
+\label{reset-phi1-tx-0-1}
+This is the complement of TX~1$\rightarrow$0. In addition, if the node happens
+to be a receiving node it will detect this as a false Message~End~Sequence.
+The local {\sc drive1} and {\sc latch1} (driving {\tt 1}) will align with the
+actual {\sc latch1} and {\sc drive2} (also driving {\tt 1}). The first
+difference will occur when the local {\sc drive2} drives the bus to {\tt 0} to
+acknowledge during the global {\sc latch2}. This discrepancy will not be
+noticed until the next state---globally {\sc drive1}, locally {\sc latch2}. At
+this point, the receiving node will think it has received and ACK'd a message,
+\textbf{this is a problem}.
+
+Using~\ref{reset-assumption}, the control node can detect this situation:
+between {\sc latch2} and {\sc drive1}, the value of the control node's {\tt
+DIN} line will have changed.
+
+\begin{figure}[!h]
+\noindent\makebox[\textwidth]{%
+    \ssmall
+    \begin{tikztimingtable}[timing/slope=.3]
+      Din  & L0.8L4{4L}3{4H}{4L} \\
+      Dout & L0.0L4{4L}4{4H}2{4L}\\
+      \\
+      \\
+      Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L} \\
+      Dout & L3{4L}LLLXXHHH2{4H}2{4L} \\
+      \\
+      Din  & L0.5L4{4L}3{4H}{4L}{3L}0.5L \\
+      Dout & L0.5L4{4L}3{4H}{3L}0.5L \\
+      CLK  & C19{2C}\\
+      \extracode
+        \begin{pgfonlayer}{background}
+          \begin{scope}[semitransparent,semithick,dashed]
+            \vertlines{1,9,...,41}
+          \end{scope}
+          \begin{scope}[semitransparent,semithick,dashed,color=red]
+            \vertlines{5,13,...,41}
+          \end{scope}
+          \begin{scope}[thick]
+            \draw[red]   (17,-4.5)  ellipse (2 and 4);
+            \draw[green] (33,-4.5)  ellipse (2 and 4);
+            \draw[blue]  (31,-13.5) ellipse (3 and 1.25);
+          \end{scope}
+          \begin{scope}[semitransparent]
+            % TX
+            \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
+            \filldraw[lightgray] ( 5,-0.5) rectangle (17,-2.5);
+            \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
+            \filldraw[lightgray] (21,-0.5) rectangle (33,-2.5);
+            \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+            % RX
+            \filldraw[lightgray] ( 1,-8.5) rectangle (29,-10.5);
+            \filldraw[yellow]    (29,-8.5) rectangle (33,-10.5);
+          \end{scope}
+        \end{pgfonlayer}
+        \begin{scope}
+          [font=\sffamily\small,shift={(-3.0em,-0.5)},anchor=east,color=blue]
+          \node at (  0,   0) {TX};
+          \node at (  0,  -8) {RX};
+          \node at (  0, -15) {Ctl};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
+          \foreach \x [evaluate=\x] in {1,17,...,41}
+            \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+        \end{scope}
+        \begin{scope}
+          [font=\bf\tiny,anchor=north,shift={(0,-3em)},color=red]
+          \foreach \x [evaluate=\x] in {1,17,...,41}
+            \foreach \offset/\l in {0/L2,4/D1,8/L1,12/D2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+        \end{scope}
+    \end{tikztimingtable}
+}
+\caption{Detail of a $1\phi$TX~0$\rightarrow$1 error. The top labels are the
+current global bus state. The red labels above the RX waveform indicate the
+local $1\phi$ state machine. {\tt DOUT} lines are colored to indicate when a
+node is forwarding (gray) or driving (yellow).
+}
+\label{fig:reset-1phi-tx-0-1}
+\end{figure}
+In Figure~\ref{fig:reset-1phi-tx-0-1} the errorenous state is possibly entered
+at the red circle. If the amibiguous value is read as high, the RX node will
+interperet this as a Message~End~Sequence.
+
+Once the RX node thinks it is ACK'ing, we are concerned with the next bit (or
+half-bit) it intends to send. If the transmitter were to send another {\tt 1}
+or if it sent a {\tt 0} but the RX node latched before its {\tt DIN} line went
+low, the issue would be resolved as the RX node would detect a different value
+during its {\sc latch2} compared to what it attempted to drive during {\sc
+drive2}. If, however, the RX node latches a 0 during its {\sc latch2} as is
+shown in the green circle, it will erroneously conclude that it has ACK'd the
+message successfully.
+
+At the same time, in the blue circle the control node is first learning there
+is a problem, as it observes its {\tt DIN} line change between {\sc latch2}
+and {\sc drive1}.
+
+
