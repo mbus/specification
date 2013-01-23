@@ -532,6 +532,7 @@ the reset assumption~(\ref{reset-assumption}) to detect the issue.
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
       Din  & L0.8L4{4L}4{4H}2{4L}0.2LLLXXHHH4H    0.5H8{2L}8{2H}8{2L}7{2H}1.5HH \\
       Dout & L0.0L4{4L}4{4H}2{4L}   LLLXXHHH4H    0.5H8{2L}8{2H}8{2L}7{2H}1.5HH \\
+      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{12D{Data 0}}{44D{Error (Forwarding)}}{28D{Reset}}D
       \\
       \\
       Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L}{4L}.5L.5HHHH4H    0.8H8{2L}8{2H}8{2L}7{2H}1.2HH \\
@@ -543,10 +544,14 @@ the reset assumption~(\ref{reset-assumption}) to detect the issue.
       CLK  & C26{2C}4L15{4C}H \\
       \extracode
         \begin{pgfonlayer}{background}
-          \begin{scope}[semitransparent,semithick,dashed]
+          \begin{scope}[semitransparent,dashed]
             \vertlines{1,9,...,49}
+            \pgfmathparse{\twidth-4}
+            \vertlines{57,65,...,\pgfmathresult}
             \vertlines[color=red]{5,13,...,49}
-            \vertlines[color=blue]{53,61,...,\twidth}
+            \vertlines[color=blue]{53,61,...,\pgfmathresult}
+            \pgfmathparse{\twidth-1}
+            \vertlines{\pgfmathresult}
           \end{scope}
           \begin{scope}[thick]
             \draw[red]   (17,-4.5)  ellipse (2 and 4);
@@ -592,7 +597,7 @@ the reset assumption~(\ref{reset-assumption}) to detect the issue.
           \node [rotate=45] at (\base+56, 0) {Reset};
         \end{scope}
         \begin{scope}
-          [font=\bf\tiny,anchor=north,shift={(0,-3em)},color=red]
+          [font=\bf\tiny,anchor=north,shift={(.2,-3.1em)},color=red]
           \foreach \x [evaluate=\x] in {1,17,...,47}
             \foreach \offset/\l in {0/L2,4/D1,8/L1,12/D2}
               \node [rotate=45] at (\x+\offset,0) {\l};
@@ -642,10 +647,10 @@ transmission.}
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{1,9,...,57}
+            \vertlines{1,9,...,49}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{5,13,...,57}
+            \vertlines{5,13,...,49}
           \end{scope}
           \begin{scope}[thick]
             \draw[red]   (17,-4.5)  ellipse (2 and 4);
@@ -673,13 +678,13 @@ transmission.}
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
-          \foreach \x [evaluate=\x] in {1,17,...,57}
+          \foreach \x [evaluate=\x] in {1,17,...,47}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
         \end{scope}
         \begin{scope}
           [font=\bf\tiny,anchor=north,shift={(0,-3em)},color=red]
-          \foreach \x [evaluate=\x] in {1,17,...,57}
+          \foreach \x [evaluate=\x] in {1,17,...,47}
             \foreach \offset/\l in {0/L2,4/D1,8/L1,12/D2}
               \node [rotate=45] at (\x+\offset,0) {\l};
         \end{scope}
