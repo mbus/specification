@@ -332,23 +332,25 @@ consider various failure modes.
           \begin{scope}[semitransparent,semithick,dashed,color=blue]
             \vertlines{33,41,...,105}
           \end{scope}
-          \begin{scope}[semitransparent]
+          \begin{scope}[semitransparent,yellow]
             % TX
             %\filldraw[yellow] ( 0,-0.5)  rectangle (1,-2.5);
             % RX
-            \filldraw[yellow] ( 1,-6.5)  rectangle ( 5,-8.5);
-            \filldraw[yellow] ( 9,-6.5)  rectangle (13,-8.5);
-            \filldraw[yellow] (17,-6.5)  rectangle (21,-8.5);
-            \filldraw[yellow] (25,-6.5)  rectangle (29,-8.5);
+            \filldraw ( 1,-6.5)  rectangle ( 5,-8.5);
+            \filldraw ( 9,-6.5)  rectangle (13,-8.5);
+            \filldraw (17,-6.5)  rectangle (21,-8.5);
+            \filldraw (25,-6.5)  rectangle (29,-8.5);
             % Clk
-            \filldraw[yellow] ( 0,-20.5) rectangle (33,-22.5);
-            \filldraw[cyan]   (33,-20.7) rectangle (113,-22.5);
+            \filldraw ( 0,-20.5) rectangle (33,-22.5);
+          \end{scope}
+          \begin{scope}[cyan,opacity=.25]
+            \filldraw   (33,-20.7) rectangle (113,-22.5);
             % Reset
-            \filldraw[cyan]   (33,-18.5) rectangle (37,-20.5);
-            \filldraw[cyan]   (49,-18.5) rectangle (53,-20.5);
-            \filldraw[cyan]   (65,-18.5) rectangle (69,-20.5);
-            \filldraw[cyan]   (81,-18.5) rectangle (85,-20.5);
-            \draw[cyan,very thick]       (97,-18.5) rectangle (101,-20.5);
+            \filldraw   (33,-18.5) rectangle (37,-20.5);
+            \filldraw   (49,-18.5) rectangle (53,-20.5);
+            \filldraw   (65,-18.5) rectangle (69,-20.5);
+            \filldraw   (81,-18.5) rectangle (85,-20.5);
+            \draw[very thick,opacity=.75]  (97,-18.5) rectangle (101,-20.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
