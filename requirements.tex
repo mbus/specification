@@ -842,7 +842,7 @@ cumbersome and not very intuitive.
       \\
       Din  & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    7LXX3H4H  4H4H4H1.0H4L4L4L 4L    \\
       Dout & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    8L X3H4H  4L4L4L    4L4H4H 4L    \\
-      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{60D{Acknowledgement Attempt}}{28D{Error (Forwarding)}}D \\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{52D{Acknowledgement Attempt}}{36D{Error (Forwarding)}}D \\
       %\\
       Din  & L 0.5L  4L12L  4H12H  4L  4H4H  4L    8L  4H4H  4L4L4L    4L4H4H 4L   \\
       Dout & L 0.5L  4L12L  4H12H  4L3.5H4H  4L    8L  4L4H  4H4H4H    4L4L4L 4L    \\
@@ -863,6 +863,7 @@ cumbersome and not very intuitive.
             %\draw[green] (33,-4.5)  ellipse (2 and 4);
             \draw[blue]  (39,-13.5) ellipse (3 and 1.25);
             \draw[blue]  (69,-14.5) ellipse (1.25 and 2);
+            \draw[blue]  (85,-14.5) ellipse (1.25 and 2);
           \end{scope}
           \begin{scope}[semitransparent]
             % TX
@@ -953,19 +954,22 @@ cumbersome and not very intuitive.
           \pgfmathparse{\pgfmathresult+8}
           \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
           \pgfmathparse{\pgfmathresult+8}
-          \node [rotate=45] at (\pgfmathresult, 0)  {RI-1};
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
           \pgfmathparse{\pgfmathresult+8}
-          \node [rotate=45] at (\pgfmathresult, 0)  {RI-1};
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
           \pgfmathparse{\pgfmathresult+8}
-          %\node [rotate=45] at (\base, 0) {Reset-S0-D};
-          %\node [rotate=45] at (\base+8, 0) {Reset-S0-L};
-          %\node [rotate=45] at (\base+16, 0) {Reset-S1-D};
-          %\node [rotate=45] at (\base+24, 0) {Reset-S1-L};
-          %\node [rotate=45] at (\base+32, 0) {Reset-S0-D};
-          %\node [rotate=45] at (\base+40, 0) {Reset-S0-L};
-          %\node [rotate=45] at (\base+48, 0) {Reset-R-D};
-          %\node [rotate=45] at (\base+56, 0) {Reset-R-L};
-          %\node [rotate=45,color=black] at (\base+64, 0) {Idle};
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node at (\pgfmathresult, 0)  {\normalsize\ldots};
+          %\pgfmathparse{\pgfmathresult+8}
+          %\node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+          %\pgfmathparse{\pgfmathresult+8}
+          %\node [rotate=45] at (\pgfmathresult, 0)  {R1-I};
+          %\pgfmathparse{\pgfmathresult+8}
+          %\node [rotate=45] at (\pgfmathresult, 0)  {R1-I};
+          %\pgfmathparse{\pgfmathresult+8}
         \end{scope}
     \end{tikztimingtable}
     \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). If the
