@@ -835,18 +835,17 @@ cumbersome and not very intuitive.
 
     \tiny
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
-      %       |    D0     || D1  ||   D0   {}  RD0
-      Din  & L 0.8L  4L12L  4H12H2.2LXX3H4H  4L            \\
-      Dout & L 0.0L  4L12L  4H12H  4L X3H4H  4L            \\
-      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{56D{Data 0}}{0D{Error (Forwarding)}}{28D{Reset}}D
+      %       |    D0     || D1  ||   D0   {}  RD0      ||  R1D     ||  R0D     || Re-Reset
+      Din  & L 0.8L  4L12L  4H12H2.2LXX3H4H  4L0.8L8L  4L4H  4H4H4H    4L4L4L 4L        \\
+      Dout & L 0.0L  4L12L  4H12H  4L X3H4H  4L    8L  4H4H  4H4H4H0.8H4L4L4L 4L        \\
+      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{24D{Data 0}}{24D{Data 1}}{36D{Reset}}D \\
       \\
-      \\
-      Din  & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L      \\
-      Dout & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L      \\
-      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{28D{Acknowledgement Attempt}}{32D{Error (Forwarding)}}{20D{Reset}}D \\
+      Din  & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    7LXX3H4H  4H4H4H1.0H4L4L4L 4L    \\
+      Dout & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    8L X3H4H  4L4L4L    4L4H4H 4L    \\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{60D{Acknowledgement Attempt}}{28D{Error (Forwarding)}}D \\
       %\\
-      Din  & L 0.5L  4L12L  4H12H  4L  4H4H  4L      \\
-      Dout & L 0.5L  4L12L  4H12H  4L3.5H4H  4L         \\
+      Din  & L 0.5L  4L12L  4H12H  4L  4H4H  4L    8L  4H4H  4L4L4L    4L4H4H 4L   \\
+      Dout & L 0.5L  4L12L  4H12H  4L3.5H4H  4L    8L  4L4H  4H4H4H    4L4L4L 4L    \\
       CLK  & C22{2C}4L15{4C}H \\
       \extracode
         \begin{pgfonlayer}{background}
@@ -863,16 +862,19 @@ cumbersome and not very intuitive.
             %\draw[red]   (17,-4.5)  ellipse (2 and 4);
             %\draw[green] (33,-4.5)  ellipse (2 and 4);
             \draw[blue]  (39,-13.5) ellipse (3 and 1.25);
+            \draw[blue]  (69,-14.5) ellipse (1.25 and 2);
           \end{scope}
           \begin{scope}[semitransparent]
             % TX
             \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
             \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
             \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+            \filldraw[yellow]    (57,-0.5) rectangle (65,-2.5);
             % RX
             \filldraw[yellow]    (37,-8.5) rectangle (41,-10.5);
-            %\filldraw[yellow]    (45,-8.5) rectangle (49,-10.5);
-            %\filldraw[yellow]    (57,-8.5) rectangle (65,-10.5);
+            \filldraw[yellow]    (49,-8.5) rectangle (57,-10.5);
+            \filldraw[yellow]    (65,-8.5) rectangle (73,-10.5);
+            \filldraw[yellow]    (81,-8.5) rectangle (89,-10.5);
             % CLK
             \filldraw[yellow]    ( 1,-16.5) rectangle (45,-18.5);
             \filldraw[cyan,opacity=.25] (45,-14.5) rectangle (\twidth-1, -18.5);
@@ -930,14 +932,31 @@ cumbersome and not very intuitive.
           \pgfmathparse{\pgfmathresult+8}
           \node [rotate=45] at (\pgfmathresult, 0)  {L1};
           \pgfmathparse{\pgfmathresult+8}
-          \node [rotate=45] at (\pgfmathresult, 0)  {D1};
+          \node [rotate=45] at (\pgfmathresult, 0)  {D2};
           \pgfmathparse{\pgfmathresult+8}
-          \node [rotate=45] at (\pgfmathresult, 0)  {L1};
+          \node [rotate=45] at (\pgfmathresult, 0)  {L2};
           \pgfmathparse{\pgfmathresult+8}
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
-          \def\base{53}
+          \def\base{45}
+          \pgfmathparse{\base+0}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {RI-1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {RI-1};
+          \pgfmathparse{\pgfmathresult+8}
           %\node [rotate=45] at (\base, 0) {Reset-S0-D};
           %\node [rotate=45] at (\base+8, 0) {Reset-S0-L};
           %\node [rotate=45] at (\base+16, 0) {Reset-S1-D};
@@ -949,7 +968,9 @@ cumbersome and not very intuitive.
           %\node [rotate=45,color=black] at (\base+64, 0) {Idle};
         \end{scope}
     \end{tikztimingtable}
-    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}).
+    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). If the
+transmitter were to send a 0 as the next data bit, it would detect the error
+at {\sc latch1} at time 16, however here we examine it sending another 1.
     }
 
     \begin{tikztimingtable}[timing/slope=.3]
