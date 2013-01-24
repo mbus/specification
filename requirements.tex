@@ -566,6 +566,7 @@ the reset assumption~(\ref{reset-assumption}) to detect the issue.
             % RX
             \filldraw[yellow]    (37,-8.5) rectangle (41,-10.5);
             \filldraw[yellow]    (45,-8.5) rectangle (49,-10.5);
+            \filldraw[yellow]    (57,-8.5) rectangle (65,-10.5);
             % CLK
             \filldraw[yellow]    ( 1,-16.5) rectangle (53,-18.5);
             \filldraw[cyan,opacity=.25] (53,-14.5) rectangle (\twidth-1, -18.5);
@@ -629,28 +630,32 @@ the reset assumption~(\ref{reset-assumption}) to detect the issue.
     \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
 transmitter latches the receiving layer's high bit during {\sc latch2} at time
 11, aborts its transmission, and begins forwarding. At time 16, the RX layer
-latches a {\tt 0} when it drive to drive a {\tt 1}, and aborts the
+latches a {\tt 0} when it had attempted to drive a {\tt 1}, and aborts the
 transmission.}
 
     \begin{tikztimingtable}[timing/slope=.3]
-      Din  & L0.8L4{4L}4{4H}2{4L}0.2LLLXXHHH \\
-      Dout & L0.0L4{4L}4{4H}2{4L}   LLLXXHHH \\
+      Din  & L0.8L4{4L}4{4H}2{4L}0.2LLLXXHHH4H     0.5H8{2L}8{2H}8{2L}7{2H}1.5HH \\
+      Dout & L0.0L4{4L}4{4H}2{4L}   LLLXXHHH4U    4U.5L6{2L}8{2H}8{2L}7{2H}1.5HH \\
+      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{16D{Data 0}}{24D{Data X}}{16D{Error (Forwarding)}}{28D{Reset}}D
       \\
       \\
-      Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L}{4L}.5L.5HHHH \\
-      Dout & L3{4L}LLLXXHHH2{4H}HHHXXLLL2{4L}2{4H} \\
-      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{32D{Acknowledgement}} \\
+      Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L}{4L}.5L.5HHHH4X 4X0.8X 6{2L}    8{2H}8{2L}7{2H}1.2HH \\
+      Dout & L3{4L}LLLXXHHH2{4H}HHHXXLLL2{4L}{4H}4X         4X4{2H}2{2L}0.8L8{2H}8{2L}7{2H}1.2HH\\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{28D{Acknowledgement}}{32D{Error (Forwarding)}}{20D{Reset}}D \\
       %\\
-      Din  & L0.5L4{4L}4{4H}3{4L}2{4H} \\
-      Dout & L0.5L4{4L}4{4H}3{4L}2{4H} \\
-      CLK  & C27{2C}\\
+      Din  & L0.5L4{4L}4{4H}3{4L}{4H}4X   4X4{2H}2{2L}8{2H}8{2L}7{2H}1.5HH  \\
+      Dout & L0.5L4{4L}4{4H}3{4L}{4H}3.5H     8{2L}8{2H}8{2L}7{2H}2.0HH \\
+      CLK  & C26{2C}4L15{4C}H \\
       \extracode
         \begin{pgfonlayer}{background}
-          \begin{scope}[semitransparent,semithick,dashed]
+          \begin{scope}[semitransparent,dashed]
             \vertlines{1,9,...,49}
-          \end{scope}
-          \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{5,13,...,49}
+            \pgfmathparse{\twidth-4}
+            \vertlines{57,65,...,\pgfmathresult}
+            \vertlines[color=red]{5,13,...,49}
+            \vertlines[color=blue]{53,61,...,\pgfmathresult}
+            \pgfmathparse{\twidth-1}
+            \vertlines{\pgfmathresult}
           \end{scope}
           \begin{scope}[thick]
             \draw[red]   (17,-4.5)  ellipse (2 and 4);
@@ -662,9 +667,14 @@ transmission.}
             \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
             \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
             \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+            \filldraw[yellow]    (49,-0.5) rectangle (57,-2.5);
             % RX
             \filldraw[yellow]    (37,-8.5) rectangle (41,-10.5);
             \filldraw[yellow]    (45,-8.5) rectangle (49,-10.5);
+            \filldraw[yellow]    (57,-8.5) rectangle (65,-10.5);
+            % CLK
+            \filldraw[yellow]    ( 1,-16.5) rectangle (53,-18.5);
+            \filldraw[cyan,opacity=.25] (53,-14.5) rectangle (\twidth-1, -18.5);
           \end{scope}
           \foreach \n [evaluate=\n as \l using int((\n-1)/4)] in {1,5,...,\twidth}
             \draw (\n,-19) -- +(0,-.2)
@@ -681,21 +691,55 @@ transmission.}
           \foreach \x [evaluate=\x] in {1,17,...,47}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
+          \node [rotate=45] at (49,0) {Drive1};
+          \def\base{57}
+          \node [rotate=45] at (\base+0, 0)  {Latch1};
+          \node [rotate=45] at (\base+8, 0)  {Drive2};
+          \node [rotate=45] at (\base+16, 0) {Latch2};
+          \node [rotate=45] at (\base+24, 0) {Drive1};
+          \node [rotate=45] at (\base+32, 0) {Latch1};
+          \node [rotate=45] at (\base+40, 0) {Reset};
+          \node [rotate=45] at (\base+48, 0) {Reset};
+          \node [rotate=45] at (\base+56, 0) {Reset};
         \end{scope}
         \begin{scope}
-          [font=\bf\tiny,anchor=north,shift={(0,-3em)},color=red]
+          [font=\bf\tiny,anchor=north,shift={(.2,-3.1em)},color=red]
           \foreach \x [evaluate=\x] in {1,17,...,47}
             \foreach \offset/\l in {0/L2,4/D1,8/L1,12/D2}
               \node [rotate=45] at (\x+\offset,0) {\l};
+          \node [rotate=45] at (49,0) {L2};
+          \def\base{57}
+          \node [rotate=45] at (\base+0, 0)  {D1};
+          \node [rotate=45] at (\base+8, 0)  {L1};
+          \node [rotate=45] at (\base+16, 0) {D2};
+          \node [rotate=45] at (\base+24, 0) {L2};
+          \node [rotate=45] at (\base+32, 0) {D1};
+          \node [rotate=45] at (\base+40, 0) {L1};
+          \node [rotate=45,color=brown] at (\base+48, 0) {R};
+          \node [rotate=45,color=brown] at (\base+56, 0) {R};
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+          \def\base{53}
+          \node [rotate=45] at (\base, 0) {Reset-S0-D};
+          \node [rotate=45] at (\base+8, 0) {Reset-S0-L};
+          \node [rotate=45] at (\base+16, 0) {Reset-S1-D};
+          \node [rotate=45] at (\base+24, 0) {Reset-S1-L};
+          \node [rotate=45] at (\base+32, 0) {Reset-S0-D};
+          \node [rotate=45] at (\base+40, 0) {Reset-S0-L};
+          \node [rotate=45] at (\base+48, 0) {Reset-R-D};
+          \node [rotate=45] at (\base+56, 0) {Reset-R-L};
+          \node [rotate=45,color=black] at (\base+64, 0) {Idle};
         \end{scope}
     \end{tikztimingtable}
     \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
 transmitter latches {\tt 0} at time 11 and does not yet know there is an
-issue.}
-
+issue. At time 12, so long as the transmitter is sending another full bit
+it does not matter whether that bit is a {\tt 0} or {\tt 1} as the control
+layer's reset will propagate during the {\sc latch1}, {\sc drive2}, and {\sc
+latch2} states.  Shown here is the assumption that the RX node latches the
+previous {\tt 1} at time 12. If it had latched {\tt 0} instead it would enter
+Reset at time 12.}
 
 
     \begin{tikztimingtable}[timing/slope=.3]
@@ -705,7 +749,7 @@ issue.}
       \\
       Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L} \\
       Dout & L3{4L}LLLXXHHH2{4H}HHHXXLLL2{4L}2{4H} \\
-      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{32D{Acknowledgement}} \\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{52D{Acknowledgement}}D{} \\
       %\\
       Din  & L0.5L4{4L}4{4H}3{4L}2{4H} \\
       Dout & L0.5L4{4L}4{4H}3{4L}2{4H} \\
