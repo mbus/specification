@@ -528,6 +528,9 @@ the reset assumption~(\ref{reset-assumption}) to detect the issue.
 
 \begin{figure}
 \begin{subfigure}{\textwidth}
+    \centering
+    \huge {\bf MES 0110, ACK 0110, RST 01011 Broken:}
+
     \tiny
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
       Din  & L0.8L4{4L}4{4H}2{4L}0.2LLLXXHHH4H    0.5H8{2L}8{2H}8{2L}7{2H}1.5HH \\
@@ -743,38 +746,43 @@ Reset at time 12.}
 
 
     \begin{tikztimingtable}[timing/slope=.3]
-      Din  & L0.8L4{4L}4{4H}3{4L}2{4H} \\
-      Dout & L0.0L4{4L}4{4H}2{4L}\\
+      Din  & L0.8L4{4L}4{4H}{4L}{4L}{4H}{4H}{4H}{4H}{4L}{4L}{16L} \\
+      Dout & L0.0L4{4L}4{4H}{4L}{4L}{4H}{4H}{4H}{4H}{4L}{4L}{16L}\\
+      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{8D{MES 0}}{8D{MES 1}}{8D{MES 1}}{8D{MES 0}}{8D{ACK 0}}{8D{NAK}}
       \\
       \\
-      Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L} \\
-      Dout & L3{4L}LLLXXHHH2{4H}HHHXXLLL2{4L}2{4H} \\
-      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{52D{Acknowledgement}}D{} \\
+      Din  & L3{4L}LLLXXHHH2{4H}HHHXXLLL{3L}XX{3H}{4H}{4H}{3H}XX{3L}{4L}{16L} \\
+      Dout & L3{4L}LLLXXHHH2{4H}HHHXXLLL{4L}{4H}{4H}{4H}{4H}X{3L}{4L}{16L} \\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{32D{Acknowledgement}}D{} \\
       %\\
-      Din  & L0.5L4{4L}4{4H}3{4L}2{4H} \\
-      Dout & L0.5L4{4L}4{4H}3{4L}2{4H} \\
-      CLK  & C27{2C}\\
+      Din  & L0.5L4{4L}4{4H}{4L}{4L}{4H}{4H}{4H}{4H}{4L}{4L}{16L} \\
+      Dout & L0.5L4{4L}4{4H}{4L}{4L}{4H}{4H}{4H}{4H}{4L}{4L}{16L} \\
+      %CLK  & C26{2C}4L15{4C}H \\
+      CLK  & C46{2C}4L \\
       \extracode
         \begin{pgfonlayer}{background}
-          \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{1,9,...,57}
-          \end{scope}
-          \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{5,13,...,57}
-          \end{scope}
-          \begin{scope}[thick]
-            \draw[red]   (17,-4.5)  ellipse (2 and 4);
-            \draw[green] (33,-4.5)  ellipse (2 and 4);
-            \draw[blue]  (47,-13.5) ellipse (3 and 1.25);
+          \begin{scope}[semitransparent,dashed]
+            \vertlines{1,9,...,49}
+            \pgfmathparse{\twidth-4}
+            \vertlines{57,65,...,\pgfmathresult}
+            \vertlines[color=red]{5,13,...,49}
+            \vertlines[color=blue]{53,61,...,\pgfmathresult}
+            \pgfmathparse{\twidth-1}
+            \vertlines{\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent]
             % TX
             \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
             \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
             \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+            \filldraw[yellow]    (41,-0.5) rectangle (45,-2.5);
+            \filldraw[yellow]    (49,-0.5) rectangle (53,-2.5);
+            \filldraw[yellow]    (57,-0.5) rectangle (61,-2.5);
             % RX
             \filldraw[yellow]    (37,-8.5) rectangle (41,-10.5);
             \filldraw[yellow]    (45,-8.5) rectangle (49,-10.5);
+            \filldraw[yellow]    (53,-8.5) rectangle (57,-10.5);
+            \filldraw[yellow]    (61,-8.5) rectangle (65,-10.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
@@ -785,18 +793,19 @@ Reset at time 12.}
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
-          \foreach \x [evaluate=\x] in {1,17,...,57}
+          \foreach \x [evaluate=\x] in {1,17,...,\twidth}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
         \end{scope}
         \begin{scope}
-          [font=\bf\tiny,anchor=north,shift={(0,-3em)},color=red]
-          \foreach \x [evaluate=\x] in {1,17,...,57}
+          [font=\bf\tiny,anchor=north,shift={(.2,-3.1em)},color=red]
+          \foreach \x [evaluate=\x] in {1,17,...,\twidth}
             \foreach \offset/\l in {0/L2,4/D1,8/L1,12/D2}
               \node [rotate=45] at (\x+\offset,0) {\l};
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+          \def\base{53}
         \end{scope}
     \end{tikztimingtable}
     \caption{Transmitting is sending data bits 0, 1, then
@@ -805,7 +814,11 @@ Message~End~Sequence ({\tt 00110110})}
 \caption{Detail of a $1\phi$TX~0$\rightarrow$1 error. The top labels are the
 current global bus state. The red labels above the RX waveform indicate the
 local $1\phi$ state machine. {\tt DOUT} lines are colored to indicate when a
-node is forwarding (gray) or driving (yellow).
+node is driving (yellow), otherwise it is forwarding its {\tt DIN} value.
+This scheme fails in the third case (TX 0,1,MES) as the RX node can
+incorrectly conclude it has ACK'd a message. While this is detectable by
+observing that the ACK is not immediately followed by Reset, this is
+cumbersome and not very intuitive.
 }
 \label{fig:reset-1phi-tx-0-1}
 \end{figure}
