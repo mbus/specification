@@ -519,16 +519,10 @@ catches the {\tt 101} phase realignment sequence.
 \label{reset-phi1-tx-0-1}
 For most nodes, this is the complement of TX~1$\rightarrow$0. However, if the
 node happens to be a receiving node it will detect this as the beginning of a
-Message~End~Sequence ({\tt 0110}). If the transmitter's next half-bit will be
-a {\tt 1}, the receiver will see {\tt 0111} and enter Reset. If the
-transmitter's next half-bit is {\tt 0}, however, the receiver may see {\tt
-0110} and begin attempting to acknowledge.
-
-Figure~\ref{fig:reset-1phi-tx-0-1} details these transitions, which diverge at
-time 10. The two errors occur at time 4 (red circle) and time 8 (green
-circle), while the controller does node learn about the issue until time 12
-(blue circle). Note the controller's detection relies on
-the reset assumption~(\ref{reset-assumption}) to detect the issue.
+Message~End~Sequence ({\tt 0111}). Figure~\ref{fig:reset-1phi-tx-0-1} details
+the possible outcomes of a TX~0$\rightarrow$1 glitch.  Note the controller's
+detection relies on the reset assumption~(\ref{reset-assumption}) to detect
+the issue.
 
 \begin{comment}
 
@@ -831,12 +825,8 @@ cumbersome and not very intuitive.
 
 \end{comment}
 
-
-\begin{figure}
+\begin{figure}[h]
 \begin{subfigure}{\textwidth}
-    \centering
-    \huge {\bf TRY MES 0111, ACK 1001, RST 01011:}
-
     \tiny
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
       %       |    D0     || D1  ||   D0   {}  RD0      ||  R1D     ||  R0D     || Re-Reset
@@ -977,26 +967,11 @@ cumbersome and not very intuitive.
         \end{scope}
     \end{tikztimingtable}
     \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). If the
-transmitter were to send a 0 as the next data bit, it would detect the error
-at {\sc latch1} at time 16, however here we examine it sending another 1.
+      transmitter had sent 0, 1, 1 ({\tt 001111}) or 0, 1, MES ({\tt
+      00110111}) The attempt to latch a 1 during {\sc latch2} at time 12 would
+      have failed and the transmitter would simply enter Reset and begin
+      forwarding earlier.
     }
-
-    \begin{tikztimingtable}[timing/slope=.3]
-    \end{tikztimingtable}
-    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
-transmitter latches {\tt 0} at time 11 and does not yet know there is an
-issue. At time 12, so long as the transmitter is sending another full bit
-it does not matter whether that bit is a {\tt 0} or {\tt 1} as the control
-layer's reset will propagate during the {\sc latch1}, {\sc drive2}, and {\sc
-latch2} states.  Shown here is the assumption that the RX node latches the
-previous {\tt 1} at time 12. If it had latched {\tt 0} instead it would enter
-Reset at time 12.}
-
-
-    \begin{tikztimingtable}[timing/slope=.3]
-    \end{tikztimingtable}
-    \caption{Transmitting is sending data bits 0, 1, then
-Message~End~Sequence ({\tt 00110110})}
 \end{subfigure}
 \caption{Detail of a $1\phi$TX~0$\rightarrow$1 error. The top labels are the
 current global bus state. The red labels above the RX waveform indicate the
