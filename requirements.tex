@@ -1,7 +1,5 @@
 \svnInfo $Id$
 
-\begin{comment}
-
 \section{Requirements \& Design Considerations}
 \label{sec:requirements}
 \label{sec:design}
@@ -224,18 +222,19 @@ consider various failure modes.
 \begin{subfigure}{\textwidth}
     \ssmall
     \begin{tikztimingtable}[timing/slope=.3]
-      Din  & L1.4L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}0.6LL \\
-      Dout & L0.0L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}2.0LL \\
+      %       |   D1    | D0  | D1  |     MES       |
+      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2L}11{2H}0.6H H \\
+      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2L}11{2H}2.0H H \\
       \\
-      Din  & L0.2L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.8LL \\
-      Dout & L0.4L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.6LL \\
+      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.8H H \\
+      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.6H H \\
       \\
-      Din  & L0.6L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.4LL \\
-      Dout & L0.8L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.2LL \\
+      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.4H H \\
+      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.2H H \\
       \\
-      Din  & L1.0L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}1.0LL \\
-      Dout & L1.2L8{2H}8{2L}8{2H}4{2L}8{2H}3{2L}0.8LL \\
-      CLK  & C40{2C}C \\
+      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.0H H \\
+      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2L}11{2H}0.8H H \\
+      CLK  & C 40{2C}                                C \\
            & \\
       \extracode
         \begin{pgfonlayer}{background}
@@ -303,19 +302,20 @@ consider various failure modes.
     \end{tikztimingtable}
 
     \begin{tikztimingtable}[timing/slope=.3]
-      Din  & L1.0L4{2L}8{2H}3{2L}1.0L0.2L8{2L}8{2H}8{2L}7{2H}1.8HH \\
-      Dout & L1.2L4{2L}8{2H}3{2L}0.8L0.4L8{2L}8{2H}8{2L}7{2H}1.6HH \\
+      %       |         ACK           |
+      Din  & H 1.0H4{2H}8{2L}3{2H}1.0H 0.2H8{2L}8{2H}8{2L}7{2H}1.8H H \\
+      Dout & H 1.2H4{2H}8{2L}3{2H}0.8H 0.4H8{2L}8{2H}8{2L}7{2H}1.6H H \\
       \\
-      Din  & L1.4L4{2L}8{2H}3{2L}0.6L0.6L8{2L}8{2H}8{2L}7{2H}1.4HH \\
-      Dout & L0.0L4{2L}8{2H}3{2L}2.0L0.8L8{2L}8{2H}8{2L}7{2H}1.2HH \\
+      Din  & H 1.4H4{2H}8{2L}3{2H}0.6H 0.6H8{2L}8{2H}8{2L}7{2H}1.4H H \\
+      Dout & H 0.0H4{2H}8{2L}3{2H}2.0H 0.8H8{2L}8{2H}8{2L}7{2H}1.2H H \\
       \\
-      Din  & L0.2L4{2L}8{2H}3{2L}1.8L1.0L8{2L}8{2H}8{2L}7{2H}1.0HH \\
-      Dout & L0.4L4{2L}8{2H}3{2L}1.6L1.2L8{2L}8{2H}8{2L}7{2H}0.8HH \\
+      Din  & H 0.2H4{2H}8{2L}3{2H}1.8H 1.0H8{2L}8{2H}8{2L}7{2H}1.0H H \\
+      Dout & H 0.4H4{2H}8{2L}3{2H}1.6H 1.2H8{2L}8{2H}8{2L}7{2H}0.8H H \\
       \\
-      Din  & L0.6L4{2L}8{2H}3{2L}1.4L1.4L8{2L}8{2H}8{2L}7{2H}0.6HH \\
-      Dout & L0.8L4{2L}8{2H}3{2L}1.2L0.0L8{2L}8{2H}8{2L}7{2H}2.0HH \\
-      CLK  & C16{2C}4L15{4C}H \\
-      ~~~  & C47{2C}2HH \\
+      Din  & H 0.6H4{2H}8{2L}3{2H}1.4H 1.4H8{2L}8{2H}8{2L}7{2H}0.6H H \\
+      Dout & H 0.8H4{2H}8{2L}3{2H}1.2H 0.0H8{2L}8{2H}8{2L}7{2H}2.0H H \\
+      CLK  & C 16{2C}4L15{4C}                                       H \\
+      ~~~  & C 47{2C}2H                                             H \\
            & \\
       \extracode
         \begin{pgfonlayer}{background}
@@ -424,13 +424,13 @@ If a local clock glitch somehow occurs on the control node, then the entire
 bus is considered out of phase from the control node and the control node will
 reset the bus when it detects another node is out of phase.
 
-In all $1\phi$ and $3\phi$ cases, the result is non-deterministic as the node
-is sampling for its local {\sc latch2} cycle while the transmitting node is
-driving the new bit. Most likely the node will latch the value that was
-previously on the bus as the new bit will not have propagated to the local
-{\tt DIN}.  It is possible, however, that the previous node in the loop is
-transmitting, has a lower threshold for detecting the rise of {\tt CLK}, and a
-powerful {\tt DOUT} driver, in which case the node will latch the new value.
+In all $1\phi$ and $3\phi$ cases, the latched values are non-deterministic as
+the node is sampling for its local {\sc latch2} cycle while the transmitting
+node is driving the new bit. Most likely the node will latch the value that
+was previously on the bus as the new bit will not have propagated to the local
+{\tt DIN}. It is possible, however, that the node that is transmitting has a
+lower threshold for detecting the rise of {\tt CLK} and a powerful {\tt DOUT}
+driver, in which case the out-of-phase node will latch the new value.
 
 Transmitting the same bit twice in a row is uninteresting as there are no
 changes on the data lines. We examine then: TX~1$\rightarrow$0,
@@ -471,17 +471,20 @@ A node that has missed one clock edge will be one phase behind:
 \noindent\makebox[\textwidth]{%
     \tiny
     \begin{tikztimingtable}[timing/slope=.3]
-      Din  & L8{1.5H}8{1.5L}8{1.5H}4{1.5L}8{1.5H}4{1.5L}8{1.5L}8{1.5L}8{1.5H}8{1.5L}8{1.5H}HH \\
-      CLK  & C48{1.5C}3L15{3C}HH \\
+      %       |  D1   |  D0   |  D1   |    MES        |   ACK               |
+      Din  & L 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L}12{1.5H} 4{1.5H}8{1.5L}4{1.5H}
+      %       | Reset
+               8{1.5L}8{1.5H}8{1.5L}8{1.5H}HH \\
+      CLK  & C 56{1.5C}3L15{3C}HH \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{1,7,...,71}
-            \vertlines{76,88,100,106,112,118}
+            \vertlines{1,7,...,83}
+            \vertlines{88,100,112,118,124}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{4,10,...,71}
-            \vertlines{82,94,122}
+            \vertlines{4,10,...,87}
+            \vertlines{94,106,130}
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
             % Reset
@@ -490,18 +493,17 @@ A node that has missed one clock edge will be one phase behind:
         \end{pgfonlayer}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=red]
-          \foreach \x [evaluate=\x] in {1,13,...,71}
+          \foreach \x [evaluate=\x] in {1,13,...,79}
             \foreach \offset/\l in {0/Latch2,3/Drive1,6/Latch1,9/Drive2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \node [rotate=45] at (76,0) {Latch2};
-          \node [rotate=45] at (82,0) {Drive1};
-          \node [rotate=45] at (88,0) {Latch1};
-          \node [rotate=45] at (94,0) {Drive2};
-          \node [rotate=45] at (100,0) {Latch2};
-          \node [rotate=45] at (106,0) {Reset};
-          \node [rotate=45] at (112,0) {Reset};
-          \node [rotate=45] at (118,0) {Reset};
-          \node [rotate=45,color=black] at (122,0) {Idle};
+          \node [rotate=45] at (88,0) {Latch2};
+          \node [rotate=45] at (94,0) {Drive1};
+          \node [rotate=45] at (100,0) {Latch1};
+          \node [rotate=45] at (106,0) {Drive2};
+          \node [rotate=45] at (112,0) {Latch2};
+          \node [rotate=45] at (118,0) {Reset (D)};
+          \node [rotate=45] at (124,0) {Reset (L)};
+          \node [rotate=45,color=black] at (130,0) {Idle (L)};
         \end{scope}
     \end{tikztimingtable}
 }
@@ -527,6 +529,8 @@ time 10. The two errors occur at time 4 (red circle) and time 8 (green
 circle), while the controller does node learn about the issue until time 12
 (blue circle). Note the controller's detection relies on
 the reset assumption~(\ref{reset-assumption}) to detect the issue.
+
+\begin{comment}
 
 \begin{figure}
 \begin{subfigure}{\textwidth}
