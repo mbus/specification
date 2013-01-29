@@ -474,8 +474,9 @@ A node that has missed one clock edge will be one phase behind:
       %       |  D1   |  D0   |  D1   |    MES        |   ACK               |
       Din  & L 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L}12{1.5H} 4{1.5H}8{1.5L}4{1.5H}
       %       | Reset
-               8{1.5L}8{1.5H}8{1.5L}8{1.5H}HH \\
-      CLK  & C 56{1.5C}3L15{3C}HH \\
+               8{1.5L}8{1.5H}8{1.5L}6{1.5H} H \\
+      CLK  & C 56{1.5C}3L14{3C} C \\
+      Bus  & D{}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{24D{MES}}{24D{ACK}}{45D{Reset}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
@@ -507,6 +508,11 @@ A node that has missed one clock edge will be one phase behind:
         \end{scope}
     \end{tikztimingtable}
 }
+\caption{A nominal transmission (1, 0, 1, MES, ACK, Reset) labeling the states
+as $1\phi$ behind. The {\tt CLK} and {\tt Bus} lines reflect the actual bus
+values, not those as interpreted by the $1\phi$ behind node.
+}
+\label{fig:1-phi}
 \end{figure}
 
 \subparagraph{TX 1$\rightarrow$0}
@@ -523,6 +529,18 @@ Message~End~Sequence ({\tt 0111}). Figure~\ref{fig:reset-1phi-tx-0-1} details
 the possible outcomes of a TX~0$\rightarrow$1 glitch.  Note the controller's
 detection relies on the reset assumption~(\ref{reset-assumption}) to detect
 the issue.
+
+\subparagraph{TX 1$\rightarrow$Message End Sequence}
+
+\subparagraph{TX 0$\rightarrow$Message End Sequence}
+
+\subparagraph{Message End Sequence}
+
+\subparagraph{Message End Sequence$\rightarrow$Message Acknowledgement}
+
+\subparagraph{Message Acknowledgement}
+
+\subparagraph{Message Acknowledgement$\rightarrow$Reset Sequence}
 
 \begin{comment}
 
