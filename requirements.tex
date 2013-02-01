@@ -220,21 +220,22 @@ consider various failure modes.
 ~
 
 \begin{figure}[!h]
+    \hspace{-4em}
 \begin{subfigure}{\textwidth}
     \scriptsize
     \begin{tikztimingtable}[timing/slope=.3]
       %       |   D1    | D0  | D1  |     MES       |
-      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2L}3{2H}0.6H H \\
-      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2L}3{2H}2.0H H \\
+      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2H}3{2L}0.6L L \\
+      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2H}3{2L}2.0L L \\
       \\
-      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.8H H \\
-      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.6H H \\
+      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.8L L \\
+      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.6L L \\
       \\
-      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.4H H \\
-      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.2H H \\
+      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.4L L \\
+      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.2L L \\
       \\
-      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.0H H \\
-      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2L}3{2H}0.8H H \\
+      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.0L L \\
+      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2H}3{2L}0.8L L \\
       CLK  & C 32{2C}                               C \\
            & \\
       \extracode
@@ -286,10 +287,10 @@ consider various failure modes.
             (48,0) node[] (g) {}
             (64,0) node[] (i) {}
             (66,0) node[] (z) {\ldots};
-          \node[right=4 of a] (b) {Data 1};
-          \node[right=4 of c] (d) {Data 0};
-          \node[right=4 of e] (f) {Data 1};
-          \node[right=1.5 of g] (h) {End Sequence};
+          \node[right=2 of a] (b) {Data 1 (11)};
+          \node[right=2 of c] (d) {Data 0 (00)};
+          \node[right=2 of e] (f) {Data 1 (11)};
+          \node[right=3 of g] (h) {MES (10)};
           \draw[->] (b.west) -- (a.east);
           \draw[<-] (c.west) -- (b.east);
           \draw[->] (d.west) -- (c.east);
@@ -302,25 +303,26 @@ consider various failure modes.
     \end{tikztimingtable}
 
     \begin{tikztimingtable}[timing/slope=.3]
-      %       |           ACK                       | RST
-      Din  & H 1.0H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.0H 0.2H8{2L} 7{2H}1.8H H \\
-      Dout & H 1.2H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}0.8H 0.4H8{2L} 7{2H}1.6H H \\
+      %       | ACK 0      1     1     0      |ACK/RST 0  1   | RST 0 11
+      Din  & L 1.0L4{2L} 4{2H} 4{2H} 3{2L}1.0L 0.2L8{2L} 8{2H}  8{2L} 7{2H} 1.8H H \\
+      Dout & L 1.2L4{2L} 4{2H} 4{2H} 3{2L}0.8L 0.4L8{2L} 8{2H}  8{2L} 7{2H} 1.6H H \\
       \\
-      Din  & H 1.4H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}0.6H 0.6H8{2L} 7{2H}1.4H H \\
-      Dout & H 0.0H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}2.0H 0.8H8{2L} 7{2H}1.2H H \\
+      Din  & L 1.4L4{2L} 4{2H} 4{2H} 3{2L}0.6L 0.6L8{2L} 8{2H}  8{2L} 7{2H} 1.4H H \\
+      Dout & L 0.0L4{2L} 4{2H} 4{2H} 3{2L}2.0L 0.8L8{2L} 8{2H}  8{2L} 7{2H} 1.2H H \\
       \\
-      Din  & H 0.2H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.8H 1.0H8{2L} 7{2H}1.0H H \\
-      Dout & H 0.4H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.6H 1.2H8{2L} 7{2H}0.8H H \\
+      Din  & L 0.2L4{2L} 4{2H} 4{2H} 3{2L}1.8L 1.0L8{2L} 8{2H}  8{2L} 7{2H} 1.0H H \\
+      Dout & L 0.4L4{2L} 4{2H} 4{2H} 3{2L}1.6L 1.2L8{2L} 8{2H}  8{2L} 7{2H} 0.8H H \\
       \\
-      Din  & H 0.6H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.4H 1.4H8{2L} 7{2H}0.6H H \\
-      Dout & H 0.8H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.2H 0.0H8{2L} 7{2H}2.0H H \\
-      CLK  & C 24{2C}4L7{4C}                                             H \\
-      ~~~  & C 39{2C}2H                                                  H \\
-           & \\
+      Din  & L 0.6L4{2L} 4{2H} 4{2H} 3{2L}1.4L 1.4L8{2L} 8{2H}  8{2L} 7{2H} 0.6H H \\
+      Dout & L 0.8L4{2L} 4{2H} 4{2H} 3{2L}1.2L 0.0L8{2L} 8{2H}  8{2L} 7{2H} 2.0H H \\
+      CLK  & C     4{2C} 4{2C} 4{2C} 4{2C}       4L3{4C} 4{4C}  4{4C} 4{4C}      H \\
+      ~~~  & C     4{2C} 4{2C} 4{2C} 4{2C}         8{2C} 8{2C}  8{2C} 8{2C}      C \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick]
-            \vertlines{1,17,...,48}
+            \vertlines{1,17,...,32}
+            \pgfmathparse{\twidth-1}
+            \vertlines{\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
             \vertlines{9,25,...,48}
@@ -329,9 +331,11 @@ consider various failure modes.
           \begin{scope}[semitransparent,semithick,dashed,color=red]
             \vertlines{5,13,...,48}
             \vertlines{61,77}
+            \vertlines{85,93}
           \end{scope}
           \begin{scope}[semitransparent,semithick,color=blue]
-            \vertlines{49,65,...,\twidth}
+            \pgfmathparse{\twidth-17}
+            \vertlines{33,49,...,\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=blue]
             \vertlines{57,73,...,\twidth}
@@ -344,13 +348,11 @@ consider various failure modes.
             \filldraw ( 9,-6.5)  rectangle (13,-8.5);
             \filldraw (17,-6.5)  rectangle (21,-8.5);
             \filldraw (25,-6.5)  rectangle (29,-8.5);
-            \filldraw (33,-6.5)  rectangle (37,-8.5);
-            \filldraw (41,-6.5)  rectangle (45,-8.5);
             % Clk
-            \filldraw ( 0,-20.5) rectangle (49,-22.5);
+            \filldraw ( 0,-20.5) rectangle (33,-22.5);
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
-            \filldraw   (49,-18.5) rectangle (\twidth-1,-22.5);
+            \filldraw   (33,-18.5) rectangle (\twidth-1,-22.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
@@ -362,36 +364,48 @@ consider various failure modes.
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
-          \foreach \x [evaluate=\x] in {1,17,...,45}
+          \foreach \x [evaluate=\x] in {1,17,...,29}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \def\base{53}
+          \def\base{37}
           \node [rotate=45] at (\base+0, 0) {Drive1};
           \node [rotate=45] at (\base+8, 0) {Latch1};
-          \node [rotate=45] at (\base+16, 0) {Reset};
-          \node [rotate=45] at (\base+24, 0) {Reset};
+          \node [rotate=45] at (\base+16, 0) {Drive2};
+          \node [rotate=45] at (\base+24, 0) {Latch2};
+          \node [rotate=45] at (\base+32, 0) {Drive1};
+          \node [rotate=45] at (\base+40, 0) {Latch1};
+          \node [rotate=45] at (\base+48, 0) {Reset};
+          \node [rotate=45] at (\base+56, 0) {Reset};
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
-          \def\base{49}
-          \node [rotate=45] at (\base, 0) {R0-D};
+          \def\base{33}
+          \node [rotate=45] at (\base+0, 0) {R0-D};
           \node [rotate=45] at (\base+8, 0) {R0-L};
-          \node [rotate=45] at (\base+16, 0) {R1-I1};
-          \node [rotate=45] at (\base+24, 0) {R1-I1};
-          \node [rotate=45,color=black] at (\base+32, 0) {Idle};
+          \node [rotate=45] at (\base+16, 0) {R1-D};
+          \node [rotate=45] at (\base+24, 0) {R1-L};
+          \node [rotate=45] at (\base+32, 0) {R0-D};
+          \node [rotate=45] at (\base+40, 0) {R0-L};
+          \node [rotate=45] at (\base+48, 0) {R1-I1};
+          \node [rotate=45] at (\base+56, 0) {R1-I1};
+          \node [color=black] at (\base+64, 0) {Idle};
+        \end{scope}
+        \begin{scope}
+          [font=\small,anchor=south,shift={(1,-18em)}]
+          \draw
+            (-2,0) node[] (z) {\ldots}
+            (0,0) node[] (a) {}
+            (64,0) node[] (c) {};
+          \node[right=16 of a] (b) {Acknowledgement (01,10,01)};
+          \draw[->] (b.west) -- (a.east);
+          \draw[<-] (c.west) -- (b.east);
         \end{scope}
         \begin{scope}
           [font=\small,anchor=south,shift={(1,-19.5em)}]
           \draw
-            (-2,0) node[] (z) {\ldots}
-            (0,0) node[] (a) {}
-            (48,0) node[] (c) {}
-            (\twidth-1,0) node[] (e) {};
-          \node[right=16 of a] (b) {Acknowledgement};
-          \node[right=12 of c] (d) {Reset};
-          %\draw[->] (z.east) -- (a.west);
-          \draw[->] (b.west) -- (a.east);
-          \draw[<-] (c.west) -- (b.east);
+            (32,0) node[] (c) {}
+            (\twidth-2,0) node[] (e) {};
+          \node[right=12 of c] (d) {Reset (010..11)};
           \draw[->] (d.west) -- (c.east);
           \draw[<-] (e.west) -- (d.east);
         \end{scope}
@@ -420,7 +434,7 @@ bus is considered out of phase from the control node and the control node will
 reset the bus when it detects another node is out of phase.
 
 In all $1\phi$ and $3\phi$ cases, the latched values are non-deterministic as
-the node is sampling for its local {\sc latch2} cycle while the transmitting
+the node is sampling for its local {\sc latch1/latch2} cycle while the transmitting
 node is driving the new bit. Most likely the node will latch the value that
 was previously on the bus as the new bit will not have propagated to the local
 {\tt DIN}. It is possible, however, that the node that is transmitting has a
@@ -466,12 +480,14 @@ A node that has missed one clock edge will be one phase behind:
 \noindent\makebox[\textwidth]{%
     \tiny
     \begin{tikztimingtable}[timing/slope=.3]
-      %       |  D1   |  D0   |  D1   |    MES        |   ACK               |
-      Din  & L 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L}12{1.5H} 4{1.5H}8{1.5L}4{1.5H}
-      %       | Reset
-               8{1.5L}8{1.5H}8{1.5L}6{1.5H} H \\
-      CLK  & C 56{1.5C}3L14{3C} C \\
-      Bus  & D{}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{24D{MES}}{24D{ACK}}{45D{Reset}}D \\
+      %       |  D1   |  D0   |  D1   |    MES        |
+      %       |   ACK        ,       ,              | Reset
+      Din  & L 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L} 4{1.5H}
+               4{1.5H}4{1.5L} 8{1.5H} 4{1.5L}4{1.5H} 8{1.5L}6{1.5H} H \\
+      CLK  & C 8{1.5C} 8{1.5C} 8{1.5C} 4{1.5C} 4{1.5C}
+               4{1.5C}4{1.5C} 8{1.5C} 4{1.5C}4{1.5C} 3L3{3C}3{3C}   C \\
+      Bus  & D{}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 01}}
+               {12D{ACK 10}}{12D{ACK 11}}{12D{ACK 01}}  {45D{Reset}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
