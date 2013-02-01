@@ -481,41 +481,41 @@ A node that has missed one clock edge will be one phase behind:
     \tiny
     \begin{tikztimingtable}[timing/slope=.3]
       %       |  D1   |  D0   |  D1   |    MES        |
-      %       |   ACK        ,       ,              | Reset
-      Din  & L 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L} 4{1.5H}
-               4{1.5H}4{1.5L} 8{1.5H} 4{1.5L}4{1.5H} 8{1.5L}6{1.5H} H \\
+      %       |   ACK   01   ,  10          | ACK/RST 01   | 0 Reset 11
+      Din  & L 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5H} 4{1.5L}
+               4{1.5L}4{1.5H} 4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}6{1.5H} H \\
       CLK  & C 8{1.5C} 8{1.5C} 8{1.5C} 4{1.5C} 4{1.5C}
-               4{1.5C}4{1.5C} 8{1.5C} 4{1.5C}4{1.5C} 3L3{3C}3{3C}   C \\
-      Bus  & D{}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 01}}
-               {12D{ACK 10}}{12D{ACK 11}}{12D{ACK 01}}  {45D{Reset}}D \\
+               4{1.5C}4{1.5C} 4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  3{3C} C \\
+      Bus  & D{}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 10}}
+               {12D{ACK 01}}{12D{ACK 10}}{24D{ACK/RST 01}} {21D{0 Reset 11}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{1,7,...,83}
-            \vertlines{88,100,112,118,124}
+            \vertlines{1,7,...,71}
+            \vertlines{76,88,100,106,112}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{4,10,...,87}
-            \vertlines{94,106,130}
+            \vertlines{4,10,...,75}
+            \vertlines{82,94,118}
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
             % Reset
-            \filldraw  (82,-.5) rectangle (130,-2.5);
+            \filldraw  (73,-.5) rectangle (\twidth-1,-2.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=red]
-          \foreach \x [evaluate=\x] in {1,13,...,79}
+          \foreach \x [evaluate=\x] in {1,13,...,67}
             \foreach \offset/\l in {0/Latch2,3/Drive1,6/Latch1,9/Drive2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \node [rotate=45] at (88,0) {Latch2};
-          \node [rotate=45] at (94,0) {Drive1};
-          \node [rotate=45] at (100,0) {Latch1};
-          \node [rotate=45] at (106,0) {Drive2};
-          \node [rotate=45] at (112,0) {Latch2};
-          \node [rotate=45] at (118,0) {Reset (D)};
-          \node [rotate=45] at (124,0) {Reset (L)};
-          \node [rotate=45,color=black] at (130,0) {Idle (L)};
+          \node [rotate=45] at (76,0) {Latch2};
+          \node [rotate=45] at (82,0) {Drive1};
+          \node [rotate=45] at (88,0) {Latch1};
+          \node [rotate=45] at (94,0) {Drive2};
+          \node [rotate=45] at (100,0) {Latch2};
+          \node [rotate=45] at (106,0) {Reset (D)};
+          \node [rotate=45] at (112,0) {Reset (L)};
+          \node [rotate=45,color=black] at (118,0) {Idle (L)};
         \end{scope}
     \end{tikztimingtable}
 }
