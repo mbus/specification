@@ -219,32 +219,32 @@ consider various failure modes.
 
 \begin{figure}[!h]
 \begin{subfigure}{\textwidth}
-    \ssmall
+    \scriptsize
     \begin{tikztimingtable}[timing/slope=.3]
       %       |   D1    | D0  | D1  |     MES       |
-      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2L}11{2H}0.6H H \\
-      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2L}11{2H}2.0H H \\
+      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2L}3{2H}0.6H H \\
+      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2L}3{2H}2.0H H \\
       \\
-      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.8H H \\
-      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.6H H \\
+      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.8H H \\
+      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.6H H \\
       \\
-      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.4H H \\
-      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.2H H \\
+      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.4H H \\
+      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.2H H \\
       \\
-      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2L}11{2H}1.0H H \\
-      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2L}11{2H}0.8H H \\
-      CLK  & C 40{2C}                                C \\
+      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.0H H \\
+      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2L}3{2H}0.8H H \\
+      CLK  & C 32{2C}                               C \\
            & \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick]
-            \vertlines{1,17,...,81}
+            \vertlines{1,17,...,\twidth}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{9,25,...,81}
+            \vertlines{9,25,...,\twidth}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{5,13,...,81}
+            \vertlines{5,13,...,\twidth}
           \end{scope}
           \begin{scope}[semitransparent]
             % TX
@@ -253,12 +253,10 @@ consider various failure modes.
             \filldraw[yellow] (33,-0.5)  rectangle (37,-2.5);
             \filldraw[yellow] (49,-0.5)  rectangle (53,-2.5);
             \filldraw[yellow] (57,-0.5)  rectangle (61,-2.5);
-            \filldraw[yellow] (65,-0.5)  rectangle (69,-2.5);
-            \filldraw[yellow] (73,-0.5)  rectangle (77,-2.5);
             % RX
-            \filldraw[yellow] (81,-6.5)  rectangle (82,-8.5);
+            \filldraw[yellow] (65,-6.5)  rectangle (66,-8.5);
             % Clk
-            \filldraw[yellow] ( 0,-20.5) rectangle (82,-22.5);
+            \filldraw[yellow] ( 0,-20.5) rectangle (\twidth,-22.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
@@ -270,10 +268,12 @@ consider various failure modes.
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
-          \foreach \x [evaluate=\x] in {1,17,...,77}
+          \pgfmathparse{\twidth-16}
+          \foreach \x [evaluate=\x] in {1,17,...,\pgfmathresult}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \node[rotate=45] at (81,0) {Drive1};
+          \pgfmathparse{\twidth-1}
+          \node[rotate=45] at (\pgfmathresult,0) {Drive1};
         \end{scope}
         \begin{scope}
           [font=\small,anchor=south,shift={(1,-18em)}]
@@ -282,12 +282,12 @@ consider various failure modes.
             (16,0) node[] (c) {}
             (32,0) node[] (e) {}
             (48,0) node[] (g) {}
-            (80,0) node[] (i) {}
-            (82,0) node[] (z) {\ldots};
+            (64,0) node[] (i) {}
+            (66,0) node[] (z) {\ldots};
           \node[right=4 of a] (b) {Data 1};
           \node[right=4 of c] (d) {Data 0};
           \node[right=4 of e] (f) {Data 1};
-          \node[right=8 of g] (h) {End Sequence};
+          \node[right=1.5 of g] (h) {End Sequence};
           \draw[->] (b.west) -- (a.east);
           \draw[<-] (c.west) -- (b.east);
           \draw[->] (d.west) -- (c.east);
@@ -296,45 +296,43 @@ consider various failure modes.
           \draw[<-] (g.west) -- (f.east);
           \draw[->] (h.west) -- (g.east);
           \draw[<-] (i.west) -- (h.east);
-          %\draw[<-] (i.east) -- (z.west);
         \end{scope}
     \end{tikztimingtable}
 
     \begin{tikztimingtable}[timing/slope=.3]
-      %       |         ACK           |
-      Din  & H 1.0H4{2H}8{2L}3{2H}1.0H 0.2H8{2L}8{2H}8{2L}7{2H}1.8H H \\
-      Dout & H 1.2H4{2H}8{2L}3{2H}0.8H 0.4H8{2L}8{2H}8{2L}7{2H}1.6H H \\
+      %       |           ACK                       | RST
+      Din  & H 1.0H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.0H 0.2H8{2L} 7{2H}1.8H H \\
+      Dout & H 1.2H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}0.8H 0.4H8{2L} 7{2H}1.6H H \\
       \\
-      Din  & H 1.4H4{2H}8{2L}3{2H}0.6H 0.6H8{2L}8{2H}8{2L}7{2H}1.4H H \\
-      Dout & H 0.0H4{2H}8{2L}3{2H}2.0H 0.8H8{2L}8{2H}8{2L}7{2H}1.2H H \\
+      Din  & H 1.4H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}0.6H 0.6H8{2L} 7{2H}1.4H H \\
+      Dout & H 0.0H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}2.0H 0.8H8{2L} 7{2H}1.2H H \\
       \\
-      Din  & H 0.2H4{2H}8{2L}3{2H}1.8H 1.0H8{2L}8{2H}8{2L}7{2H}1.0H H \\
-      Dout & H 0.4H4{2H}8{2L}3{2H}1.6H 1.2H8{2L}8{2H}8{2L}7{2H}0.8H H \\
+      Din  & H 0.2H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.8H 1.0H8{2L} 7{2H}1.0H H \\
+      Dout & H 0.4H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.6H 1.2H8{2L} 7{2H}0.8H H \\
       \\
-      Din  & H 0.6H4{2H}8{2L}3{2H}1.4H 1.4H8{2L}8{2H}8{2L}7{2H}0.6H H \\
-      Dout & H 0.8H4{2H}8{2L}3{2H}1.2H 0.0H8{2L}8{2H}8{2L}7{2H}2.0H H \\
-      CLK  & C 16{2C}4L15{4C}                                       H \\
-      ~~~  & C 47{2C}2H                                             H \\
+      Din  & H 0.6H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.4H 1.4H8{2L} 7{2H}0.6H H \\
+      Dout & H 0.8H4{2H} 4{2L} 8{2H} 4{2L} 3{2H}1.2H 0.0H8{2L} 7{2H}2.0H H \\
+      CLK  & C 24{2C}4L7{4C}                                             H \\
+      ~~~  & C 39{2C}2H                                                  H \\
            & \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick]
-            \vertlines{1,17,...,32}
-            \vertlines{37,53,69}
+            \vertlines{1,17,...,48}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{9,25,...,32}
-            \vertlines{97}
+            \vertlines{9,25,...,48}
+            \vertlines{53,69}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{5,13,...,32}
-            \vertlines{45,61,77,85,93}
+            \vertlines{5,13,...,48}
+            \vertlines{61,77}
           \end{scope}
           \begin{scope}[semitransparent,semithick,color=blue]
-            \vertlines{33,49,...,89}
+            \vertlines{49,65,...,\twidth}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=blue]
-            \vertlines{41,57,...,89}
+            \vertlines{57,73,...,\twidth}
           \end{scope}
           \begin{scope}[semitransparent,yellow]
             % TX
@@ -344,11 +342,13 @@ consider various failure modes.
             \filldraw ( 9,-6.5)  rectangle (13,-8.5);
             \filldraw (17,-6.5)  rectangle (21,-8.5);
             \filldraw (25,-6.5)  rectangle (29,-8.5);
+            \filldraw (33,-6.5)  rectangle (37,-8.5);
+            \filldraw (41,-6.5)  rectangle (45,-8.5);
             % Clk
-            \filldraw ( 0,-20.5) rectangle (33,-22.5);
+            \filldraw ( 0,-20.5) rectangle (49,-22.5);
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
-            \filldraw   (33,-18.5) rectangle (\twidth-1,-22.5);
+            \filldraw   (49,-18.5) rectangle (\twidth-1,-22.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
@@ -360,41 +360,33 @@ consider various failure modes.
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
-          \foreach \x [evaluate=\x] in {1,17,...,29}
+          \foreach \x [evaluate=\x] in {1,17,...,45}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \def\base{37}
+          \def\base{53}
           \node [rotate=45] at (\base+0, 0) {Drive1};
           \node [rotate=45] at (\base+8, 0) {Latch1};
-          \node [rotate=45] at (\base+16, 0) {Drive2};
-          \node [rotate=45] at (\base+24, 0) {Latch2};
-          \node [rotate=45] at (\base+32, 0) {Drive1};
-          \node [rotate=45] at (\base+40, 0) {Latch1};
-          \node [rotate=45] at (\base+48, 0) {Reset};
-          \node [rotate=45] at (\base+56, 0) {Reset};
+          \node [rotate=45] at (\base+16, 0) {Reset};
+          \node [rotate=45] at (\base+24, 0) {Reset};
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
-          \def\base{33}
-          \node [rotate=45] at (\base, 0) {Reset-S0-D};
-          \node [rotate=45] at (\base+8, 0) {Reset-S0-L};
-          \node [rotate=45] at (\base+16, 0) {Reset-S1-D};
-          \node [rotate=45] at (\base+24, 0) {Reset-S1-L};
-          \node [rotate=45] at (\base+32, 0) {Reset-S0-D};
-          \node [rotate=45] at (\base+40, 0) {Reset-S0-L};
-          \node [rotate=45] at (\base+48, 0) {Reset-R-D};
-          \node [rotate=45] at (\base+56, 0) {Reset-R-L};
-          \node [rotate=45,color=black] at (\base+64, 0) {Idle};
+          \def\base{49}
+          \node [rotate=45] at (\base, 0) {R0-D};
+          \node [rotate=45] at (\base+8, 0) {R0-L};
+          \node [rotate=45] at (\base+16, 0) {R1-I1};
+          \node [rotate=45] at (\base+24, 0) {R1-I1};
+          \node [rotate=45,color=black] at (\base+32, 0) {Idle};
         \end{scope}
         \begin{scope}
           [font=\small,anchor=south,shift={(1,-19.5em)}]
           \draw
             (-2,0) node[] (z) {\ldots}
             (0,0) node[] (a) {}
-            (32,0) node[] (c) {}
-            (97,0) node[] (e) {};
-          \node[right=6 of a] (b) {Acknowledgement};
-          \node[right=28 of c] (d) {Reset};
+            (48,0) node[] (c) {}
+            (\twidth-1,0) node[] (e) {};
+          \node[right=16 of a] (b) {Acknowledgement};
+          \node[right=12 of c] (d) {Reset};
           %\draw[->] (z.east) -- (a.west);
           \draw[->] (b.west) -- (a.east);
           \draw[<-] (c.west) -- (b.east);
@@ -407,7 +399,9 @@ consider various failure modes.
 %}
   \caption{A normal end sequence, showing the last three bits sent (1, 0, 1)
 followed by a Message~End~Sequence and Message~Acknowledgement. During reset,
-the control node halves the clock speed it puts on the bus for phase-locking.}
+the control node halves the clock speed it puts on the bus for phase-locking.
+Here we see the accelerated Reset, which can hopefully be safely entered\ldots
+}
 \end{figure}
 
 \subsubsection{Phase Offsets}
