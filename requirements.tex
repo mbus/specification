@@ -535,7 +535,7 @@ the issue.
 Latching an extra {\tt 1} and missing the {\tt 0} will result either in a {\tt
 11} sequence and eventually no acknowledgement, a {\tt 10} sequence---a
 reset---, or a half-cycle lagged {\tt 01} sequence. This final case we examine
-in detail in Figure~\ref{fig:1-phi-tx1-mes}.
+in detail in Figure~\ref{fig:1-phi-tx1mes}.
 
 \subparagraph{TX 0$\rightarrow$Message End Sequence}
 Slipping an edge here will either cause the node to read the 0 from the
@@ -681,16 +681,164 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
           \node at (\pgfmathresult, 0)  {\normalsize\ldots};
         \end{scope}
     \end{tikztimingtable}
-    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). If at
-      time 14 the next half-bit was a {\tt 0} instead of a {\tt 1}, the TX
-      node would simply enter reset earlier at time 16 when the {\sc latch1}
+    \caption{\footnotesize
+      Transmitter is sending data bits 0, 1, 0 ({\tt 001100}).
+      The 0, 1, 1 ({\tt 001111}) case is considered in~\ref{fig:1-phi-tx011}.
+      Sending 0, 1, MES ({\tt 00110111}) would cause the TX node to latch a
+      {\tt 0} at time 12 for the second half-bit of the MES sequence and enter
+      reset earlier than is shown here.
+      If at time 14 the next half-bit was a {\tt 0} instead of a {\tt 1}, the
+      TX node would simply enter reset earlier at time 16 when the {\sc latch1}
       did not match the driven value. The second half-bit driven at time 18 is
       irrelevant, as the {\sc latch2} at time 20 will unconditionally enter
       reset as the latches at time 12, 16, and 20 make up the {\tt 010} reset
       sequence.
     }
+    \label{fig:1-phi-tx010}
 
-\begin{comment}
+
+    \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
+      %       |    D0     || D1  || D1            || RST
+      Din  & L 0.8L  4L12L  4H12H 3.2H4H3HXX3L  4L 16.5L16H16L16H               0.5H \\
+      Dout & L 0.0L  4L12L  4H12H   4H4H3HXX3L  4L    4L 4L4L4.5L 16H16L16H     0.5H \\
+      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{16D{Data 1}}{24D{Data 0}}
+                {16D{Err (FWD)}}{28D{Reset}} D \\
+      \\
+      Din  & L 0.0L  4L11LXX3H12H   4H4H4H H2LLL3L    4L 4L4L4.8L 16H16L16H     0.2H \\
+      Dout & L 0.0L  4L11LXX3H12H   4H4H4H  4L L3L    4L 4L 4L 4L 16.8H 16L 16H 0.2H\\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}
+             {8D{ACK 1}}{12D{ACK 0}}{16D{ACK 0}}{16D{ACK 1}}{8D{FWD}}{20D{Reset}} D \\
+      %\\
+      Din  & L 0.5L  4L12L  4H12H   4H4H4H  4L  4L    4L 4L 4L 4L 16.5H 16L 16H 0.0H\\
+      Dout & L 0.5L  4L12L  4H12H   4H4H4H  4L3.5L   16L16H16L16H               1.0H \\
+      CLK  & C26{2C}4L15{4C}H \\
+      \extracode
+        \begin{pgfonlayer}{background}
+          \begin{scope}[semitransparent,dashed]
+            \vertlines{1,9,...,49}
+            \pgfmathparse{\twidth-4}
+            \vertlines{49,57,...,\pgfmathresult}
+            \vertlines[color=red]{5,13,...,45}
+            \vertlines[color=blue]{53,61,...,\pgfmathresult}
+            \pgfmathparse{\twidth-1}
+            \vertlines{\pgfmathresult}
+          \end{scope}
+          \begin{scope}[thick]
+            \draw[blue]  (47,-13.5) ellipse (3 and 1.25);
+            %\draw[blue]  (69,-14.5) ellipse (1.25 and 2);
+          \end{scope}
+          \begin{scope}[semitransparent]
+            % TX
+            \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
+            \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
+            \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+            \filldraw[yellow]    (49,-0.5) rectangle (53,-2.5);
+            %\filldraw[yellow]    (57,-0.5) rectangle (65,-2.5);
+            % RX
+            \filldraw[yellow]    (37,-8.5) rectangle (41,-10.5);
+            \filldraw[yellow]    (45,-8.5) rectangle (49,-10.5);
+            %\filldraw[yellow]    (49,-8.5) rectangle (57,-10.5);
+            %\filldraw[yellow]    (65,-8.5) rectangle (73,-10.5);
+            % CLK
+            \filldraw[yellow]    ( 1,-16.5) rectangle (53,-18.5);
+            \filldraw[cyan,opacity=.25] (53,-14.5) rectangle (\twidth-1, -18.5);
+          \end{scope}
+          \foreach \n [evaluate=\n as \l using int((\n-1)/4)] in {1,5,...,\twidth}
+            \draw (\n,-19) -- +(0,-.2)
+              node [below,inner sep=2pt] {\scalebox{.75}{\tiny\l}};
+        \end{pgfonlayer}
+        \begin{scope}
+          [font=\sffamily\small,shift={(-3.0em,-0.5)},anchor=east,color=blue]
+          \node at (  0,   0) {TX};
+          \node at (  0,  -8) {RX};
+          \node at (  0, -15) {Ctl};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
+          \foreach \x [evaluate=\x] in {1,17,...,47}
+            \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+          \node [rotate=45] at (49,0) {Drive1};
+
+          \def\base{57}
+          \pgfmathparse{\base+0}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Latch1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Drive2};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Latch2};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Drive1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Latch1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Drive2};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Idle1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {Idle2};
+          \pgfmathparse{\pgfmathresult+8}
+        \end{scope}
+        \begin{scope}
+          [font=\bf\tiny,anchor=north,shift={(.2,-3.1em)},color=red]
+          \foreach \x [evaluate=\x] in {1,17,...,47}
+            \foreach \offset/\l in {0/L2,4/D1,8/L1,12/D2}
+              \node [rotate=45] at (\x+\offset,0) {\l};
+          \node [rotate=45] at (49,0) {L2};
+
+          \def\base{57}
+          \pgfmathparse{\base+0}
+          \node [rotate=45] at (\pgfmathresult, 0)  {D1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {L1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {D2};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {L2};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {D1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {L1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {**};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+          \def\base{53}
+          \pgfmathparse{\base+0}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-I1};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [rotate=45] at (\pgfmathresult, 0)  {R1-I2};
+          \pgfmathparse{\pgfmathresult+8}
+          \node [color=black] at (\pgfmathresult, 0)  {Idle};
+        \end{scope}
+    \end{tikztimingtable}
+    \caption{\footnotesize
+      Transmitter is sending data bits 0, 1, 1 ({\tt 001111}).
+      If the next TX half-bit was {\tt 1} instead of {\tt 0}, it would fail
+      to latch at time 14, entering Reset earlier. Here we show the second
+      half-bit to also be {\tt 0}, if instead it was {\tt 1}---beginning a
+      Message~End~Sequence---, the TX node would have driven its output high
+      at time 16, presenting a possible opportunity to reset the RX node. The
+      TX node would still enter Reset at time 22, as it has latched the
+      {\tt 010} Reset sequence at times 14, 18, and 22.
+      In both cases, however, the TX node enters Reset and fails the
+      transmission while the RX node believes it has ACK'd a complete
+      transmission.
+    }
+    \label{fig:1-phi-tx011}
 
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
       %       |    D0     || D1  || MES 0111         || ACK? || Reset
@@ -808,13 +956,14 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
           \node at (\pgfmathresult, 0)  {\normalsize\ldots};
         \end{scope}
     \end{tikztimingtable}
-    \caption{A detail examination of transmitting a 1 transitioning to a
+    \caption{\footnotesize
+      A detail examination of transmitting a 1 transitioning to a
       Message~End~Sequence ({\tt 110111}). We examine the most pathological
       case here, that is latching {\tt 0} at time 4 (otherwise in the above
       case), {\tt 1} at time 8 (otherwise {\tt 01} enters Reset), and {\tt 0}
       at time 10.
     }
-    \label{fig:1-phi-tx1-mes}
+    \label{fig:1-phi-tx1mes}
 
 
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
@@ -940,7 +1089,8 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
           \node [rotate=45] at (\pgfmathresult, 0)  {R1-I2};
         \end{scope}
     \end{tikztimingtable}
-    \caption{Uncertainty can occur if the $1\phi$ slip is too late. In
+    \caption{\footnotesize
+      Uncertainty can occur if the $1\phi$ slip is too late. In
       particular, if the slip occurs during the Acknowledgement phase, the
       result is non-deterministic. At time 11, the TX node may latch a {\tt 0},
       in which case the transmission will succeed. If it latches a {\tt 1},
@@ -950,8 +1100,6 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
       the end of the transmission.
     }
     \label{fig:1-phi-last-chance}
-
-\end{comment}
 
 \end{subfigure}
 \caption{Detailed timing digrams of a $1\phi$ errors. The top labels are the
