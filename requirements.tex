@@ -206,7 +206,9 @@ to delay before raising the clk to allow the pmu to switch mode etc...
 \label{sec:design-reset}
 The reset mechanism is the \bus escape hatch. Its reliability is a first
 order design constraint, and here we attempt to demonstrate how the reset
-mechanism can in all possible states reliably reset \bus.
+mechanism can in all possible states reliably reset \bus. Some other possible
+reset designs and their shortcomings are discussed in
+Appendix~\ref{sec:appendix-reset}.
 \begin{quote}
 \em n.b.\ this section assumes a knowledge of \bus design
 \end{quote}
