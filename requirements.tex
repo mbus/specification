@@ -1,4 +1,5 @@
 \svnInfo $Id$
+\begin{comment}
 
 \section{Requirements \& Design Considerations}
 \label{sec:requirements}
@@ -552,6 +553,8 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
 
 \subparagraph{Message Acknowledgement$\rightarrow$Reset Sequence}
 
+\end{comment}
+
 \begin{figure}[h]
 \begin{subfigure}{\textwidth}
     \tiny
@@ -559,15 +562,15 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
       %       |    D0     || D1  ||   D0   {}  RD0      ||  R1D     ||  R0D     || Re-Reset
       Din  & L 0.8L  4L12L  4H12H2.2LXX3H4H  4L0.8L8L  4L4H  4H4H4H    4L4L4L 4L        \\
       Dout & L 0.0L  4L12L  4H12H  4L X3H4H  4L    8L  4H4H  4H4H4H0.8H4L4L4L 4L        \\
-      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{24D{Data 0}}{24D{Data 1}}{36D{Reset}}D \\
+      ~~~~ & D{}{16D{Data 0}}{16D{Data 1}}{24D{Data 0}}{24D{Data 1}}{28D{Reset}}D \\
       \\
       Din  & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    7LXX3H4H  4H4H4H1.0H4L4L4L 4L    \\
-      Dout & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    8L X3H4H  4L4L4L    4L4H4H 4L    \\
-      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{52D{Acknowledgement Attempt}}{36D{Error (Forwarding)}}D \\
+      Dout & L 0.0L  4L11LXX3H11HXX3L  4H4H  4L    8L X3H4H  4L4L4L    4L4L4L 4L    \\
+      ~~~~ & {5D{Data 0}}{32D{End Sequence}}{36D{Acknowledgement Attempt}}{36D{Error (Forwarding)}}D \\
       %\\
-      Din  & L 0.5L  4L12L  4H12H  4L  4H4H  4L    8L  4H4H  4L4L4L    4L4H4H 4L   \\
+      Din  & L 0.5L  4L12L  4H12H  4L  4H4H  4L    8L  4H4H  4L4L4L    4L4L4L 4L   \\
       Dout & L 0.5L  4L12L  4H12H  4L3.5H4H  4L    8L  4L4H  4H4H4H    4L4L4L 4L    \\
-      CLK  & C22{2C}4L15{4C}H \\
+      CLK  & C22{2C}4L15{4C}C \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,dashed]
@@ -580,11 +583,8 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
             \vertlines{\pgfmathresult}
           \end{scope}
           \begin{scope}[thick]
-            %\draw[red]   (17,-4.5)  ellipse (2 and 4);
-            %\draw[green] (33,-4.5)  ellipse (2 and 4);
             \draw[blue]  (39,-13.5) ellipse (3 and 1.25);
             \draw[blue]  (69,-14.5) ellipse (1.25 and 2);
-            \draw[blue]  (85,-14.5) ellipse (1.25 and 2);
           \end{scope}
           \begin{scope}[semitransparent]
             % TX
@@ -596,7 +596,6 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
             \filldraw[yellow]    (37,-8.5) rectangle (41,-10.5);
             \filldraw[yellow]    (49,-8.5) rectangle (57,-10.5);
             \filldraw[yellow]    (65,-8.5) rectangle (73,-10.5);
-            \filldraw[yellow]    (81,-8.5) rectangle (89,-10.5);
             % CLK
             \filldraw[yellow]    ( 1,-16.5) rectangle (45,-18.5);
             \filldraw[cyan,opacity=.25] (45,-14.5) rectangle (\twidth-1, -18.5);
@@ -675,31 +674,23 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
           \pgfmathparse{\pgfmathresult+8}
           \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
           \pgfmathparse{\pgfmathresult+8}
-          \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
-          \pgfmathparse{\pgfmathresult+8}
-          \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
-          \pgfmathparse{\pgfmathresult+8}
           \node [rotate=45] at (\pgfmathresult, 0)  {R1-D};
           \pgfmathparse{\pgfmathresult+8}
           \node [rotate=45] at (\pgfmathresult, 0)  {R1-L};
           \pgfmathparse{\pgfmathresult+8}
           \node at (\pgfmathresult, 0)  {\normalsize\ldots};
-          %\pgfmathparse{\pgfmathresult+8}
-          %\node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
-          %\pgfmathparse{\pgfmathresult+8}
-          %\node [rotate=45] at (\pgfmathresult, 0)  {R1-I};
-          %\pgfmathparse{\pgfmathresult+8}
-          %\node [rotate=45] at (\pgfmathresult, 0)  {R1-I};
-          %\pgfmathparse{\pgfmathresult+8}
         \end{scope}
     \end{tikztimingtable}
-    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). If the
-      transmitter had sent 0, 1, 1 ({\tt 001111}) or 0, 1, MES ({\tt
-      00110111}) The attempt to latch a 1 during {\sc latch2} at time 12 would
-      have failed and the transmitter would simply enter Reset and begin
-      forwarding earlier.
+    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). If at
+      time 14 the next half-bit was a {\tt 0} instead of a {\tt 1}, the TX
+      node would simply enter reset earlier at time 16 when the {\sc latch1}
+      did not match the driven value. The second half-bit driven at time 18 is
+      irrelevant, as the {\sc latch2} at time 20 will unconditionally enter
+      reset as the latches at time 12, 16, and 20 make up the {\tt 010} reset
+      sequence.
     }
 
+\begin{comment}
 
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
       %       |    D0     || D1  || MES 0111         || ACK? || Reset
@@ -960,6 +951,7 @@ ACK will cause the control layer to reset the bus, discarding the transaction.
     }
     \label{fig:1-phi-last-chance}
 
+\end{comment}
 
 \end{subfigure}
 \caption{Detailed timing digrams of a $1\phi$ errors. The top labels are the
