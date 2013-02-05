@@ -13,4 +13,10 @@
   \item[Varying edge latching?] \hfil \\
   How consistent are phase-offset nodes likely to be in latching previous
   versus new bus values, see:~\ref{todo:varying-latches}.
+
+  \item[Maximum length?] \hfil \\
+  Should there be some built-in (high, several~kB) message length, just in
+  case the controller happens to miss a Message~End~Sequence or something?
+  (Answer: almost certainly yes). The real question: What is a reasonable such
+  maximum?
 \end{description}

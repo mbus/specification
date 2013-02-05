@@ -118,39 +118,33 @@ Picking up transmission from the last bit of data the transmitting node wishes
 to send, the transmitting node pushes its last bit on its {\tt DOUT} line
 during the {\sc drive1} state, and it is latched by \bus during the {\sc
 latch1} and {\sc latch2} states.  At the next {\sc drive1} state, the 
-transmitting node drives its {\tt DOUT} line low. This low bit is a sentinel 
+transmitting node drives its {\tt DOUT} line high. This high half-bit is a sentinel 
 stop bit---it is not part of the transmitted message, rather the beginning of 
 the Message~End~Sequence. At the rising edge of the {\tt CLK} that starts the
-{\sc latch1} state, all \bus nodes latch {\tt 0}. The next rising edge of the
+{\sc latch1} state, all \bus nodes latch {\tt 1}. The next rising edge of the
 {\tt CLK}, which starts {\sc drive2} state, the transmitting node drives its 
-{\tt DOUT} line high. At the next rising {\tt CLK} edge, which starts the next 
+{\tt DOUT} line low. At the next rising {\tt CLK} edge, which starts the next 
 {\sc latch2} state, nodes will observe that the data line differs from 
-{\sc latch1} state. All forwarding nodes will treat this transition as a 
-Bus~Reset signal. The receiving and control nodes, however, will recognize 
-this sequence as a Stop.
+{\sc latch1} state. The receiving and control nodes will recognize this
+{\tt 10} sequence as a Message~End~Sequence.
 
 At the next rising edge after transmitting the Stop sequence, the transmitting
 node should begin forwarding its {\tt DIN} to its {\tt DOUT}.
 
-After any Bus~Reset (which Stop qualifies as), the control node will drive 2
-more pulses on the {\tt CLK} line. For forwarding nodes not participating in
-this transaction, these are the pulses required to transition them from {\sc
-reset} to {\sc idle}. For the transmitting and receiving nodes, the {\sc
-drive} / {\sc latch} alternation continues.
-
 \subsection{Message Acknowledgement}
 \label{sec:protocol-ack}
-After the Stop message, the receiving layer is responsible for sending a
+After the Message~End~Sequence, the receiving layer is responsible for sending a
 message acknowledgement. The message was determined to be a Stop at the {\sc
 Latch2} that ended the previous cycle.
 
 At the next rising clock edge, a {\sc drive1}, the {\em receiving} layer
-should drive a {\tt 1} (Note that this will not create an edge yet as the bus
-should already be high from the end of the Stop sequence). The value {\tt 1}
+should drive a {\tt 0} (Note that this will not create an edge yet as the bus
+should already be low from the end of the Stop sequence). The value {\tt 0}
 is latched by \bus at the next clock edge during {\sc latch1}. At the next
-clock edge, {\sc drive2}, the receiving layer should drive {\tt 0} if it
+clock edge, {\sc drive2}, the receiving layer should drive {\tt 1} if it
 wishes to acknowledge the transmission. The acknowledgement is confirmed at
-the next clock edge, {\sc latch2}.
+the next clock edge, {\sc latch2}. The acknowledging layer then sends a {\tt
+10} in a similar fashion.
 
 This is a relatively fast turnaround for the receiving node. It has from {\sc
 latch2} when it detects the Stop condition until the next {\sc drive2} to
@@ -158,17 +152,11 @@ determine whther or not it wishes to acknowledge the transmission. Designers
 should take care to ensure the acknowledge signal logic can be generated in
 half a bit time (2 clock pluses).
 
-It is important that the receiving node continues to monitor its {\tt DIN}
-line during the Message~Acknowledgement sequence. In particular, during the
-{\sc Latch1} phase of the acknowledgement sequence, if the {\tt DIN} value is
-{\tt 0} instead of {\tt 1}, the receiving node {\em cannot} acknowledge the
-message, and the entire transaction should be aborted, and receiving node
-should return to the Forwarding.{\sc reset} state. This condition may occur
-when an asychronous Bus~Reset event is triggered.
+The last two half-bits of the Acknowledgement handshake---{\tt 01}---are sent
+by the control layer. These half-bits serve dual purpose, both the completion
+of the acknowledgement handshake and they are the beginning of a
+Bus~Reset~({\tt 010}).
 
-After Acknowledgement/Bus~Reset sequence, the control node will drive one
-full cycle (4 pulses on the {\tt CLK} line), after which the \bus returns to
-Bus~Idle.
 
 \subsection{Bus Reset}
 \label{sec:protocol-reset}
@@ -178,60 +166,5 @@ clock edge is defined as a {\sc latch2 state}.
 The transmitting node sets {\tt DOUT} to
 its new value on the next rising edge, the {\sc drive1} state.
 
-If {\tt DIN} has changed between the {\sc Latch1} state and the {\sc latch2}
-state, this indicates a start of Bus~Reset sequence. Upon receipt of start of
-Bus~Reset, all member nodes should switch to the Forwarding.{\sc reset} state,
-{\bf except}
-\begin{itemize}
-  \item A transmitting node sending a Message~End~Sequence.
-  \item A receiving node receiving a Message~End~Sequence.
-\end{itemize}
-Both transmitter and receiver should revert to forwarding.{\sc reset}
-after sending / receiving a Message~Acknowledgement. After the
-Message~End~Sequence and Message~Acknowledgement are complete, all member
-nodes should be in Forwarding.{\sc reset}, waiting for four more clock pulses
-to transition to Forwarding.{\sc idle}.
-
-When a Bus~Reset is received, the control node will drive four more clock
-pulses---one more complete cycle.
-Depending on the {\tt DIN} during these cycles, the control node will:
-\begin{table}[h!]
-  \def\arraystretch{2}
-  \begin{tabularx}{\linewidth}{| c | X |}
-    \hline
-    1 1 & Return to Bus~Idle. \\ \hline
-    0 1 & This corresponds to the Stop sequence. The sequence should only
-    occur once be transaction, if more are detected, the control node will
-    begin forcefully resetting the bus, as outlined below.\\ \hline
-    1 0 & This corresponds to the Acknowledgement sequence. This sequence
-    terminates a transaction. After an Acknowledgement, the control nodes sets
-    its {\tt DOUT} line high, and issues four more clock pulses, returning all
-    nodes to Bus~Idle. \\ \hline
-    0 0 & This state should not occur in normal operation. In response, the
-    control node will drive four more pulses, ignoring its {\tt DIN} line and
-    generating a Bus~Reset signal. It will then generate four more clock
-    pulses with its {\tt DOUT} line high, repeating this process until it
-    samples four 1's on its {\tt DIN} line. \\ \hline
-  \end{tabularx}
-\end{table}
-
-\noindent
-\textbf{\em IMPORTANT:} If a node initiates Bus~Rest during the transmission
-of a {\tt 0} bit and is not the receiving node, it will have introduced a
-false Message~End~Sequence. The node issuing the reset is responsible for
-driving a {\tt 0} during the next {\sc Drive1} and {\sc Drive2} cycles,
-ignoring its {\tt DIN}.  A receiving node attempting to ACK the message will
-detect this and fail the transaction appropriately. This will cause the
-control layer to detect an erroneous state and issue one more reset cycle,
-driven by the control layer.
-
-%\begin{quote}
-%\begin{bytefield}{32} \\
-%\colorbitbox{lightgreen}{8}{Message Type} &
-%\colorbitbox{lightred}{8}{Event ID} &
-%\colorbitbox{lightcyan}{8}{Length} &
-%\bitbox{8}{[Message Data...]} &
-%\end{bytefield}
-%\end{quote}
-
+For details on Reset desgin, see \nameref{sec:design-reset}.
 

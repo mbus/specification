@@ -446,7 +446,9 @@ changes on the data lines. We examine then: TX~1$\rightarrow$0,
 TX~0$\rightarrow$1, TX~1$\rightarrow$Message~End~Sequence,
 the~Message~End~Sequence,
 Message~End~Sequence$\rightarrow$Message~Acknowledgement,
-Message~Acknowledgement$\rightarrow$Idle.
+Message~Acknowledgement$\rightarrow$Idle. Similarly, the breakdowns only
+discuss the ``interesting'' cases; that is, when a node latches a value that
+would not have normally occurred.
 
 \medskip
 \noindent
@@ -457,22 +459,11 @@ Message~Acknowledgement$\rightarrow$Idle.
   rising clock arrives first. For the {\em control} layer, however, we must
   be able to assume that the control layer will sample its {\tt DIN} as it
   raises the {\tt CLK} line, that is {\em before} a new value could possibly
-  have propogated.  This is necessary to resolve issues such as those discussed
-  in $1\phi-$TX$-0\rightarrow$1~(\ref{reset-phi1-tx-0-1}).
+  have propogated.
 \end{framed}
-
-\medskip
-\textbf{\textsc{Todo:}} The sample graphics do not include
-TX~0$\rightarrow$~Message~End~Sequence, Message~End~Sequence$\rightarrow$Idle,
-others? Does that matter?
 
 \paragraph{$1\phi$ Offset}
 ~
-
-\begin{quote}
-{\em Note:} A transmitting node that is $1\phi$ off is equivalent to the rest
-of the bus being $3\phi$ off, and thus need not be explicitly discussed here.
-\end{quote}
 
 A node that has missed one clock edge will be one phase behind:
 
@@ -558,39 +549,199 @@ transition. \hl{TODO: I am considering this sufficiently improbable?}
 \end{itemize}
 
 \subparagraph{TX 1$\rightarrow$0}
-In the common case, the node will latch another 1, matching the {\sc latch1}
-value, deferring the issue to another possible state. If the node does catch
-the new 0, it will detect 
+When an offset node latches the incoming {\tt 0} during its local {\sc latch2}
+cycle, it will consider this a Message~End~Sequence ({\tt 10}). If the $1\phi$
+slip occurs at the RX node, it will begin Acknowledgement out of phase.
+Figure~\ref{fig:1phi-1-0} details the possible cases, all of which result in a
+sucessfully reset bus with all nodes having aborted the transaction.
+
+\begin{figure}[h!]
+  \ssmall
+  \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
+    %                                            ||||
+    Din  & L 1.0L 8{2H}1.0L4{2L}LXXH1{2H}   H3.0L0.5L16L 16H 16L        \\
+    Dout & L 0.0L 8{2H}2.0L4{2L}LXXH1{2H}    4.0L0.5L16L 16H 16L         \\
+    ~~~~ & D{} {16D{Data 1}}{16D{Data 0}}{24D{Data 0}}{16D{Err (FWD)}}{12D{Reset}} \\
+    \\
+    Din  & L 0.0L 7{2H}HXXL5{2L}1.0L1{2H} XXL2.0L0.8L16L 16H 16L \\
+    Dout & L 0.0L 7{2H}HXXL5{2L}    2{2H}0.5H3.5L    4L 4H 4H4.8L16H 16L  \\
+    ~~~~ & 5D{} {16D{MES 10}}{20D{ACK 01}}{8D{ACK 10}}{32D{Err (FWD)}}{4D{Reset}} \\
+    %\\
+    Din  & L 0.8L 8{2H}    6{2L}    2{2H}    4.0L    4L 4H 4H 4L 16H 16L   \\
+    Dout & L 0.8L 8{2H}    6{2L}    2{2H}    3.2L    16L 16H 16L      \\
+    CLK  & C      8{2C}    6{2C}    2{2C}    2{2C}   4L 11{4C} C         \\
+    \extracode
+      \begin{pgfonlayer}{background}
+        \begin{scope}[semitransparent,dashed]
+          \vertlines{1,9,...,49}
+          \pgfmathparse{\twidth-4}
+          \vertlines{49,57,...,\pgfmathresult}
+          \vertlines[color=red]{5,13,...,49}
+          \vertlines[color=blue]{53,61,...,\pgfmathresult}
+        \end{scope}
+        \begin{scope}[thick]
+          \draw[blue]  (31,-13.5) ellipse (3 and 1.25);
+          \draw[blue]  (45,-14.5) ellipse (1.25 and 2);
+        \end{scope}
+        \begin{scope}[semitransparent]
+          % TX
+          \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
+          \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
+          \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+          % RX
+          \filldraw[yellow]    (29,-8.5) rectangle (33,-10.5);
+          \filldraw[yellow]    (41,-8.5) rectangle (45,-10.5);
+          % CLK
+          \filldraw[yellow]    ( 1,-16.5) rectangle (37,-18.5);
+          \filldraw[cyan,opacity=.25] (37,-14.5) rectangle (\twidth, -18.5);
+        \end{scope}
+        \foreach \n [evaluate=\n as \l using int((\n-1)/4)] in {1,5,...,\twidth}
+          \draw (\n,-19) -- +(0,-.2)
+            node [below,inner sep=2pt] {\scalebox{.75}{\tiny\l}};
+      \end{pgfonlayer}
+      \begin{scope}
+        [font=\sffamily\small,shift={(-3.0em,-0.5)},anchor=east,color=blue]
+        \node at (  0,   0) {TX};
+        \node at (  0,  -8) {RX};
+        \node at (  0, -15) {Ctl};
+      \end{scope}
+      \begin{scope}
+        [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
+        \foreach \x [evaluate=\x] in {1,17,...,17}
+          \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
+            \node [rotate=45] at (\x+\offset,0) {\l};
+        \node [rotate=45] at (33,0) {Drive1};
+
+        \def\base{41}
+        \pgfmathparse{\base+0}
+        \node [rotate=45] at (\pgfmathresult, 0)  {Latch1};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {Drive2};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {Latch2};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {Drive1};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {Latch1};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {Drive2};
+        \pgfmathparse{\pgfmathresult+8}
+      \end{scope}
+      \begin{scope}
+        [font=\bf\tiny,anchor=north,shift={(.2,-3.1em)},color=red]
+        \node [rotate=45] at ( 1,0) {**};
+        \foreach \x [evaluate=\x] in {5,21,...,35}
+          \foreach \offset/\l in {0/D1,4/L1,8/D2,12/L2}
+            \node [rotate=45] at (\x+\offset,0) {\l};
+
+        \def\base{41}
+        \pgfmathparse{\base+0}
+        \node [rotate=45] at (\pgfmathresult, 0)  {D1};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {L1};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {D2};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {L2};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {D1};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {L1};
+        \pgfmathparse{\pgfmathresult+8}
+      \end{scope}
+      \begin{scope}
+        [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+        \def\base{37}
+        \pgfmathparse{\base+0}
+        \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {R1-D};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {R1-L};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {R0-D};
+        \pgfmathparse{\pgfmathresult+8}
+        \node [rotate=45] at (\pgfmathresult, 0)  {R0-L};
+        \pgfmathparse{\pgfmathresult+9}
+        \node at (\pgfmathresult, -1)  {\normalsize \ldots};
+      \end{scope}
+  \end{tikztimingtable}
+  \caption{{\em TX 1$\rightarrow$0 False MES~~}
+We assume the RX latches 0 at time 4, creating the problem. The TX may
+possibly be reset at time 7 if it latched 1, here we assume not. At time 8 the
+control layer detects a change between {\sc latch2} and {\sc drive1}, alerting
+it to the issue and entering Reset. We show the next TX half-bit to be 0 (and
+thus a Data 0) as if it was a 1, the TX layer would reset at time 10.
+  }
+  \label{fig:1phi-1-0}
+\end{figure}
 
 \subparagraph{TX 0$\rightarrow$1}
-\label{reset-phi1-tx-0-1}
-For most nodes, this is the complement of TX~1$\rightarrow$0. However, if the
-node happens to be a receiving node it will detect this as the beginning of a
-Message~End~Sequence ({\tt 0111}). Figure~\ref{fig:reset-1phi-tx-0-1} details
-the possible outcomes of a TX~0$\rightarrow$1 glitch.  Note the controller's
-detection relies on the reset assumption~(\ref{reset-assumption}) to detect
-the issue.
+If an offset node latches an incoming {\tt 1}, it will have received a {\tt
+01} sequence, which is erroneous and will cause the node to enter Forwarding
+(if it wasn't already) until the Reset sequence is received. An RX node may
+consider explicitly resetting the bus\footnote{
+  An attempt to Reset the bus will alert the control layer that there is an
+out-of-phase node, and it will actually reset the bus, re-aligning the offset
+node.}, but such an optimization is not mandated.
 
 \subparagraph{TX 1$\rightarrow$Message End Sequence}
-Latching an extra {\tt 1} and missing the {\tt 0} will result either in a {\tt
-11} sequence and eventually no acknowledgement, a {\tt 10} sequence---a
-reset---, or a half-cycle lagged {\tt 01} sequence. This final case we examine
-in detail in Figure~\ref{fig:1-phi-tx1mes}.
+An offset node will read the leading {\tt 1} of the Message~End~Sequence as
+the second half-bit of the previous Data 1. It will then read the second
+half-bit of the Message~End~Sequence as a {\tt 0} half-bit and the absence of
+an Acknowledgement as the second {\tt 0} half-bit. After another {\tt 0}
+half-bit, the control layer will Reset the bus following a
+Message~End~Sequence with no Acknowledgement.
 
 \subparagraph{TX 0$\rightarrow$Message End Sequence}
-Slipping an edge here will either cause the node to read the 0 from the
-Message~End~Sequence as the completion of the 0 bit, or to miss the first 0 of
-the Message~End~Sequence completely, reading an extra 1 bit in place of it. In
-the former case, the transmission completes normally. In the latter, an
-additional high bit will be read, after which the failure of the RX layer to
-ACK will cause the control layer to reset the bus, discarding the transaction.
-
-\subparagraph{Message End Sequence}
+An offset node will read the leading high half-bit of the
+Message~End~Sequence, generating a {\tt 01} sequence, which will cause the
+node to abort the transmission and await Reset.
 
 \subparagraph{Message End Sequence$\rightarrow$Message Acknowledgement}
+Missing an edge on this transition will not be immediately noticed, as the
+leading half-bit of Acknowledgement is also low. If a node is consistently
+lagging or leading the input signal, it will fail during the control-driven
+portion of acknowledgement. The implications of this for:
 
-\subparagraph{Message Acknowledgement}
+\begin{itemize}
+  \item {\bf TX Node:} A transmitter that drops a clock after transmitting the
+Message~End~Sequence may falsely interpret an ACK as a NAK.
+
+  \item {\bf RX Node:} An RX node that drops a clock after transmitting its
+first edge (that is, after the {\sc drive2} that defines ACK {\tt 01}) will
+believe it acknowledged successfully, whereas the status of the TX Node is
+non-deterministic.
+\end{itemize}
 
 \subparagraph{Message Acknowledgement$\rightarrow$Reset Sequence}
+Unaligned edges are not possible during Reset as the data line is not driven
+on a global bus clock edge. It is, however, possible that a clock edge may be
+missed during Reset. Such a failure cannot be detected. The error will be
+corrected during the next transaction's Reset.
 
 
+\paragraph{$2\phi$ Offset}
+It is extremely highly improbable that a node misses two clock edges and
+directly beomes $2\phi$ offset\footnote{
+  It is possible for the offset to be spread across multiple bits, e.g.
+  two edges in a longs string of 0's.}.
+Such a node will have missed one half-bit of a transmission. On the first
+non-contiguous bit, it will detect either a false Message~End~Sequence~({\tt
+10}) or an error~({\tt 01}). Any response to the false Message~End~Sequence
+will be treated as a Reset by the TX node, and the RX node will at the latest
+fail to align with the last two half-bits driven by the control node whilst
+trying to acknowledge.
+
+
+\paragraph{$3\phi$ Offset, $4\phi$ Offset}
+These are both deemed extraordiarily unlikely to occur without detection as a
+$1\phi$ or $2\phi$ error prior to getting this far out of alignment. The
+$3\phi$ cases largely mirror the $1\phi$ cases. The $4\phi$ case is a
+completely missed bit, which will result in the TX and RX nodes believing they
+have completed a transaction successfully when in reality the RX node has
+received one less bit than the TX node sent. The likelyhood of this occurring
+it so small, and the bus is still recoverable via Reset, that it is not
+considered a large concern.

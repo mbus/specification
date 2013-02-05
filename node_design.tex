@@ -1,7 +1,7 @@
 \svnInfo $Id$
 
 \section{Node Design}
-\label{sec:design}
+\label{sec:node}
 The \bus defines two {\em physical} types of nodes: member nodes and a control
 node. An instantiation of \bus must have one and only one control node and
 must have at least one member node (N $\geq$ 1). The maximum number of member
@@ -160,10 +160,13 @@ Figure~\ref{fig:logical} the very simple, short logic path from {\tt DIN} to
 {\tt DOUT}. Nodes are obligated to forward data in less than 10~ns.
 
 \paragraph{Forwarding.\textsc{reset}}
-Any time a Bus~Reset event occurs, nodes return to {\sc reset}. After four
-clock pulses, nodes transition to {\sc idle}. Note that it is both common and
-expected (Message~End~Sequence~$\rightarrow$~Message~Acknowledgement) to loop
-Bus~Reset events, transitioning from {\sc reset} to {\sc reset}.
+Any time a Bus~Reset event occurs, nodes return to {\sc reset}. When in {\sc
+reset}, nodes latch every clock edge. A node is looking to match either {\tt
+11} or {\tt 011}, after either pattern a node progresses to {\sc idle}.
+
+If a node in {\sc reset} receives three pulses, but does not match one of the
+two signatures, it should return to {\sc ignore} or {\sc reset} as
+appropriate.
 
 \paragraph{Forwarding.\textsc{Idle}}
 This is the rest/idle state for \bus nodes.
@@ -255,18 +258,3 @@ it may report failure). After a node pulls its {\tt DOUT} low there is a
 maximum possible $t_{long}$ of XXX\_TODO\_XXX before a control node must pull
 {\tt CLK} low in response. If {\tt CLK} is not pulled low, the node should
 consider itself disconnected and report failure to send as appropriate.
-
-\paragraph{\sc Async\_reset}
-If a node (other than the receiving node) elects to issue a Bus~Reset in the
-middle of a transmission, it should enter the {\sc async\_reset} state. The
-primary purpose for this state is to properly transition into {\sc
-false\_mes\_fix} if necessary, see the note in~\ref{sec:protocol-reset} for
-details.
-
-\paragraph{\sc False\_mes\_fix}
-When a non-receiving node issues a Bus~Reset event, it is possible that in the
-process it inadvertently issues a Message~End~Sequence. This occurs when a
-node issuing a reset elects to reset when the currently transmitting bit is a
-{\tt 0}. To correct this, the resetting node must distinguish for the
-receiving node that this is actually a Bus~Reset event by driving an
-additional {\tt 0} on the bus (details:~\ref{sec:protocol-reset}).
