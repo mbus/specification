@@ -426,10 +426,10 @@ necessary for the node to re-align. We leverage the reset sequence to achieve
 this goal, and also include a brief discussion of the implications of whether
 the node that falls out of phase is a forwarding, transmitting, or receiving
 node. We are able to gaurentee that once the introduction of faults is
-removed, the \bus is reset and all nodes are phase-aligned and prepared to
+removed, the \bus can reset and all nodes are phase-aligned and prepared to
 communicate. We can further gaurentee that all messages are either completely
-received or rejected. We cannot gaurtentee the correctness of acknowledgements
-in the face of transient errors, however.
+received or rejected, even in the face of phase-errors. We cannot gaurtentee
+the correctness of acknowledgements in the face of transient errors, however.
 
 For the purposes of phase, the control node is defined to always be in phase.
 If a local clock glitch somehow occurs on the control node, then the entire
