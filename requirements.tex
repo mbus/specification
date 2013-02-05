@@ -220,7 +220,6 @@ consider various failure modes.
 ~
 
 \begin{figure}[!h]
-    \hspace{-4em}
 \begin{subfigure}{\textwidth}
     \scriptsize
     \begin{tikztimingtable}[timing/slope=.3]
@@ -552,14 +551,7 @@ transition. \hl{TODO: I am considering this sufficiently improbable?}
   \label{todo:varying-latches}
 \end{itemize}
 
-\subparagraph{TX 1$\rightarrow$0}
-When an offset node latches the incoming {\tt 0} during its local {\sc latch2}
-cycle, it will consider this a Message~End~Sequence ({\tt 10}). If the $1\phi$
-slip occurs at the RX node, it will begin Acknowledgement out of phase.
-Figure~\ref{fig:1phi-1-0} details the possible cases, all of which result in a
-sucessfully reset bus with all nodes having aborted the transaction.
-
-\begin{figure}[h!]
+\begin{figure}[htb]
   \ssmall
   \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
     %                                            ||||
@@ -682,14 +674,16 @@ thus a Data 0) as if it was a 1, the TX layer would reset at time 10.
   \label{fig:1phi-1-0}
 \end{figure}
 
+\subparagraph{TX 1$\rightarrow$0}
+If an offset node latches an incoming {\tt 0}, it will have received a {\tt
+10} sequence, which is illegal.
+
 \subparagraph{TX 0$\rightarrow$1}
-If an offset node latches an incoming {\tt 1}, it will have received a {\tt
-01} sequence, which is erroneous and will cause the node to enter Forwarding
-(if it wasn't already) until the Reset sequence is received. An RX node may
-consider explicitly resetting the bus\footnote{
-  An attempt to Reset the bus will alert the control layer that there is an
-out-of-phase node, and it will actually reset the bus, re-aligning the offset
-node.}, but such an optimization is not mandated.
+When an offset node latches the incoming {\tt 0} during its local {\sc latch2}
+cycle, it will consider this a Message~End~Sequence ({\tt 10}). If the $1\phi$
+slip occurs at the RX node, it will begin Acknowledgement out of phase.
+Figure~\ref{fig:1phi-1-0} details the possible cases, all of which result in a
+sucessfully reset bus with all nodes having aborted the transaction.
 
 \subparagraph{TX 1$\rightarrow$Message End Sequence}
 An offset node will read the leading {\tt 1} of the Message~End~Sequence as

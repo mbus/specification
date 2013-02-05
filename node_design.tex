@@ -249,9 +249,22 @@ A receiver must acknowledge the successful receipt of a transmission. If a
 receiver wishes to NAK a transmission, it simply does nothing and allows the
 Message~End~Sequence Bus~Reset to occur.
 
-\subsubsection{Non-Standard States}
+\subsubsection{Exception States}
 
-\paragraph{\sc Not\_Connected}
+\paragraph{Exception.{\sc Error}}
+For some reason, a node has detected an error on the bus. In this state, the
+node's goal is to alert the control layer and to reset the bus. A node in {\sc
+error} will alternate its {\tt DOUT} line {\em every} clock edge. This will
+quickly be picked up by the control layer as it detects an unexpected edge
+transition and initiates the Reset sequence. A node leaves {\sc error} once it
+receives the Reset sequence.
+
+{\sc Error} is a relatively expensive state, as any RX/TX nodes following a
+node in {\sc error} will in turn enter {\sc error} themselves. It will require
+a full Reset cycle from the control layer to reset each node in {\sc error}
+sequentially.
+
+\paragraph{Exception.{\sc Not\_Connected}}
 A robust implementation should include detection of some kind for an attempt
 to utilize the bus when the node is not actually connected to a bus (so that
 it may report failure). After a node pulls its {\tt DOUT} low there is a
