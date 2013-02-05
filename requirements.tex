@@ -225,17 +225,17 @@ consider various failure modes.
     \scriptsize
     \begin{tikztimingtable}[timing/slope=.3]
       %       |   D1    | D0  | D1  |     MES       |
-      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2H}3{2L}0.6L L \\
-      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2H}3{2L}2.0L L \\
+      Din  & L 1.4L8{2H} 8{2L} 8{2H} 4{2L}3{2H}0.6H H \\
+      Dout & L 0.0L8{2H} 8{2L} 8{2H} 4{2L}3{2H}2.0H H \\
       \\
-      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.8L L \\
-      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.6L L \\
+      Din  & L 0.2L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.8H H \\
+      Dout & L 0.4L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.6H H \\
       \\
-      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.4L L \\
-      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.2L L \\
+      Din  & L 0.6L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.4H H \\
+      Dout & L 0.8L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.2H H \\
       \\
-      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2H}3{2L}1.0L L \\
-      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2H}3{2L}0.8L L \\
+      Din  & L 1.0L8{2H} 8{2L} 8{2H} 4{2L}3{2H}1.0H H \\
+      Dout & L 1.2L8{2H} 8{2L} 8{2H} 4{2L}3{2H}0.8H H \\
       CLK  & C 32{2C}                               C \\
            & \\
       \extracode
@@ -290,7 +290,7 @@ consider various failure modes.
           \node[right=2 of a] (b) {Data 1 (11)};
           \node[right=2 of c] (d) {Data 0 (00)};
           \node[right=2 of e] (f) {Data 1 (11)};
-          \node[right=3 of g] (h) {MES (10)};
+          \node[right=3 of g] (h) {MES (01)};
           \draw[->] (b.west) -- (a.east);
           \draw[<-] (c.west) -- (b.east);
           \draw[->] (d.west) -- (c.east);
@@ -303,42 +303,42 @@ consider various failure modes.
     \end{tikztimingtable}
 
     \begin{tikztimingtable}[timing/slope=.3]
-      %       | ACK 0      1     1     0      |ACK/RST 0  1   | RST 0 11
-      Din  & L 1.0L4{2L} 4{2H} 4{2H} 3{2L}1.0L 0.2L8{2L} 8{2H}  8{2L} 7{2H} 1.8H H \\
-      Dout & L 1.2L4{2L} 4{2H} 4{2H} 3{2L}0.8L 0.4L8{2L} 8{2H}  8{2L} 7{2H} 1.6H H \\
+      %       | ACK 1      0      |ACK/RST 0  1   | RST 0 11
+      Din  & H 1.0H4{2H} 3{2L}1.0L 0.2L8{2L} 8{2H}  8{2L} 7{2H} 1.8H H \\
+      Dout & H 1.2H4{2H} 3{2L}0.8L 0.4L8{2L} 8{2H}  8{2L} 7{2H} 1.6H H \\
       \\
-      Din  & L 1.4L4{2L} 4{2H} 4{2H} 3{2L}0.6L 0.6L8{2L} 8{2H}  8{2L} 7{2H} 1.4H H \\
-      Dout & L 0.0L4{2L} 4{2H} 4{2H} 3{2L}2.0L 0.8L8{2L} 8{2H}  8{2L} 7{2H} 1.2H H \\
+      Din  & H 1.4H4{2H} 3{2L}0.6L 0.6L8{2L} 8{2H}  8{2L} 7{2H} 1.4H H \\
+      Dout & H 0.0H4{2H} 3{2L}2.0L 0.8L8{2L} 8{2H}  8{2L} 7{2H} 1.2H H \\
       \\
-      Din  & L 0.2L4{2L} 4{2H} 4{2H} 3{2L}1.8L 1.0L8{2L} 8{2H}  8{2L} 7{2H} 1.0H H \\
-      Dout & L 0.4L4{2L} 4{2H} 4{2H} 3{2L}1.6L 1.2L8{2L} 8{2H}  8{2L} 7{2H} 0.8H H \\
+      Din  & H 0.2H4{2H} 3{2L}1.8L 1.0L8{2L} 8{2H}  8{2L} 7{2H} 1.0H H \\
+      Dout & H 0.4H4{2H} 3{2L}1.6L 1.2L8{2L} 8{2H}  8{2L} 7{2H} 0.8H H \\
       \\
-      Din  & L 0.6L4{2L} 4{2H} 4{2H} 3{2L}1.4L 1.4L8{2L} 8{2H}  8{2L} 7{2H} 0.6H H \\
-      Dout & L 0.8L4{2L} 4{2H} 4{2H} 3{2L}1.2L 0.0L8{2L} 8{2H}  8{2L} 7{2H} 2.0H H \\
-      CLK  & C     4{2C} 4{2C} 4{2C} 4{2C}       4L3{4C} 4{4C}  4{4C} 4{4C}      H \\
-      ~~~  & C     4{2C} 4{2C} 4{2C} 4{2C}         8{2C} 8{2C}  8{2C} 8{2C}      C \\
+      Din  & H 0.6H4{2H} 3{2L}1.4L 1.4L8{2L} 8{2H}  8{2L} 7{2H} 0.6H H \\
+      Dout & H 0.8H4{2H} 3{2L}1.2L 0.0L8{2L} 8{2H}  8{2L} 7{2H} 2.0H H \\
+      CLK  & C     4{2C} 4{2C}   4L3{4C} 4{4C}  4{4C} 4{4C}      H \\
+      ~~~  & C     4{2C} 4{2C}     8{2C} 8{2C}  8{2C} 8{2C}      C \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick]
-            \vertlines{1,17,...,32}
+            \vertlines{1,17,...,16}
             \pgfmathparse{\twidth-1}
             \vertlines{\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{9,25,...,48}
-            \vertlines{53,69}
+            \vertlines{9,25,...,32}
+            \vertlines{37,53}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{5,13,...,48}
-            \vertlines{61,77}
-            \vertlines{85,93}
+            \vertlines{5,13,...,32}
+            \vertlines{45,61}
+            \vertlines{69,77}
           \end{scope}
           \begin{scope}[semitransparent,semithick,color=blue]
             \pgfmathparse{\twidth-17}
-            \vertlines{33,49,...,\pgfmathresult}
+            \vertlines{17,33,...,\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=blue]
-            \vertlines{57,73,...,\twidth}
+            \vertlines{41,57,...,\twidth}
           \end{scope}
           \begin{scope}[semitransparent,yellow]
             % TX
@@ -346,13 +346,11 @@ consider various failure modes.
             % RX
             \filldraw ( 1,-6.5)  rectangle ( 5,-8.5);
             \filldraw ( 9,-6.5)  rectangle (13,-8.5);
-            \filldraw (17,-6.5)  rectangle (21,-8.5);
-            \filldraw (25,-6.5)  rectangle (29,-8.5);
             % Clk
-            \filldraw ( 0,-20.5) rectangle (33,-22.5);
+            \filldraw ( 0,-20.5) rectangle (17,-22.5);
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
-            \filldraw   (33,-18.5) rectangle (\twidth-1,-22.5);
+            \filldraw   (17,-18.5) rectangle (\twidth-1,-22.5);
           \end{scope}
         \end{pgfonlayer}
         \begin{scope}
@@ -364,10 +362,10 @@ consider various failure modes.
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=brown]
-          \foreach \x [evaluate=\x] in {1,17,...,29}
+          \foreach \x [evaluate=\x] in {1}
             \foreach \offset/\l in {0/Drive1,4/Latch1,8/Drive2,12/Latch2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \def\base{37}
+          \def\base{21}
           \node [rotate=45] at (\base+0, 0) {Drive1};
           \node [rotate=45] at (\base+8, 0) {Latch1};
           \node [rotate=45] at (\base+16, 0) {Drive2};
@@ -379,7 +377,7 @@ consider various failure modes.
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
-          \def\base{33}
+          \def\base{17}
           \node [rotate=45] at (\base+0, 0) {R0-D};
           \node [rotate=45] at (\base+8, 0) {R0-L};
           \node [rotate=45] at (\base+16, 0) {R1-D};
@@ -395,15 +393,15 @@ consider various failure modes.
           \draw
             (-2,0) node[] (z) {\ldots}
             (0,0) node[] (a) {}
-            (64,0) node[] (c) {};
-          \node[right=16 of a] (b) {Acknowledgement (01,10,01)};
+            (60,0) node[] (c) {};
+          \node[right=16 of a] (b) {Acknowledgement (10,010)};
           \draw[->] (b.west) -- (a.east);
           \draw[<-] (c.west) -- (b.east);
         \end{scope}
         \begin{scope}
           [font=\small,anchor=south,shift={(1,-19.5em)}]
           \draw
-            (32,0) node[] (c) {}
+            (16,0) node[] (c) {}
             (\twidth-2,0) node[] (e) {};
           \node[right=12 of c] (d) {Reset (010..11)};
           \draw[->] (d.west) -- (c.east);
@@ -421,12 +419,18 @@ Here we see the accelerated Reset, which can hopefully be safely entered\ldots
 \end{figure}
 
 \subsubsection{Phase Offsets}
-At some point, it is possible that a node may miss a clock edge. At that
-point, the node is considered out of phase. In order for the node to
-successfully communicate in the future, it is necessary for the node to
-re-align. We leverage the reset sequence to achieve this goal, and also
-include a brief discussion of the implications of whether the node that falls
-out of phase is a forwarding, transmitting, or receiving node.
+At some point, it is possible that a node may miss a clock edge (or high
+capactiance on the {\tt CLK} line delays a node detecting edges, or coupling
+induces an edge, etc, etc). At that point, the node is considered out of
+phase. In order for the node to successfully communicate in the future, it is
+necessary for the node to re-align. We leverage the reset sequence to achieve
+this goal, and also include a brief discussion of the implications of whether
+the node that falls out of phase is a forwarding, transmitting, or receiving
+node. We are able to gaurentee that once the introduction of faults is
+removed, the \bus is reset and all nodes are phase-aligned and prepared to
+communicate. We can further gaurentee that all messages are either completely
+received or rejected. We cannot gaurtentee the correctness of acknowledgements
+in the face of transient errors, however.
 
 For the purposes of phase, the control node is defined to always be in phase.
 If a local clock glitch somehow occurs on the control node, then the entire
@@ -434,21 +438,19 @@ bus is considered out of phase from the control node and the control node will
 reset the bus when it detects another node is out of phase.
 
 In all $1\phi$ and $3\phi$ cases, the latched values are non-deterministic as
-the node is sampling for its local {\sc latch1/latch2} cycle while the transmitting
-node is driving the new bit. Most likely the node will latch the value that
-was previously on the bus as the new bit will not have propagated to the local
-{\tt DIN}. It is possible, however, that the node that is transmitting has a
-lower threshold for detecting the rise of {\tt CLK} and a powerful {\tt DOUT}
-driver, in which case the out-of-phase node will latch the new value.
+the node is sampling for its local {\sc latch1/latch2} cycle while the
+transmitting node is driving the new bit. Most likely the node will latch the
+value that was previously on the bus as the new bit will not have propagated
+to the local {\tt DIN}. It is possible, however, that the node that is
+transmitting has a lower threshold for detecting the rise of {\tt CLK} and a
+powerful {\tt DOUT} driver, in which case the out-of-phase node will latch the
+new value.
 
 Transmitting the same bit twice in a row is uninteresting as there are no
 changes on the data lines. We examine then: TX~1$\rightarrow$0,
 TX~0$\rightarrow$1, TX~1$\rightarrow$Message~End~Sequence,
-the~Message~End~Sequence,
 Message~End~Sequence$\rightarrow$Message~Acknowledgement,
-Message~Acknowledgement$\rightarrow$Idle. Similarly, the breakdowns only
-discuss the ``interesting'' cases; that is, when a node latches a value that
-would not have normally occurred.
+Message~Acknowledgement$\rightarrow$Reset.
 
 \medskip
 \noindent
@@ -459,7 +461,8 @@ would not have normally occurred.
   rising clock arrives first. For the {\em control} layer, however, we must
   be able to assume that the control layer will sample its {\tt DIN} as it
   raises the {\tt CLK} line, that is {\em before} a new value could possibly
-  have propogated.
+  have propogated. This feature enables the control node to detect, and
+  correct, out of phase nodes.
 \end{framed}
 
 \paragraph{$1\phi$ Offset}
@@ -471,23 +474,23 @@ A node that has missed one clock edge will be one phase behind:
 \noindent\makebox[\textwidth]{%
     \tiny
     \begin{tikztimingtable}[timing/slope=.3]
-      %       |  D0   |  D1   |  D0   |  D1   |    MES        |
-      %       |   ACK   01   ,  10          | ACK/RST 01   | 0 Reset 11
-      Din  & L 8{1.5L} 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5H} 4{1.5L}
-               4{1.5L}4{1.5H} 4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}6{1.5H} H \\
+      %       |  D0   |  D1   |  D0   |  D1   |    MES 01     |
+      %       |   ACK   10   | ACK/RST 01   | 0 Reset 11
+      Din  & L 8{1.5L} 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L} 4{1.5H}
+               4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}6{1.5H} H \\
       CLK  & C 8{1.5C} 8{1.5C} 8{1.5C} 8{1.5C} 4{1.5C} 4{1.5C}
-               4{1.5C}4{1.5C} 4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  3{3C} C \\
-      Bus  & D{}{12D{Data 0}}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 10}}
-               {12D{ACK 01}}{12D{ACK 10}}{24D{ACK/RST 01}} {21D{0 Reset 11}}D \\
+               4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  3{3C} C \\
+      Bus  & D{}{12D{Data 0}}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 01}}
+               {12D{ACK 10}}{33D{ACK/RST 010}} {12D{Reset 11}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
-            \vertlines{1,7,...,83}
-            \vertlines{88,100,112,118,124}
+            \vertlines{1,7,...,71}
+            \vertlines{76,88,100,106,112}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
-            \vertlines{4,10,...,87}
-            \vertlines{94,106,130}
+            \vertlines{4,10,...,75}
+            \vertlines{82,94,118}
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
             % Reset
@@ -499,17 +502,18 @@ A node that has missed one clock edge will be one phase behind:
         \end{pgfonlayer}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=red]
-          \foreach \x [evaluate=\x] in {1,13,...,79}
+          \foreach \x [evaluate=\x] in {1,13,...,67}
             \foreach \offset/\l in {0/Latch2,3/Drive1,6/Latch1,9/Drive2}
               \node [rotate=45] at (\x+\offset,0) {\l};
-          \node [rotate=45] at (88,0) {Latch2};
-          \node [rotate=45] at (94,0) {Drive1};
-          \node [rotate=45] at (100,0) {Latch1};
-          \node [rotate=45] at (106,0) {Drive2};
-          \node [rotate=45] at (112,0) {Latch2};
-          \node [rotate=45] at (118,0) {Reset (D)};
-          \node [rotate=45] at (124,0) {Reset (L)};
-          \node [rotate=45,color=black] at (130,0) {Idle (L)};
+          \def\base{76}
+          \node [rotate=45] at (\base+0,0) {Latch2};
+          \node [rotate=45] at (\base+6,0) {Drive1};
+          \node [rotate=45] at (\base+12,0) {Latch1};
+          \node [rotate=45] at (\base+18,0) {Drive2};
+          \node [rotate=45] at (\base+24,0) {Latch2};
+          \node [rotate=45] at (\base+30,0) {Reset (D)};
+          \node [rotate=45] at (\base+36,0) {Reset (L)};
+          \node [rotate=45,color=black] at (\base+42,0) {Idle (L)};
         \end{scope}
     \end{tikztimingtable}
 }
