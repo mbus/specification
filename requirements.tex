@@ -13,7 +13,7 @@ our further design constraints.
 \paragraph{Must be fully-synthesizable}
 In an effort to make \bus ubiquitous, it is important that other designers can
 easily add \bus to their systems/chips. In practice, this means a
-fully-synthesizable design, such that simple, pure verilog can be given to any
+fully-synthesizable design such that simple, pure verilog can be given to any
 individual wishing to implement \bus. The provides added advantages in
 pre-silicon testing and validation. One thought was using both {\tt CLK} edges
 to alternate {\sc drive} and {\sc latch} states to reduce the power draws by
@@ -30,8 +30,8 @@ synthesizability.
 \paragraph{Must be low-power}
 The \bus was designed for the Michigan Micro Mote~(M3) project. The system is
 designed to run off a 0.5~$\mu$Ah battery. To serve as a feasible
-communication bus, the energy consumption must be on the order of $pW$. XXX:
-Ballpark expected transaction sizes, frequency, etc -- actual energy budget.
+communication bus, the energy consumption must be on the order of $pW$.
+%XXX: Ballpark expected transaction sizes, frequency, etc -- actual energy budget.
 
 \paragraph{Support Multi-master operation / bus arbitration / avoid race
 conditions}
@@ -195,12 +195,14 @@ there's not much power.  I'm not sure if we want to get into the power budgets
 of the nodes in different modes - it will depend on the pmu design...
 
 \paragraph{Consider Arbitration as DOUT and CLK low?}
+\hl{
 One more note on this time:  currently, the spec requires that the pmu resides
 with the ctr processor, since it's the only node that is definitely aware of a
 wakeup.  However, if the ctr instead pulls down right way on clk (not data),
 which does not take much power, then all nodes will know that a bus request
 has been detected and the pmu can reside on any node.  The ctr that would have
 to delay before raising the clk to allow the pmu to switch mode etc...
+}
 
 \subsection{Reset Design}
 \label{sec:design-reset}
@@ -210,7 +212,8 @@ mechanism can in all possible states reliably reset \bus. Some other possible
 reset designs and their shortcomings are discussed in
 Appendix~\ref{sec:appendix-reset}.
 \begin{quote}
-\em n.b.\ this section assumes a knowledge of \bus design
+\em n.b.\ this section assumes a knowledge of \bus design. New readers should
+skip this section.
 \end{quote}
 
 We first examine when a transaction occurs correctly, as designed, and then
@@ -413,9 +416,15 @@ consider various failure modes.
   \caption{A normal end sequence, showing the last three bits sent (1, 0, 1)
 followed by a Message~End~Sequence and Message~Acknowledgement. During reset,
 the control node halves the clock speed it puts on the bus for phase-locking.
-Here we see the accelerated Reset, which can hopefully be safely entered\ldots
 }
 \end{figure}
+
+We are able to gaurentee that once the introduction of faults is
+removed, the \bus can reset and all nodes are phase-aligned and prepared to
+communicate. We make no gaurentees in the presence of faults however---there
+is no parity, no CRC---, it is expected that faults should be an exceptional
+circumstance in a well-designed \bus implementation. Below we discuss the
+behavior of \bus given various faults and prove the bus resets successfully.
 
 \subsubsection{Phase Offsets}
 At some point, it is possible that a node may miss a clock edge (or high
@@ -425,11 +434,7 @@ phase. In order for the node to successfully communicate in the future, it is
 necessary for the node to re-align. We leverage the reset sequence to achieve
 this goal, and also include a brief discussion of the implications of whether
 the node that falls out of phase is a forwarding, transmitting, or receiving
-node. We are able to gaurentee that once the introduction of faults is
-removed, the \bus can reset and all nodes are phase-aligned and prepared to
-communicate. We can further gaurentee that all messages are either completely
-received or rejected, even in the face of phase-errors. We cannot gaurtentee
-the correctness of acknowledgements in the face of transient errors, however.
+node.
 
 For the purposes of phase, the control node is defined to always be in phase.
 If a local clock glitch somehow occurs on the control node, then the entire
@@ -493,7 +498,7 @@ A node that has missed one clock edge will be one phase behind:
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
             % Reset
-            \filldraw  (85,-.5) rectangle (\twidth-1,-2.5);
+            \filldraw  (73,-.5) rectangle (\twidth-1,-2.5);
           \end{scope}
           \foreach \n [evaluate=\n as \l using int((\n-1)/3)] in {1,4,...,\twidth}
             \draw (\n,-5) -- +(0,-.2)
