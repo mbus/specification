@@ -22,7 +22,9 @@ idle state.
 three member nodes (1, 2, and 3) and a control node. The data loop is connected
 Ctl $\rightarrow 1 \rightarrow 2 \rightarrow 3 \rightarrow$ Ctl. This
 demonstrates arbitration between member nodes 1 and 3, which node 1 wins. Node
-1 then transmits data to node 2, which ACK's the data.}
+1 then transmits data to node 2, which ACK's the data. Reset is elided for
+space, see Section~\ref{sec:design-reset} for details of the Reset sequence.
+}
 \label{fig:transmission}
 \end{figure*}
 

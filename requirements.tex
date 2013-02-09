@@ -543,21 +543,22 @@ Reset in two possible cases:
 states, the node would have to {\sc latch2} a~0 from Data bit~0 as data is
 rising, then it will unconditionally {\sc latch1} a~1 during the global {\sc
 drive2} as data is stable, and finally it must {\sc latch2} a~0 as data is
-falling. At this time the node is sampling {\em every} edge, but the next
-three global edges are {\sc latch1}, {\sc drive2}, {\sc latch2} which will all
-be {\tt 0}. The Reset engine will not observe {\tt 11} or {\tt 011} and the
-node will return to forwarding.
+falling. The next edge is the phase-alignment/entry into reset and {\tt DIN}
+is ignored, the ignored edge is the global {\sc drive2} of Data 0. In Reset, a
+node is seeking either a {\tt 11} or a {\tt 011} sequence. This will reliably
+fail for a transmission of Data 0, however for a subsequent Data 1 or
+Message~End~Sequence it is possible to read this as a false entry into Idle.
+The subsequent bits of the transaction will appear as a new transmission, and
+in the absolute worst case it is plausible (if not probable) that the
+remaining bits align with this node's address.
 
   \item {\bf 0$\rightarrow$MES$\rightarrow$ACK:} Referring to times in
 Figure~\ref{fig:1-phi} for clarity, the {\tt 010} sequence would be latched at
-times 16 (from the Data 0), 18, and 20. Now the node is latching every edge,
-but it is possible to latch {\tt 011} during times 21, 22, and 23 and falsely
-enter into Idle. For this to occur, however, the lagging node would have to
-have latched the previous value on the bus during both a 0$\rightarrow$1
-transition (time~16) and a 1$\rightarrow$0 transition (time~18), but then at
-time~22 it would have to latch the new value during a 0$\rightarrow$1
-transition. \hl{TODO: I am considering this sufficiently improbable?}
-  \label{todo:varying-latches}
+times 18, 20, and 22. The edge at time 23 is ignored for phase-alignment. Then
+the edges at times 25 and 27 would register as a {\tt 00} sequence, which is
+illegal. The latch history register will again match a reset at time 33. The
+edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
+{\tt 011} reset sequence.
 \end{itemize}
 
 \begin{figure}[htb]

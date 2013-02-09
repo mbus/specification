@@ -5,7 +5,13 @@
 The \bus defines two {\em physical} types of nodes: member nodes and a control
 node. An instantiation of \bus must have one and only one control node and
 must have at least one member node (N $\geq$ 1). The maximum number of member
-nodes is a function of clock speed, see XXX\_TODO\_XXX for details.
+nodes is a function of clock speed\footnote{
+  The maximum chip-to-chip latency is defined as 10~ns. Assuming a TX node has
+similar delay to generate the next bit and clock delay to nodes is 0, then the
+minimum cycle time is N nodes * 10~ns. \bus designers are obligated to
+consider all possibly delays and thus define a maximum feasible clock speed,
+however, for most designs the maximum clock speed theorectically possbile will
+largely exceed the plausible speed for the given power budget.}.
 
 During a transmission, \bus defines three {\em logical} types of nodes:
 a transmitting node, a receiving node, and forwarding nodes. During a
@@ -64,26 +70,25 @@ pad to be XXX~pF for inter-operability of generalized components\footnote{
 The {\tt CLK} signal is a shared bus. Any physical design must support two
 {\tt CLK} wires, one to each neighboring node. On a common chip, this is
 simply a shared bus. Chips designed for wirebonding, however, should be sure
-to expose two {\tt CLK} pads and electrically connect them on die.
+to expose two {\tt CLK} pads and electrically connect them on die. The maximum
+permitted propogation delay of the {\tt CLK} signal to any layer is
+XXX\_TODO\_XXX~ns, thus designers must consider the drive strength of their
+control layer as well as the capacitive load of any bus connections and pads
+to ensure this requirement is met.
 
 \subsubsection{Control Node}
 \label{sec:physical-control}
-A control node requires 5 signals:
+A control node requires 3 signals:
 
 \begin{itemize}
   \item {\tt DIN} -- Data In
   \item {\tt DOUT} -- Data Out
   \item {\tt CLK} -- Clock
-  \item {\tt DSNOOP} -- Data Snoop
-  \item {\tt MODE} -- Mode select
 \end{itemize}
 
 The control node is responsible for the generation of the {\tt CLK} signal.
 Thus, unlike member nodes in a wire-bonded system, the control node has a
 minimum of one {\tt CLK} pad instead of two.
-
-The exact functionality of the {\tt DSNOOP} and {\tt MODE} pins is not yet
-defined.
 
 \subsubsection{Bus Connections}
 \label{sec:physical-bus}
@@ -114,13 +119,37 @@ defined.
 \end{itemize}
 
 
+\subsubsection{Injection}
+For a packaged system using \bus, simply providing an external {\tt DIN} and
+{\tt DOUT} that is normally jumpered, plus access to the {\tt CLK} line, is
+sufficient to allow transient bus elements (such as a programmer, debugger).
+
+For completely contained systems, it is desirable to also define a bus
+injection methodology that can be probed onto a chip, as well as a passive
+listening method. \bus defines two additional, optional pads that may be added
+to any node:
+
+\begin{itemize}
+  \item {\tt DSNOOP} -- Snoop, Data out
+  \item {\tt MODE}   -- Connected?, Data in
+\end{itemize}
+
+The {\tt MODE} pad is connected to a weak pull-down resistor. During device
+power-on, if the {\tt MODE} pad is found to be high, an external device is
+assumed to be connected. In this case, the {\tt DIN} pad is routed to the {\tt
+DSNOOP} pad and the {\tt MODE} pad is routed to the chip-internal {\tt DIN}
+signal. Otherwise the {\tt MODE} pad is ignored and the chip {\tt DIN} pad
+routes to both the chip-internal {\tt DIN} signal and the {\tt DSNOOP} pad.
+These functions are determined during Power-On-Reset and remain fixed until a
+future chip-Reset.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Logical Design}
 \label{sec:logical}
 
 There are three {\em logical} types of \bus nodes: transmitting, receiving,
-and forwarding. \bus can be considered `multi-master', any node is capable of
+and forwarding. \bus can be considered multi-master, any node is capable of
 transmitting to any other node. The control node adopts these same three
 personalities, but its behavoir differs slightly during
 arbitration~(\ref{sec:protocol-arbitration}) and
@@ -149,9 +178,12 @@ Bus~Reset~(\ref{sec:protocol-reset}).
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{img/fsm_diagram}
   \caption{A FSM describing the logical behavoir of \bus nodes. All
-transitions except \textsc{Idle}$\rightarrow$\textsc{Arbitrate} occur on
-rising {\tt CLK} edge. Not shown are implicit arrows from every state returning to
-\textsc{reset} any time a Bus~Reset event occurs.}
+transitions except \textsc{Idle}$\rightarrow$\textsc{Arbitrate} (and
+\textsc{Arbitrate}$\rightarrow$\textsc{Not\_Connected}) occur on rising {\tt
+CLK} edge. Not shown are implicit arrows from every state returning to
+\textsc{reset} any time a Bus~Reset event occurs nor arrows to \textsc{error}
+whenever a bus error is detected.
+}
 \end{figure}
 
 \subsubsection{Forwarding}
@@ -257,12 +289,7 @@ node's goal is to alert the control layer and to reset the bus. A node in {\sc
 error} will alternate its {\tt DOUT} line {\em every} clock edge. This will
 quickly be picked up by the control layer as it detects an unexpected edge
 transition and initiates the Reset sequence. A node leaves {\sc error} once it
-receives the Reset sequence.
-
-{\sc Error} is a relatively expensive state, as any RX/TX nodes following a
-node in {\sc error} will in turn enter {\sc error} themselves. It will require
-a full Reset cycle from the control layer to reset each node in {\sc error}
-sequentially.
+has completed once complete alternation, it then forwards until it is Reset.
 
 \paragraph{Exception.{\sc Not\_Connected}}
 A robust implementation should include detection of some kind for an attempt
