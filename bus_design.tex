@@ -120,15 +120,15 @@ Picking up transmission from the last bit of data the transmitting node wishes
 to send, the transmitting node pushes its last bit on its {\tt DOUT} line
 during the {\sc drive1} state, and it is latched by \bus during the {\sc
 latch1} and {\sc latch2} states.  At the next {\sc drive1} state, the 
-transmitting node drives its {\tt DOUT} line high. This high half-bit is a sentinel 
+transmitting node drives its {\tt DOUT} line low. This low half-bit is a sentinel 
 stop bit---it is not part of the transmitted message, rather the beginning of 
 the Message~End~Sequence. At the rising edge of the {\tt CLK} that starts the
-{\sc latch1} state, all \bus nodes latch {\tt 1}. The next rising edge of the
+{\sc latch1} state, all \bus nodes latch {\tt 0}. The next rising edge of the
 {\tt CLK}, which starts {\sc drive2} state, the transmitting node drives its 
-{\tt DOUT} line low. At the next rising {\tt CLK} edge, which starts the next 
+{\tt DOUT} line high. At the next rising {\tt CLK} edge, which starts the next 
 {\sc latch2} state, nodes will observe that the data line differs from 
 {\sc latch1} state. The receiving and control nodes will recognize this
-{\tt 10} sequence as a Message~End~Sequence.
+{\tt 01} sequence as a Message~End~Sequence.
 
 At the next rising edge after transmitting the Stop sequence, the transmitting
 node should begin forwarding its {\tt DIN} to its {\tt DOUT}.
@@ -140,24 +140,18 @@ message acknowledgement. The message was determined to be a Stop at the {\sc
 Latch2} that ended the previous cycle.
 
 At the next rising clock edge, a {\sc drive1}, the {\em receiving} layer
-should drive a {\tt 0} (Note that this will not create an edge yet as the bus
-should already be low from the end of the Stop sequence). The value {\tt 0}
+should drive a {\tt 1} (Note that this will not create an edge yet as the bus
+should already be hgih from the end of the Stop sequence). The value {\tt 1}
 is latched by \bus at the next clock edge during {\sc latch1}. At the next
-clock edge, {\sc drive2}, the receiving layer should drive {\tt 1} if it
+clock edge, {\sc drive2}, the receiving layer should drive {\tt 0} if it
 wishes to acknowledge the transmission. The acknowledgement is confirmed at
-the next clock edge, {\sc latch2}. The acknowledging layer then sends a {\tt
-10} in a similar fashion.
+the next clock edge, {\sc latch2}.
 
 This is a relatively fast turnaround for the receiving node. It has from {\sc
 latch2} when it detects the Stop condition until the next {\sc drive2} to
 determine whther or not it wishes to acknowledge the transmission. Designers
 should take care to ensure the acknowledge signal logic can be generated in
 half a bit time (2 clock pluses).
-
-The last two half-bits of the Acknowledgement handshake---{\tt 01}---are sent
-by the control layer. These half-bits serve dual purpose, both the completion
-of the acknowledgement handshake and they are the beginning of a
-Bus~Reset~({\tt 010}).
 
 
 \subsection{Bus Reset}
