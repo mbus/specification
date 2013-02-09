@@ -512,6 +512,10 @@ A node that has missed one clock edge will be one phase behind:
           \node [rotate=45] at (\base+12,0) {Latch1};
           \node [rotate=45] at (\base+18,0) {Drive2};
           \node [rotate=45] at (\base+24,0) {Latch2};
+        \end{scope}
+        \begin{scope}
+          [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
+          \def\base{76}
           \node [rotate=45] at (\base+30,0) {Reset (Phase)};
           \node [rotate=45] at (\base+36,0) {Reset (Phase)};
           \node [rotate=45] at (\base+42,0) {Reset$_{1}$};
