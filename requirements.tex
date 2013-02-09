@@ -314,19 +314,19 @@ consider various failure modes.
 
     \begin{tikztimingtable}[timing/slope=.3]
       %       |  ACK/RST 0  1  | RST 0 11
-      Din  & L 0.2L8{2L} 8{2H}  8{2L} 15{2H} 1.8H H \\
-      Dout & L 0.4L8{2L} 8{2H}  8{2L} 15{2H} 1.6H H \\
+      Din  & L 0.2L8{2L} 8{2H}  12{2L} 7{2H} 1.8H H \\
+      Dout & L 0.4L8{2L} 8{2H}  12{2L} 7{2H} 1.6H H \\
       \\
-      Din  & L 0.6L8{2L} 8{2H}  8{2L} 15{2H} 1.4H H \\
-      Dout & L 0.8L8{2L} 8{2H}  8{2L} 15{2H} 1.2H H \\
+      Din  & L 0.6L8{2L} 8{2H}  12{2L} 7{2H} 1.4H H \\
+      Dout & L 0.8L8{2L} 8{2H}  12{2L} 7{2H} 1.2H H \\
       \\
-      Din  & L 1.0L8{2L} 8{2H}  8{2L} 15{2H} 1.0H H \\
-      Dout & L 1.2L8{2L} 8{2H}  8{2L} 15{2H} 0.8H H \\
+      Din  & L 1.0L8{2L} 8{2H}  12{2L} 7{2H} 1.0H H \\
+      Dout & L 1.2L8{2L} 8{2H}  12{2L} 7{2H} 0.8H H \\
       \\
-      Din  & L 1.4L8{2L} 8{2H}  8{2L} 15{2H} 0.6H H \\
-      Dout & L 0.0L8{2L} 8{2H}  8{2L} 15{2H} 2.0H H \\
-      CLK  & L 4L  3{4C} 4{4C}  4{4C}  8{4C}      H \\
-      ~~~  & L     8{2C} 8{2C}  8{2C} 16{2C}      C \\
+      Din  & L 1.4L8{2L} 8{2H}  12{2L} 7{2H} 0.6H H \\
+      Dout & L 0.0L8{2L} 8{2H}  12{2L} 7{2H} 2.0H H \\
+      CLK  & L 4L  3{4C} 4{4C}  6{4C}  4{4C}      H \\
+      ~~~  & L     8{2C} 8{2C}  12{2C} 8{2C}      C \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick]
@@ -339,14 +339,15 @@ consider various failure modes.
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
             \pgfmathparse{\twidth-5}
-            \vertlines{13,29,...,\pgfmathresult}
+            \vertlines{13,29,...,\pgfmathresult,\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,semithick,color=blue]
             \pgfmathparse{\twidth-17}
             \vertlines{1,17,...,\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed,color=blue]
-            \vertlines{9,25,...,\twidth}
+            \pgfmathparse{\twidth-9}
+            \vertlines{9,25,...,\pgfmathresult,\pgfmathresult}
           \end{scope}
           \begin{scope}[semitransparent,yellow]
             % TX
@@ -376,10 +377,9 @@ consider various failure modes.
           \node [rotate=45] at (\base+24, 0) {Latch2};
           \node [rotate=45] at (\base+32, 0) {Drive1};
           \node [rotate=45] at (\base+40, 0) {Latch1};
-          \node [rotate=45] at (\base+48, 0) {Reset$_{1}$-D};
-          \node [rotate=45] at (\base+56, 0) {Reset$_{1}$-L};
-          \node [rotate=45] at (\base+64, 0) {Reset$_{2}$-D};
-          \node [rotate=45] at (\base+72, 0) {Reset$_{2}$-L};
+          \node [rotate=45] at (\base+48, 0) {Phase-Align};
+          \node [rotate=45] at (\base+56, 0) {Reset$_{1}$};
+          \node [rotate=45] at (\base+64, 0) {Reset$_{2}$};
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
@@ -390,11 +390,10 @@ consider various failure modes.
           \node [rotate=45] at (\base+24, 0) {R1-L};
           \node [rotate=45] at (\base+32, 0) {R0-D};
           \node [rotate=45] at (\base+40, 0) {R0-L};
-          \node [rotate=45] at (\base+48, 0) {R1-I$_{1}$-D};
+          \node [rotate=45] at (\base+48, 0) {R-Align};
           \node [rotate=45] at (\base+56, 0) {R1-I$_{1}$-L};
-          \node [rotate=45] at (\base+64, 0) {R1-I$_{2}$-D};
-          \node [rotate=45] at (\base+72, 0) {R1-I$_{2}$-L};
-          \node [color=black] at (\base+80, 0) {Idle};
+          \node [rotate=45] at (\base+64, 0) {R1-I$_{2}$-L};
+          \node [color=black] at (\base+72, 0) {Idle};
         \end{scope}
         \begin{scope}
           [font=\small,anchor=south,shift={(1,-18em)}]
