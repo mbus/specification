@@ -476,22 +476,22 @@ A node that has missed one clock edge will be one phase behind:
     \tiny
     \begin{tikztimingtable}[timing/slope=.3]
       %       |  D0   |  D1   |  D0   |  D1   |    MES 01     |
-      %       |   ACK   10   | ACK/RST 01   | 0 Reset 11
+      %       |   ACK   10   | ACK/RST 01   | 0 Reset P11 | Idle
       Din  & L 8{1.5L} 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L} 4{1.5H}
-               4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}6{1.5H} H \\
+               4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}4{1.5L}6{1.5H} 4{1.5H} H \\
       CLK  & C 8{1.5C} 8{1.5C} 8{1.5C} 8{1.5C} 4{1.5C} 4{1.5C}
-               4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  3{3C} C \\
+               4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  2{3C}  3{3C}   2{3C} C \\
       Bus  & D{}{12D{Data 0}}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 01}}
-               {12D{ACK 10}}{33D{ACK/RST 010}} {12D{Reset 11}}D \\
+               {12D{ACK 10}}{27D{ACK/RST 010}} {30D{Reset 11}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
             \vertlines{1,7,...,71}
-            \vertlines{76,88,100,106,112}
+            \vertlines{76,88,100,106,112,118,124}
           \end{scope}
           \begin{scope}[semitransparent,semithick,dashed]
             \vertlines{4,10,...,75}
-            \vertlines{82,94,118}
+            \vertlines{82,94,130}
           \end{scope}
           \begin{scope}[cyan,opacity=.25]
             % Reset
@@ -512,15 +512,18 @@ A node that has missed one clock edge will be one phase behind:
           \node [rotate=45] at (\base+12,0) {Latch1};
           \node [rotate=45] at (\base+18,0) {Drive2};
           \node [rotate=45] at (\base+24,0) {Latch2};
-          \node [rotate=45] at (\base+30,0) {Reset (D)};
-          \node [rotate=45] at (\base+36,0) {Reset (L)};
-          \node [rotate=45,color=black] at (\base+42,0) {Idle (L)};
+          \node [rotate=45] at (\base+30,0) {Reset (Phase)};
+          \node [rotate=45] at (\base+36,0) {Reset (Phase)};
+          \node [rotate=45] at (\base+42,0) {Reset$_{1}$};
+          \node [rotate=45] at (\base+48,0) {Reset$_{2}$};
+          \node [rotate=45,color=black] at (\base+54,0) {Idle (L)};
         \end{scope}
     \end{tikztimingtable}
 }
 \caption{A nominal transmission (0, 1, 0, 1, MES, ACK, Reset) labeling the
 states as $1\phi$ behind. The {\tt CLK} and {\tt Bus} lines reflect the actual
-bus values, not those as interpreted by the $1\phi$ behind node.
+bus values, not those as interpreted by the $1\phi$ behind node except during
+reset where they necessarily re-align.
 }
 \label{fig:1-phi}
 \end{figure}
