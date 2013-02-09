@@ -4,15 +4,25 @@
 \label{sec:todo}
 \subsection{Issues}
 \begin{description}
-	\item[CLK glitch] \hfil \\
-	CLK glitch potentially causes a node driving the bus at {\sc latch state} or
-	alternating {\sc drive1} and {\sc drive2}. The former may lead to improper
-	reset some nodes if CLKs arrive differently. The latter may stall the entire
-	transmission.
-
   \item[Maximum length?] \hfil \\
-  Should there be some built-in (high, several~kB) message length, just in
+  Should there be some built-in (high, several~kB-MB) message length, just in
   case the controller happens to miss a Message~End~Sequence or something?
   (Answer: almost certainly yes). The real question: What is a reasonable such
   maximum?
+
+  \item[Power-Gated Member Wake-up] \hfil \\
+  Layers (member nodes) in the M3 system are all power gated, this means they
+  require non-zero time to wake up and stabilize at the beginning of
+  transmissions. In particular, this wakeup requires a few states:
+  \begin{itemize}
+    \item Power on (remove power-gating)
+    \item Warm up local oscillators
+    \item De-assert Reset
+    \item Remove isolation
+  \end{itemize}
+  In practice there are 4 states required in the most extreme to safely wake
+  up a system. The TODO: Is this true in a general sense? If so, should waking
+  nodes at the beginning of transmission be part of the protocol itself that's
+  required or an unofficial M3 extension? See some of the more detailed
+  current thoughts in~\ref{todo:wakeup}.
 \end{description}

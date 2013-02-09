@@ -195,14 +195,25 @@ there's not much power.  I'm not sure if we want to get into the power budgets
 of the nodes in different modes - it will depend on the pmu design...
 
 \paragraph{Consider Arbitration as DOUT and CLK low?}
-\hl{
-One more note on this time:  currently, the spec requires that the pmu resides
-with the ctr processor, since it's the only node that is definitely aware of a
-wakeup.  However, if the ctr instead pulls down right way on clk (not data),
-which does not take much power, then all nodes will know that a bus request
-has been detected and the pmu can reside on any node.  The ctr that would have
-to delay before raising the clk to allow the pmu to switch mode etc...
-}
+\label{todo:wakeup}
+{\em M3 implentations note:} One more note on this time: currently, the spec
+requires that the pmu resides with the ctr processor, since it's the only node
+that is definitely aware of a wakeup.  However, if the ctr instead pulls down
+right way on clk (not data), which does not take much power, then all nodes
+will know that a bus request has been detected and the pmu can reside on any
+node.  The ctr that would have to delay before raising the clk to allow the
+pmu to switch mode etc...
+
+{\em Response:} The falling edge after $t_{long}$ is sufficient for the
+initial waking of nodes, or the rising edge of the arbitration (doesn't
+matter). The bus expects the data lines to be stable during the window between
+arbitration resolution and the first {\sc drive1} cycle, but the bus itself
+ignores the lines during this window. For the M3 power wake-up, we can stretch
+the \bus~{\tt CLK} line and have the control layer toggle the data lines to
+generate the needed state edges for layer wake-up. Non-M3 layers will ignore
+this wake-up. Things get a little funny as a non-M3 controller will need to
+M3-aware, but that's not an impossible case to handle. \hl{TODO: Consider this
+as possibly part of the spec?}
 
 \subsection{Reset Design}
 \label{sec:design-reset}
