@@ -196,7 +196,7 @@ of the nodes in different modes - it will depend on the pmu design...
 
 \paragraph{Consider Arbitration as DOUT and CLK low?}
 \label{todo:wakeup}
-{\em M3 implentations note:} One more note on this time: currently, the spec
+{\em M3 implementation note:} Currently, the spec
 requires that the pmu resides with the ctr processor, since it's the only node
 that is definitely aware of a wakeup.  However, if the ctr instead pulls down
 right way on clk (not data), which does not take much power, then all nodes
@@ -224,7 +224,7 @@ reset designs and their shortcomings are discussed in
 Appendix~\ref{sec:appendix-reset}.
 \begin{quote}
 \em n.b.\ this section assumes a knowledge of \bus design. New readers should
-skip this section.
+skip this section and return to it later.
 \end{quote}
 
 We first examine when a transaction occurs correctly, as designed, and then
@@ -421,7 +421,7 @@ consider various failure modes.
   \label{fig:reset-normal}
 %}
   \caption{A normal end sequence, showing the last three bits sent (1, 0, 1)
-followed by a Message~End~Sequence,Message~Acknowledgement, and Reset. During
+followed by a Message~End~Sequence, Message~Acknowledgement, and Reset. During
 reset, the control node halves the clock speed it puts on the bus for
 phase-locking.
 }
@@ -487,13 +487,13 @@ A node that has missed one clock edge will be one phase behind:
     \tiny
     \begin{tikztimingtable}[timing/slope=.3]
       %       |  D0   |  D1   |  D0   |  D1   |    MES 01     |
-      %       |   ACK   10   | ACK/RST 01   | 0 Reset P11 | Idle
+      %       |   ACK   10   |     RST 01   | 0 Reset P11 | Idle
       Din  & L 8{1.5L} 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L} 4{1.5H}
                4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}4{1.5L}6{1.5H} 4{1.5H} H \\
       CLK  & C 8{1.5C} 8{1.5C} 8{1.5C} 8{1.5C} 4{1.5C} 4{1.5C}
                4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  2{3C}  3{3C}   2{3C} C \\
       Bus  & D{}{12D{Data 0}}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 01}}
-               {12D{ACK 10}}{27D{ACK/RST 010}} {30D{Reset 11}}D \\
+               {12D{ACK 10}}{27D{Reset 010}} {30D{Reset 11}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
@@ -573,38 +573,40 @@ edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
 \end{itemize}
 
 \begin{figure}[htb]
+  \centering
   \ssmall
   \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
     %                                         ||||
-    Din  & H 1.0H 8{2L}1.0H4{2H}HXXL1{2L}4.0L 0.5L16H 16L 16H        \\
-    Dout & H 0.0H 8{2L}2.0H4{2H}HXXL1{2L}4.0L     4.0L\\
-    ~~~~ & D{} {16D{Data 0}}{16D{Data 1}}{24D{Data 0}}{16D{Err (FWD)}}{12D{Reset}} \\
+    Din  & H 1.0H 8{2L}1.0H4{2H}HXXL1{2L}4.0L 0.5L16L 16H 15.5L        L \\
+    Dout & H 0.0H 8{2L}2.0H4{2H}HXXL1{2L}4.0L     12L 4HX15H 0.5H15.5L L \\
+    ~~~~ & D{} {16D{Data 0}}{16D{Data 1}}{16D{MES 0}}{24D{MES 1}}{13D{Reset}} \\
     \\
-    Din  & H 0.0H 7{2L}LXXH5{2H}1.0H2{2L}3.0L 0.5L4.0L\\
-    Dout & H 0.0H 7{2L}LXXH5{2H}    2{2L}4.0L 0.5L4.0L\\
-    ~~~~ & 5D{} {16D{MES 01}}{20D{ACK 10}} \\
+    Din  & H 0.0H 7{2L}LXXH5{2H}1.0H2{2L}3.0L     11LXX19.0H 0.8H15.2L L \\
+    Dout & H 0.0H 7{2L}LXXH5{2H}    2{2L}4.0L     11LXX19.0H 0.8H15.2L L \\
+    ~~~~ & 5D{} {16D{MES 01}}{20D{ACK 10}}{40D{ACK/RST 010}}{5D{Reset}} \\
     %\\
-    Din  & H 0.8H 8{2L}    6{2H}    2{2L}4.0L     4.0L\\
-    Dout & H 0.8H 8{2L}    6{2H}    2{2L}3.2L     16H 16L 16H      \\
-    CLK  & C      8{2C}    6{2C}    2{2C}2{2C}    4L 11{4C} C         \\
+    Din  & H 0.8H 8{2L}    6{2H}    2{2L}4.0L     12L  19.2H 1.0H15.0L L \\
+    Dout & H 0.8H 8{2L}    6{2H}    2{2L}3.2L     16L 16H 16L          L \\
+    CLK  & C      8{2C}    6{2C}    2{2C}2{2C}    4L 11{4C}            C \\
     \extracode
       \begin{pgfonlayer}{background}
         \begin{scope}[semitransparent,dashed]
           \vertlines{1,9,...,49}
-          \pgfmathparse{\twidth-4}
+          \pgfmathparse{\twidth-1}
           \vertlines{49,57,...,\pgfmathresult}
           \vertlines[color=red]{5,13,...,49}
           \vertlines[color=blue]{53,61,...,\pgfmathresult}
         \end{scope}
         \begin{scope}[thick]
           \draw[blue]  (31,-13.5) ellipse (3 and 1.25);
-          \draw[blue]  (45,-14.5) ellipse (1.25 and 2);
+          %\draw[blue]  (45,-14.5) ellipse (1.25 and 2);
         \end{scope}
         \begin{scope}[semitransparent]
           % TX
           \filldraw[yellow]    ( 1,-0.5) rectangle ( 5,-2.5);
           \filldraw[yellow]    (17,-0.5) rectangle (21,-2.5);
           \filldraw[yellow]    (33,-0.5) rectangle (37,-2.5);
+          \filldraw[yellow]    (49,-0.5) rectangle (53,-2.5);
           % RX
           \filldraw[yellow]    (29,-8.5) rectangle (33,-10.5);
           % CLK
@@ -640,7 +642,7 @@ edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
         \pgfmathparse{\pgfmathresult+8}
         \node [rotate=45] at (\pgfmathresult, 0)  {Latch1};
         \pgfmathparse{\pgfmathresult+8}
-        \node [rotate=45] at (\pgfmathresult, 0)  {Drive2};
+        \node [rotate=45] at (\pgfmathresult, 0)  {Phase-Align};
         \pgfmathparse{\pgfmathresult+8}
       \end{scope}
       \begin{scope}
@@ -662,7 +664,7 @@ edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
         \pgfmathparse{\pgfmathresult+8}
         \node [rotate=45] at (\pgfmathresult, 0)  {D1};
         \pgfmathparse{\pgfmathresult+8}
-        \node [rotate=45] at (\pgfmathresult, 0)  {L1};
+        \node [rotate=45] at (\pgfmathresult, 0)  {*L1*};
         \pgfmathparse{\pgfmathresult+8}
       \end{scope}
       \begin{scope}
@@ -684,33 +686,53 @@ edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
         \node at (\pgfmathresult, -1)  {\normalsize \ldots};
       \end{scope}
   \end{tikztimingtable}
-  \caption{{\em TX 0$\rightarrow$1 False MES~~}
-We assume the RX latches 0 at time 4, creating the problem. The TX may
-possibly be reset at time 7 if it latched 1, here we assume not. At time 8 the
-control layer detects a change between {\sc latch2} and {\sc drive1}, alerting
-it to the issue and entering Reset. We show the next TX half-bit to be 0 (and
-thus a Data 0) as if it was a 1, the TX layer would reset at time 10.
+  \caption[Lof Entry]{{\em TX 0$\rightarrow$1 False MES~~}
+    We assume the RX latches 0 at time 4, creating the problem. The TX may
+    possibly be reset at time 7 if it latched 1, here we assume not. At time 8
+    the control layer detects a change between {\sc latch2} and {\sc drive1},
+    alerting it to the issue and entering Reset.
+
+    \hspace{1em}
+    We show the next TX half-bit to be~{\tt 0} as if it was a~{\tt 1}, the TX
+    layer would reset at time 10. If the next half-bit had been~{\tt 1}, it
+    would also introduce the possibility of the RX node latching a~{\tt 1} at
+    time 8 and failing its ACK attempt.  We show the next TX half-bit as
+    a~{\tt 1} (that is, the TX layer was sending the Message~End~Sequence); if
+    it had been~{\tt 0} the TX layer would have reset at time 14 when its {\sc
+    latch2} latched a~{\tt 1} instead of a~{\tt 0}.
+
+    \hspace{1em}
+    The last uncertaintly is at time 12, where the receiving node may possibly
+    latch a~{\tt 1} instead of the expected~{\tt 0}. Latching the high value
+    of a low$\rightarrow$high transition was the original glitch that caused
+    the RX node to enter this state, thus assuming a consistent design
+    shortcoming, it is more likely to latch high and be reset here. The shown
+    example instead demonstrates how an RX node may possibly ACK a complete
+    message and propogate a truncated message to the higher layers.
+
+    \hspace{1em}
+    This series of events is one possible explanation of a design error that
+    results in a \bus implementation that ``cannot send the number~1''.
   }
   \label{fig:1phi-1-0}
 \end{figure}
 
 \subparagraph{TX 1$\rightarrow$0}
 If an offset node latches an incoming {\tt 0}, it will have received a {\tt
-10} sequence, which is illegal. A forwarding node will not notice the {\tt 01}
+10} sequence, which is illegal. A forwarding node will not notice the {\tt 10}
 sequence, as the only record it has of incoming bits is its local reset
-detector. If an RX node records {\tt 01}, however, it will enter the {\sc
+detector. If an RX node records {\tt 10}, however, it will enter the {\sc
 error} state and reset the bus.
 
 \subparagraph{TX 0$\rightarrow$1}
 When an offset node latches the incoming {\tt 1} during its local {\sc latch2}
 cycle, it will consider this a Message~End~Sequence ({\tt 01}). If the $1\phi$
 slip occurs at the RX node, it will begin Acknowledgement out of phase.
-Figure~\ref{fig:1phi-1-0} details the possible cases, all of which result in a
-sucessfully reset bus with all nodes having aborted the transaction.
+Figure~\ref{fig:1phi-1-0} details the possible outcomes.
 
 \subparagraph{TX 1$\rightarrow$Message End Sequence}
-An offset node will read the leading low half-bit of the
-Message~End~Sequence, generating a {\tt 10} sequence, which will cause the
+An offset node latching the new value will read the leading low half-bit of
+the Message~End~Sequence, generating a {\tt 10} sequence, which will cause the
 node to abort the transmission and enter {\sc error}.
 
 \subparagraph{TX 0$\rightarrow$Message End Sequence}
@@ -721,12 +743,9 @@ an Acknowledgement as the second {\tt 1} half-bit. After another {\tt 1}
 half-bit, the control layer will Reset the bus following a
 Message~End~Sequence with no Acknowledgement.
 
-%%%%%%%%%%%%%%%%%%%%%% TODO
 \subparagraph{Message End Sequence$\rightarrow$Message Acknowledgement}
 Missing an edge on this transition will not be immediately noticed, as the
-leading half-bit of Acknowledgement is also low. If a node is consistently
-lagging or leading the input signal, it will fail during the control-driven
-portion of acknowledgement. The implications of this for:
+leading half-bit of Acknowledgement is also high.
 
 \begin{itemize}
   \item {\bf TX Node:} A transmitter that drops a clock after transmitting the
@@ -742,7 +761,9 @@ non-deterministic.
 Unaligned edges are not possible during Reset as the data line is not driven
 on a global bus clock edge. It is, however, possible that a clock edge may be
 missed during Reset. Such a failure cannot be detected. The error will be
-corrected during the next transaction's Reset.
+corrected during the next transaction's Reset. In the interim, the node will
+view the bus as busy until another node elects to communicate. See the
+discussion in \ref{sec:reset-hung}~\nameref{sec:reset-hung} for more details.
 
 
 \paragraph{$2\phi$ Offset}
@@ -757,13 +778,49 @@ will be treated as a Reset by the TX node, and the RX node will at the latest
 fail to align with the last two half-bits driven by the control node whilst
 trying to acknowledge.
 
+\paragraph{$3\phi$ Offset}
 
-\paragraph{$3\phi$ Offset, $4\phi$ Offset}
-These are both deemed extraordiarily unlikely to occur without detection as a
-$1\phi$ or $2\phi$ error prior to getting this far out of alignment. The
-$3\phi$ cases largely mirror the $1\phi$ cases. The $4\phi$ case is a
+\paragraph{$4\phi$ Offset}
+This is deemed extraordiarily unlikely to occur without detection as a
+1-,~2-,~or~$3\phi$ error prior to getting this far out of alignment.
+The $4\phi$ case is a
 completely missed bit, which will result in the TX and RX nodes believing they
 have completed a transaction successfully when in reality the RX node has
 received one less bit than the TX node sent. The likelyhood of this occurring
 it so small, and the bus is still recoverable via Reset, that it is not
 considered a large concern.
+
+\subsubsection{Hung Nodes}
+\label{sec:reset-hung}
+We define ``hung'' as an erroneous state from which a node would never depart
+without external intervention. We are not concerned with how a node got into
+an erroneous state---a pathological series of SERs, whatever---the focus is on
+how a node excises itself.
+
+\paragraph{Busy During Bus Idle}
+In this state, the \bus is Idle, but a node believes there is still a
+transmission taking place and will wait forever for a new clock edge,
+constantly reporting the \bus as busy.
+
+As relief for this state, recall that any node may elect to reset the bus at
+any time. A node attempting to transmit faced with an endlessly busy bus could
+eventually elect to reset the bus. It is the responsibility of system
+designers to consider this maximum timeout value, with the understanding that
+this is an extradinary and exceptional state and the timeout is a cautious
+design that should never be necessary (that is, err on the long side).
+
+To reset the bus in this case, a node should immediately pull its {\tt DOUT}
+line low\footnote{
+  As the local state machine requires \bus~{\tt CLK} edges to progress, the
+  signal that determines this reset to be necessary must also be capable of
+  driving the {\tt DOUT} line low, or the problem will not be solved.
+} and then enter the {\sc Error} state. If the bus is idle, the local node
+will see the arbitration clock pulse as a clock edge, placing it $1\phi$
+behind. When the {\sc error} drives data high, the control layer will detect
+an out-of-phase node and reset the entire bus.
+
+Had the bus not actually been idle at the time of the reset attempt. The
+initial pulling down of {\tt DOUT} may possibly trigger the control node's
+out-of-phase detection, if that did not occur then the reset sequence induced
+by the node from {\sc error} state will definitively result in the controller
+resetting the bus.
