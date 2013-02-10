@@ -13,12 +13,12 @@ our further design constraints.
 \paragraph{Must be fully-synthesizable}
 In an effort to make \bus ubiquitous, it is important that other designers can
 easily add \bus to their systems/chips. In practice, this means a
-fully-synthesizable design such that simple, pure verilog can be given to any
+fully-synthesizable design such that simple, pure Verilog can be given to any
 individual wishing to implement \bus. The provides added advantages in
 pre-silicon testing and validation. One thought was using both {\tt CLK} edges
 to alternate {\sc drive} and {\sc latch} states to reduce the power draws by
 {\tt CLK} wire. However, using both edges requires a custom designed flip-flop
-which is not supported by commom standard cell library. Using single edge 
+which is not supported by common standard cell library. Using single edge 
 trigger has worse energy-per-bit but retains better portability.
 
 \paragraph{Optimize for synthesis simplicity over speed}
@@ -181,9 +181,9 @@ then is the absent receiver, which is a relative non-issue for a bus such as
 
 \paragraph{Streaming}
 Some bus designs incorporate a ``streaming'' mode, which allows for a series
-of physical bus transactions to be considered one continguous message at the
+of physical bus transactions to be considered one contiguous message at the
 receiving layer. As \bus allows for arbitrary length messages, such a feature
-becomes largely unnecessary, and \bus defines no streaming primative.
+becomes largely unnecessary, and \bus defines no streaming primitive.
 
 \paragraph{Avoid ratioed-logic, avoid timing constraints}
 
@@ -427,9 +427,9 @@ phase-locking.
 }
 \end{figure}
 
-We are able to gaurentee that once the introduction of faults is
+We are able to guarantee that once the introduction of faults is
 removed, the \bus can reset and all nodes are phase-aligned and prepared to
-communicate. We make no gaurentees in the presence of faults however---there
+communicate. We make no guarantees in the presence of faults however---there
 is no parity, no CRC---, it is expected that faults should be an exceptional
 circumstance in a well-designed \bus implementation. Below we discuss the
 behavior of \bus given various faults and prove the bus resets successfully.
@@ -437,7 +437,7 @@ behavior of \bus given various faults and prove the bus resets successfully.
 \subsubsection{Phase Offsets}
 \label{sec:design-reset-phase}
 At some point, it is possible that a node may miss a clock edge (or high
-capactiance on the {\tt CLK} line delays a node detecting edges, or coupling
+capacitance on the {\tt CLK} line delays a node detecting edges, or coupling
 induces an edge, etc, etc). At that point, the node is considered out of
 phase. In order for the node to successfully communicate in the future, it is
 necessary for the node to re-align. We leverage the reset sequence to achieve
@@ -474,7 +474,7 @@ Message~Acknowledgement$\rightarrow$Reset.
   rising clock arrives first. For the {\em control} layer, however, we must
   be able to assume that the control layer will sample its {\tt DIN} as it
   raises the {\tt CLK} line, that is {\em before} a new value could possibly
-  have propogated. This feature enables the control node to detect, and
+  have propagated. This feature enables the control node to detect, and
   correct, out of phase nodes.
 \end{framed}
 
@@ -546,7 +546,7 @@ reset where they necessarily re-align.
 
 \subparagraph{Forwarding Nodes}
 There is not much attention paid to forwarding nodes in these breakdowns, as
-the only concern is a forwarding node inadvertantly entering Reset and
+the only concern is a forwarding node inadvertently entering Reset and
 progressing all the way to idle. A forwarding node can pre-emptively enter
 Reset in two possible cases:
 
@@ -703,13 +703,13 @@ edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
     latch2} latched a~{\tt 1} instead of a~{\tt 0}.
 
     \hspace{1em}
-    The last uncertaintly is at time 12, where the receiving node may possibly
+    The last uncertainty is at time 12, where the receiving node may possibly
     latch a~{\tt 1} instead of the expected~{\tt 0}. Latching the high value
     of a low$\rightarrow$high transition was the original glitch that caused
     the RX node to enter this state, thus assuming a consistent design
     shortcoming, it is more likely to latch high and be reset here. The shown
     example instead demonstrates how an RX node may possibly ACK a complete
-    message and propogate a truncated message to the higher layers.
+    message and propagate a truncated message to the higher layers.
 
     \hspace{1em}
     This series of events is one possible explanation of a design error that
@@ -769,7 +769,7 @@ discussion in \ref{sec:reset-hung}~\nameref{sec:reset-hung} for more details.
 
 \paragraph{$2\phi$ Offset}
 It is extremely highly improbable that a node misses two clock edges and
-directly beomes $2\phi$ offset\footnote{
+directly becomes $2\phi$ offset\footnote{
   It is possible for the offset to be spread across multiple bits, e.g.
   two edges in a longs string of 0's.}.
 Such a node will have missed one half-bit of a transmission. On the first
@@ -785,18 +785,18 @@ enter as $1\phi$. Instead of slipping a clock edge, a spurious clock edge will
 advance the local state machine, placing it $3\phi$ out of phase.
 
 As with $1\phi$, in most cases the effect will be negligible, but in the most
-pathological events a node could falsely acknowledge a message, propogating a
+pathological events a node could falsely acknowledge a message, propagating a
 fragment, or become hung. In all cases, the next glitch-free transmission will
 reset and re-align the node.
 
 \paragraph{$4\phi$ Offset}
-This is deemed extraordiarily unlikely to occur without detection as a
+This is deemed extraordinarily unlikely to occur without detection as a
 1-,~2-,~or~$3\phi$ error prior to getting this far out of alignment.
 The $4\phi$ case is a
 completely missed bit, which will result in the TX and RX nodes believing they
 have completed a transaction successfully when in reality the RX node has
 received one less bit than the TX node sent. In the case of a $4\phi$ error,
-the bus is trivially reset as a ``complete'' tranmission will have taken place
+the bus is trivially reset as a ``complete'' transmission will have taken place
 by the end.
 
 \subsubsection{Hung Nodes}
@@ -815,7 +815,7 @@ As relief for this state, recall that any node may elect to reset the bus at
 any time. A node attempting to transmit faced with an endlessly busy bus could
 eventually elect to reset the bus. It is the responsibility of system
 designers to consider this maximum timeout value, with the understanding that
-this is an extradinary and exceptional state and the timeout is a cautious
+this is an extraordinary and exceptional state and the timeout is a cautious
 design that should never be necessary (that is, err on the long side).
 
 To reset the bus in this case, a node should immediately pull its {\tt DOUT}
@@ -844,14 +844,14 @@ of {\tt 0}'s or {\tt 1}'s on the bus.
 One possible solution is for the TX layer to monitor beyond the
 acknowledgement bits. Specifically, when the TX layer receives a NAK (or ACK),
 no more than 3 more half-bits should be received before entering Reset. Thus
-after sending a Message~End~Sequnce, a TX node should start a 5~half-bit
+after sending a Message~End~Sequence, a TX node should start a 5~half-bit
 counter. Upon expiration of the counter, if the TX node does not enter {\sc
 reset}, it should enter {\sc error} instead.
 
 The other solution relies on the controller to detect the error. This is
 more challenging as the controller has no way to distinguish between a broken
 transmitter and a message with a lengthy run of {\tt 0}'s or {\tt 1}'s. While
-\bus does allow for arbitrary message lengths, desginers may define a maximum
+\bus does allow for arbitrary message lengths, designers may define a maximum
 message length for a particular \bus instantiation. The control layer counts
 the number of bits received and can forcefully reset the bus if necessary.
 This maximum message length is defined as the number of {\sc drive1} edges

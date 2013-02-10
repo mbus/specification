@@ -152,7 +152,7 @@ at the next clock edge, {\sc latch2}.
 
 This is a relatively fast turnaround for the receiving node. It has from {\sc
 latch2} when it detects the Message~End~Sequence until the next {\sc drive2} to
-determine whther or not it wishes to acknowledge the transmission. Designers
+determine whether or not it wishes to acknowledge the transmission. Designers
 should take care to ensure the acknowledge signal logic can be generated in
 half a bit time (2 clock pluses).
 
@@ -160,7 +160,7 @@ half a bit time (2 clock pluses).
 \subsection{Bus Reset}
 \label{sec:protocol-reset}
 The \bus Reset is designed to be particularly robust. For details on Reset
-desgin decisions, see~\ref{sec:design-reset}~\nameref{sec:design-reset}. Here
+design decisions, see~\ref{sec:design-reset}~\nameref{sec:design-reset}. Here
 we describe Reset functionally.
 
 A Bus Reset can only be performed by the control node. Member nodes can
@@ -213,9 +213,9 @@ completion of reset. The final clock edge finishes the transaction, returning
 If a node records a sequence other than {\tt 11} or {\tt 011} during Reset, an
 error has occurred. If the node is simply forwarding, it should return to
 forwarding and await the real Reset so as to avoid needlessly interrupting an
-otherwise suceeeding transmission. If the node was transmitting or receiving
+otherwise succeeding transmission. If the node was transmitting or receiving
 it should enter into {\sc error} to abort the current transaction as it is no
-longer salvagable.
+longer salvageable.
 
-More details and subtleties of Reset are coverend
+More details and subtleties of Reset are covered
 in~\ref{sec:design-reset}~\nameref{sec:design-reset}.
