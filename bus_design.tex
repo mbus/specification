@@ -68,12 +68,24 @@ control node, the node whose {\tt DOUT} is connected to the control node's
 {\tt DIN}, has the lowest priority.
 
 At the end of $t_{long}$, the control node drives the {\tt CLK} line high. The
-arbitration phase ends on this rising edge. Whichever node won the arbitration
-transitions from a forwarding node to a transmitting node. If it is not the
-transmitting or receiving node, the control node enters forwarding mode for
-the duration of the transmission.
+normal arbitration phase ends on this rising edge. The next two clock edges
+allow for a high-priority arbitration. As \bus priority is topology-dependent,
+we provide a priority arbitration cycle to allow a low priority member node to
+preempt transmissions. This priority mechanism is still topology-dependent,
+that is, if Node~1 in Figure~\ref{fig:transmission} had also attempted to send
+a priority message, it would have won that arbitration as well. The priority
+arbitration cycle is two clock edges, the first edge is for nodes to drive
+their priority requests onto the bus and the second is to latch the results.
+During priority arbitration, the node that won the original arbitration should
+{\bf not} forward its {\tt DIN} to {\tt DOUT}. At the end of priority
+arbitration, if the original winner did not request a priority message, the
+node must sample its {\tt DIN} line. If the line is still low there was no
+priority message, if the {\tt DIN} line has gone high, however, the node
+must back off and allow the priority message requester to transmit.
 
-The rising edge that established the arbitration winner
+Whichever node ultimately won arbitration
+transitions from a forwarding node to a transmitting node.
+The rising edge that established the priority arbitration winner
 is defined as a {\sc latch2} edge. This means the next clock edge will be a
 {\sc drive1}, when the transmitting node should send the first bit of the
 destination address.

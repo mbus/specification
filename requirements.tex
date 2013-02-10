@@ -859,8 +859,8 @@ message length for a particular \bus instantiation. The control layer counts
 the number of bits received and can forcefully reset the bus if necessary.
 This maximum message length is defined as the number of {\sc drive1} edges
 seen by the controller\footnote{
-  Note that the arbitration edge is defined as a {\sc latch2}, and thus will
-  not count towards this limit.
+  Note that the arbitration edges are defined as {\sc latch1}, {\sc drive1},
+  and {\sc latch2}, and thus will not count towards this limit.
 }. Addressing bits and the Message~End~Sequence and Message~Acknowledgement
 all count towards this limit. The intention of this limit is not to be used
 frequently, and should be set well above the maximum expected message size.
