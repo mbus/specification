@@ -779,6 +779,14 @@ fail to align with the last two half-bits driven by the control node whilst
 trying to acknowledge.
 
 \paragraph{$3\phi$ Offset}
+The $3\phi$ errors largely mirror the $1\phi$ errors. $3\phi$ is as simple to
+enter as $1\phi$. Instead of slipping a clock edge, a spurious clock edge will
+advance the local state machine, placing it $3\phi$ out of phase.
+
+As with $1\phi$, in most cases the effect will be negligible, but in the most
+pathological events a node could falsely acknowledge a message, propogating a
+fragment, or become hung. In all cases, the next glitch-free transmission will
+reset and re-align the node.
 
 \paragraph{$4\phi$ Offset}
 This is deemed extraordiarily unlikely to occur without detection as a
@@ -786,9 +794,9 @@ This is deemed extraordiarily unlikely to occur without detection as a
 The $4\phi$ case is a
 completely missed bit, which will result in the TX and RX nodes believing they
 have completed a transaction successfully when in reality the RX node has
-received one less bit than the TX node sent. The likelyhood of this occurring
-it so small, and the bus is still recoverable via Reset, that it is not
-considered a large concern.
+received one less bit than the TX node sent. In the case of a $4\phi$ error,
+the bus is trivially reset as a ``complete'' tranmission will have taken place
+by the end.
 
 \subsubsection{Hung Nodes}
 \label{sec:reset-hung}
