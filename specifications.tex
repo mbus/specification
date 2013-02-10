@@ -19,8 +19,8 @@ software.
 \subsection{Buffer Overflow / Flow Control}
 There is no explicit flow control mechanism in \bus. If a receiving node does
 not have a large enough buffer to handle the incoming message, it should not
-acknowledge the message. As an optimization, a receiving node that overflows
-is also encouraged (but not required) to issue a Bus~Reset when the node
-overflows. This has two benefits: (i) it halts a transmission as soon as it
-becomes evident that it will not succeed, (ii) it indicates to the
-transmitting node the maximum buffer size of the receiving node.
+acknowledge the message. A receiving node that overflows should issue a
+Bus~Reset when the node overflows. This has two benefits: (i) it halts a
+transmission as soon as it becomes evident that it will not succeed, (ii) it
+hints to the transmitting node the approximate maximum buffer size of the
+receiving node.
