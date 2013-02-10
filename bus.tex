@@ -66,7 +66,7 @@
 
 \svnInfo $Id$ 
 
-\fancyfoot[L]{Revision 0.1 -- \today}
+\fancyfoot[L]{Revision 0.5 -- \today}
 \fancyfoot[R]{\footnotesize{\em (svn: \svnInfoFile::r\svnInfoRevision)}}
 \pagestyle{fancyplain}
 
@@ -99,6 +99,10 @@
 
 \begin{itemize}
 
+\item Revision 0.5 {\footnotesize(r2985)} -- Feb 10, 2012
+\subitem Overhaul reset design
+\subitem Upgrade RX overflow Reset to requirement from optional optimization
+
 \item Revision 0.4 {\footnotesize(r2850)} -- Jan 22, 2012
 \subitem Begin to address Reset issues
 
@@ -121,10 +125,10 @@
 \appendix
 \section{Other MES, ACK, RST Designs}
 \label{sec:appendix-reset}
-\begin{comment}
 \input{appendix_0110}
+\FloatBarrier
+\clearpage
 \input{appendix_0111}
-
-\end{comment}
+\FloatBarrier
 
 \end{document}

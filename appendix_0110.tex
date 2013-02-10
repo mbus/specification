@@ -3,12 +3,11 @@
 \subsection{MES 0110, ACK 0110, RST 010}
 
 \subsubsection{$1\phi$ Offset}
+~
 
-\begin{figure}
+\begin{figure}[h!]
 \begin{subfigure}{\textwidth}
     \centering
-    \huge {\bf MES 0110, ACK 0110, RST 01011 Broken:}
-
     \tiny
     \begin{tikztimingtable}[timing/slope=.3,timing/wscale=1.0]
       Din  & L0.8L4{4L}4{4H}2{4L}0.2LLLXXHHH4H    0.5H8{2L}8{2H}8{2L}7{2H}1.5HH \\
@@ -108,7 +107,8 @@
           \node [rotate=45,color=black] at (\base+64, 0) {Idle};
         \end{scope}
     \end{tikztimingtable}
-    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
+    \caption{
+Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
 transmitter latches the receiving layer's high bit during {\sc latch2} at time
 11, aborts its transmission, and begins forwarding. At time 16, the RX layer
 latches a {\tt 0} when it had attempted to drive a {\tt 1}, and aborts the
@@ -213,7 +213,8 @@ transmission.}
           \node [rotate=45,color=black] at (\base+64, 0) {Idle};
         \end{scope}
     \end{tikztimingtable}
-    \caption{Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
+    \caption{
+Transmitter is sending data bits 0, 1, 0 ({\tt 001100}). The
 transmitter latches {\tt 0} at time 11 and does not yet know there is an
 issue. At time 12, so long as the transmitter is sending another full bit
 it does not matter whether that bit is a {\tt 0} or {\tt 1} as the control
@@ -286,10 +287,12 @@ Reset at time 12.}
           \def\base{53}
         \end{scope}
     \end{tikztimingtable}
-    \caption{Transmitting is sending data bits 0, 1, then
+    \caption{
+Transmitting is sending data bits 0, 1, then
 Message~End~Sequence ({\tt 00110110})}
 \end{subfigure}
-\caption{Detail of a $1\phi$TX~0$\rightarrow$1 error. The top labels are the
+\caption{
+Detail of a $1\phi$TX~0$\rightarrow$1 error. The top labels are the
 current global bus state. The red labels above the RX waveform indicate the
 local $1\phi$ state machine. {\tt DOUT} lines are colored to indicate when a
 node is driving (yellow), otherwise it is forwarding its {\tt DIN} value.
@@ -300,4 +303,3 @@ cumbersome and not very intuitive.
 }
 \label{fig:reset-1phi-tx-0-1}
 \end{figure}
-
