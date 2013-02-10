@@ -20,9 +20,10 @@ resetting all nodes on a \bus. After receiving a Bus~Reset, \bus returns to
 three member nodes (1, 2, and 3) and a control node. The data loop is connected
 Ctl $\rightarrow 1 \rightarrow 2 \rightarrow 3 \rightarrow$ Ctl. This
 demonstrates arbitration between member nodes 1 and 3, which node 1 wins. Node
-1 then transmits data ({\tt 1,0,\ldots}) to node 2, which ACK's the data.
-Reset is elided for space, see Section~\ref{sec:design-reset} for details of
-the Reset sequence.
+3, however, has a high priority message and uses the priority cycle to
+overrule Node 1. Node 3 then transmits data ({\tt 0,1,\ldots}) to node 2,
+which ACK's the data.  Reset is elided for space, see
+Section~\ref{sec:design-reset} for details of the Reset sequence.
 }
 \label{fig:transmission}
 \end{figure*}
