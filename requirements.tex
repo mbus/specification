@@ -324,20 +324,20 @@ consider various failure modes.
     \end{tikztimingtable}
 
     \begin{tikztimingtable}[timing/slope=.3]
-      %       |  ACK/RST 0  1  | RST 0 11
-      Din  & L 0.2L8{2L} 8{2H}  12{2L} 7{2H} 1.8H H \\
-      Dout & L 0.4L8{2L} 8{2H}  12{2L} 7{2H} 1.6H H \\
+      %       |  ACK/RST 0  1  | RST 0 111
+      Din  & L 0.2L8{2L} 8{2H}  12{2L} 11{2H} 1.8H H \\
+      Dout & L 0.4L8{2L} 8{2H}  12{2L} 11{2H} 1.6H H \\
       \\
-      Din  & L 0.6L8{2L} 8{2H}  12{2L} 7{2H} 1.4H H \\
-      Dout & L 0.8L8{2L} 8{2H}  12{2L} 7{2H} 1.2H H \\
+      Din  & L 0.6L8{2L} 8{2H}  12{2L} 11{2H} 1.4H H \\
+      Dout & L 0.8L8{2L} 8{2H}  12{2L} 11{2H} 1.2H H \\
       \\
-      Din  & L 1.0L8{2L} 8{2H}  12{2L} 7{2H} 1.0H H \\
-      Dout & L 1.2L8{2L} 8{2H}  12{2L} 7{2H} 0.8H H \\
+      Din  & L 1.0L8{2L} 8{2H}  12{2L} 11{2H} 1.0H H \\
+      Dout & L 1.2L8{2L} 8{2H}  12{2L} 11{2H} 0.8H H \\
       \\
-      Din  & L 1.4L8{2L} 8{2H}  12{2L} 7{2H} 0.6H H \\
-      Dout & L 0.0L8{2L} 8{2H}  12{2L} 7{2H} 2.0H H \\
-      CLK  & L 4L  3{4C} 4{4C}  6{4C}  4{4C}      H \\
-      ~~~  & L     8{2C} 8{2C}  12{2C} 8{2C}      C \\
+      Din  & L 1.4L8{2L} 8{2H}  12{2L} 11{2H} 0.6H H \\
+      Dout & L 0.0L8{2L} 8{2H}  12{2L} 11{2H} 2.0H H \\
+      CLK  & L 4L  3{4C} 4{4C}  6{4C}  6{4C}      H \\
+      ~~~  & L     8{2C} 8{2C}  12{2C} 12{2C}      C \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick]
@@ -391,6 +391,7 @@ consider various failure modes.
           \node [rotate=45] at (\base+48, 0) {Phase-Align};
           \node [rotate=45] at (\base+56, 0) {Reset$_{1}$};
           \node [rotate=45] at (\base+64, 0) {Reset$_{2}$};
+          \node [rotate=45] at (\base+72, 0) {Reset$_{3}$};
         \end{scope}
         \begin{scope}
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
@@ -404,7 +405,8 @@ consider various failure modes.
           \node [rotate=45] at (\base+48, 0) {R-Align};
           \node [rotate=45] at (\base+56, 0) {R1-I$_{1}$};
           \node [rotate=45] at (\base+64, 0) {R1-I$_{2}$};
-          \node [color=black] at (\base+72, 0) {Idle};
+          \node [rotate=45] at (\base+72, 0) {R1-I$_{3}$};
+          \node [color=black] at (\base+80, 0) {Idle};
         \end{scope}
         \begin{scope}
           [font=\small,anchor=south,shift={(1,-18em)}]
