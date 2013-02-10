@@ -234,7 +234,11 @@ The control node pulls {\tt CLK} low in response. Shortly before the control
 node pulls {\tt CLK} high, a node at the top of the stack (still in the {\sc
 idle} state) elects to transmit. There is not enough time for his {\tt DOUT}
 to propagate to the bottom node, however, thus when {\tt CLK} goes high, both
-the bottom and top nodes believe they have won the arbitration.}.
+the bottom and top nodes believe they have won the arbitration. Designers must
+select a sufficiently long period $t_{long}$ to ensure all signals are stable.
+Twice the maximum possible propogation delay (delay for falling {\tt CLK} to
+furthest node + furthest node's {\tt DOUT} back to closest node) of the system
+should be sufficient.}.
 
 The {\sc arbitrate} state is left when the {\tt CLK} line is pulled high by
 the control node. If a member node's {\tt DIN} is high on the rising clock
