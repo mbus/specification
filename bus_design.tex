@@ -6,15 +6,13 @@ During normal operation, \bus remains in Bus~Idle~(\ref{sec:protocol-idle}).
 A transmission begins with Arbitration~(\ref{sec:protocol-arbitration}), then
 Message Transmission~(\ref{sec:protocol-transmission}), then
 Message~End~Sequence~(\ref{sec:protocol-end}),
-and Message~Acknowledgement~(\ref{sec:protocol-ack}). A unique feature of \bus
-is that both the Message~End~Sequence and the Message~Acknowledgement are
-interpreted as start Bus~Reset~(\ref{sec:protocol-reset}) signals by any
-forwarding nodes. All events except initiating arbitration occur on the rising
+and Message~Acknowledgement~(\ref{sec:protocol-ack}).
+All events except initiating arbitration occur on the rising
 edge of {\tt CLK}.
 
 The Bus~Reset signal may occur at any time and supersedes any current state,
 resetting all nodes on a \bus. After receiving a Bus~Reset, \bus returns to
-idle state.
+{\sc idle} state.
 
 \begin{figure*}[h!]
 \includegraphics[width=\linewidth]{img/timing}
