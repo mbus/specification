@@ -492,11 +492,11 @@ A node that has missed one clock edge will be one phase behind:
       %       |  D0   |  D1   |  D0   |  D1   |    MES 01     |
       %       |   ACK   10   |     RST 01   | 0 Reset P11 | Idle
       Din  & L 8{1.5L} 8{1.5H} 8{1.5L} 8{1.5H} 4{1.5L} 4{1.5H}
-               4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}4{1.5L}6{1.5H} 4{1.5H} H \\
+               4{1.5H}4{1.5L} 8{1.5L}8{1.5H} 8{1.5L}4{1.5L}6{1.5H} 8{1.5H} H \\
       CLK  & C 8{1.5C} 8{1.5C} 8{1.5C} 8{1.5C} 4{1.5C} 4{1.5C}
-               4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  2{3C}  3{3C}   2{3C} C \\
+               4{1.5C}4{1.5C} 3L3{3C}  4{3C}   4{3C}  2{3C}  3{3C}   4{3C} C \\
       Bus  & D{}{12D{Data 0}}{12D{Data 1}}{12D{Data 0}}{12D{Data 1}}{12D{MES 01}}
-               {12D{ACK 10}}{27D{Reset 010}} {30D{Reset 11}}D \\
+               {12D{ACK 10}}{27D{Reset 010}} {36D{Reset 11}}D \\
       \extracode
         \begin{pgfonlayer}{background}
           \begin{scope}[semitransparent,semithick,dashed,color=red]
@@ -531,10 +531,11 @@ A node that has missed one clock edge will be one phase behind:
           [font=\sc\tiny,anchor=north,shift={(0,3em)},color=blue]
           \def\base{76}
           \node [rotate=45] at (\base+30,0) {Reset (Phase)};
-          \node [rotate=45] at (\base+36,0) {Reset (Phase)};
+          \node [rotate=45] at (\base+36,0) {Reset$_{??}$};
           \node [rotate=45] at (\base+42,0) {Reset$_{1}$};
           \node [rotate=45] at (\base+48,0) {Reset$_{2}$};
-          \node [rotate=45,color=black] at (\base+54,0) {Idle (L)};
+          \node [rotate=45] at (\base+56,0) {Reset$_{3}$};
+          \node [rotate=45,color=black] at (\base+62,0) {Idle (L)};
         \end{scope}
     \end{tikztimingtable}
 }
@@ -559,7 +560,7 @@ rising, then it will unconditionally {\sc latch1} a~1 during the global {\sc
 drive2} as data is stable, and finally it must {\sc latch2} a~0 as data is
 falling. The next edge is the phase-alignment/entry into reset and {\tt DIN}
 is ignored, the ignored edge is the global {\sc drive2} of Data 0. In Reset, a
-node is seeking either a {\tt 11} or a {\tt 011} sequence. This will reliably
+node is seeking either a {\tt 011} or a {\tt 0111} sequence. This will reliably
 fail for a transmission of Data 0, however for a subsequent Data 1 or
 Message~End~Sequence it is possible to read this as a false entry into Idle.
 The subsequent bits of the transaction will appear as a new transmission, and
@@ -572,7 +573,7 @@ times 18, 20, and 22. The edge at time 23 is ignored for phase-alignment. Then
 the edges at times 25 and 27 would register as a {\tt 00} sequence, which is
 illegal. The latch history register will again match a reset at time 33. The
 edge at 35 is ignored as the phase-alignment edge and 37, 39, and 41 form a
-{\tt 011} reset sequence.
+{\tt 0111} reset sequence.
 \end{itemize}
 
 \begin{figure}[htb]
