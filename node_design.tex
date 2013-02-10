@@ -288,8 +288,8 @@ For some reason, a node has detected an error on the bus. In this state, the
 node's goal is to alert the control layer and to reset the bus. A node in {\sc
 error} will alternate its {\tt DOUT} line {\em every} clock edge. This will
 quickly be picked up by the control layer as it detects an unexpected edge
-transition and initiates the Reset sequence. A node leaves {\sc error} once it
-has completed once complete alternation, it then forwards until it is Reset.
+transition and initiates the Reset sequence. A node progresses from {\sc error}
+to {\sc idle} once it has completed one full alternation (3~half-bits).
 
 \paragraph{Exception.{\sc Not\_Connected}}
 A robust implementation should include detection of some kind for an attempt
