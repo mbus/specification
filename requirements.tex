@@ -402,8 +402,8 @@ consider various failure modes.
           \node [rotate=45] at (\base+32, 0) {R0-D};
           \node [rotate=45] at (\base+40, 0) {R0-L};
           \node [rotate=45] at (\base+48, 0) {R-Align};
-          \node [rotate=45] at (\base+56, 0) {R1-I$_{1}$-L};
-          \node [rotate=45] at (\base+64, 0) {R1-I$_{2}$-L};
+          \node [rotate=45] at (\base+56, 0) {R1-I$_{1}$};
+          \node [rotate=45] at (\base+64, 0) {R1-I$_{2}$};
           \node [color=black] at (\base+72, 0) {Idle};
         \end{scope}
         \begin{scope}
@@ -435,6 +435,7 @@ circumstance in a well-designed \bus implementation. Below we discuss the
 behavior of \bus given various faults and prove the bus resets successfully.
 
 \subsubsection{Phase Offsets}
+\label{sec:design-reset-phase}
 At some point, it is possible that a node may miss a clock edge (or high
 capactiance on the {\tt CLK} line delays a node detecting edges, or coupling
 induces an edge, etc, etc). At that point, the node is considered out of

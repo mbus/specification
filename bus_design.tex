@@ -88,8 +88,9 @@ The first rising edge after arbitration starts the first {\sc drive1} state.
 After {\tt CLK} goes high, the transmitting node should set its {\tt DOUT}
 line to {\tt 0} or {\tt 1} as appropriate. At the next rising edge, \bus
 switches to {\sc latch1} state and nodes latch the value on their {\tt DIN}
-lines. The next rising edge starts the {\sc drive2} state. The transmitting
-node should \textsc{\textbf{FORWARD}}, not drive. During a normal
+lines. The next rising edge starts the {\sc drive2} state. During {\sc drive2}
+the transmitting node should \textbf{forward} its {\tt DIN} value as opposed
+to driving the data bit again. During a normal
 transmission, the value forwarded will not change, but if any node desires to
 reset the bus, they may do so by setting the opposite bit during {\sc drive2},
 initiating a Bus~Reset event\footnote{
@@ -113,6 +114,8 @@ There is no protocol-level delineation between address and data bits. The
 transmitting node sends address$+$data as a continuous stream of bits until
 it terminates the message with a Message~End~Sequence.
 
+\hl{TODO:} The \bus addressing scheme has not yet been defined.
+
 \subsection{Message End Sequence}
 \label{sec:protocol-end}
 Picking up transmission from the last bit of data the transmitting node wishes
@@ -129,25 +132,26 @@ the Message~End~Sequence. At the rising edge of the {\tt CLK} that starts the
 {\sc latch1} state. The receiving and control nodes will recognize this
 {\tt 01} sequence as a Message~End~Sequence.
 
-At the next rising edge after transmitting the Stop sequence, the transmitting
-node should begin forwarding its {\tt DIN} to its {\tt DOUT}.
+At the next rising edge after transmitting the stop sequence, the transmitting
+node should begin forwarding its {\tt DIN} to its {\tt DOUT} and listening for
+an acknowledgement.
 
 \subsection{Message Acknowledgement}
 \label{sec:protocol-ack}
 After the Message~End~Sequence, the receiving layer is responsible for sending a
-message acknowledgement. The message was determined to be a Stop at the {\sc
-Latch2} that ended the previous cycle.
+Message Acknowledgement. The receiver cannot detect the Message~End~Sequence
+until the {\sc latch2} that ended the previous cycle.
 
-At the next rising clock edge, a {\sc drive1}, the {\em receiving} layer
-should drive a {\tt 1} (Note that this will not create an edge yet as the bus
-should already be hgih from the end of the Stop sequence). The value {\tt 1}
-is latched by \bus at the next clock edge during {\sc latch1}. At the next
-clock edge, {\sc drive2}, the receiving layer should drive {\tt 0} if it
-wishes to acknowledge the transmission. The acknowledgement is confirmed at
-the next clock edge, {\sc latch2}.
+At the next rising clock edge, a {\sc drive1}, the receiving layer continues
+to forward {\tt DIN} to {\tt DOUT}, which functionally drives a {\tt 1} as the
+data ring should already be high from the end of the Message~End~Sequence. The
+value {\tt 1} is latched by \bus at the next clock edge during {\sc latch1}.
+At the next clock edge, {\sc drive2}, the receiving layer should drive {\tt 0}
+if it wishes to acknowledge the transmission. The acknowledgement is confirmed
+at the next clock edge, {\sc latch2}.
 
 This is a relatively fast turnaround for the receiving node. It has from {\sc
-latch2} when it detects the Stop condition until the next {\sc drive2} to
+latch2} when it detects the Message~End~Sequence until the next {\sc drive2} to
 determine whther or not it wishes to acknowledge the transmission. Designers
 should take care to ensure the acknowledge signal logic can be generated in
 half a bit time (2 clock pluses).
@@ -155,11 +159,63 @@ half a bit time (2 clock pluses).
 
 \subsection{Bus Reset}
 \label{sec:protocol-reset}
-The \bus cycles through {\sc drive1}, {\sc latch1}, {\sc drive2}, and {\sc
-latch2} on every rising clock edge.  Coming from Bus~Idle, the first rising
-clock edge is defined as a {\sc latch2 state}.
-The transmitting node sets {\tt DOUT} to
-its new value on the next rising edge, the {\sc drive1} state.
+The \bus Reset is designed to be particularly robust. For details on Reset
+desgin decisions, see~\ref{sec:design-reset}~\nameref{sec:design-reset}. Here
+we describe Reset functionally.
 
-For details on Reset desgin, see \nameref{sec:design-reset}.
+A Bus Reset can only be performed by the control node. Member nodes can
+request that the control node reset the bus by generating illegal signals such
+as transitions during {\sc latch} cycles are a {\tt 10} sequence any time
+except Acknowledgement.
 
+During reset, the control node halves the speed of the \bus~{\tt CLK} line.
+The controller's internal clock is still running at full speed. The control
+layer uses these extra edges to reliably drive values onto the data lines in
+the face of unreliable nodes, see Figure~\ref{fig:reset-normal} for details of
+the timing of the extra edges.
+
+The control node begins reset by driving {\tt 0}. It alternates between
+driving {\tt 0} and {\tt 1} until its {\tt DIN} history buffer contains the
+sequence {\tt 010}. For any member node, latching the sequence {\tt 010} {\em
+unconditionally} transitions the node to {\sc reset}. The robustness of this
+detection is paramount. The recommended practice is a small 3-bit shift
+register that records every latched bit. If the pattern {\tt 010} ever appears
+in this register, a signal should be asserted that directly moves the node
+into {\sc reset}, conceptually:
+
+\begin{quote}
+\lstset{
+  language=Verilog,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{OliveGreen}\textbf,
+  literate={`}{{\`{}}}1 {'}{{\'{}}}1
+}
+\begin{lstlisting}
+wire reset_history = (reset_history_reg == 3'b010);
+
+always @(posedge clock) begin
+  state <= (reset_history) ? `STATE_RESET : next_state;
+\end{lstlisting}
+\end{quote}
+
+As the only clock driving state machines in \bus is the \bus~{\tt CLK} line,
+an edge is required to actually push the state machine into {\sc reset} after
+detecting the need in {\sc latch1/2}. We call this edge Phase-Align for reasons
+exaplined in~\ref{sec:design-reset-phase}~\nameref{sec:design-reset-phase} and
+continue to hold data low during this cycle. After the Phase-Align edge,
+member nodes sample on {\em every} edge.
+
+Finally, the control node drives the data line high and drives two cycles. The
+{\tt 11} (or possibly {\tt 011} if a node is $1\phi$ or $3\phi$) marks the
+completion of reset. The final clock edge finishes the transaction, returning
+\bus to Idle.
+
+If a node records a sequence other than {\tt 11} or {\tt 011} during Reset, an
+error has occurred. If the node is simply forwarding, it should return to
+forwarding and await the real Reset so as to avoid needlessly interrupting an
+otherwise suceeeding transmission. If the node was transmitting or receiving
+it should enter into {\sc error} to abort the current transaction as it is no
+longer salvagable.
+
+More details and subtleties of Reset are coverend
+in~\ref{sec:design-reset}~\nameref{sec:design-reset}.
