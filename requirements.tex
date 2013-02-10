@@ -832,3 +832,34 @@ initial pulling down of {\tt DOUT} may possibly trigger the control node's
 out-of-phase detection, if that did not occur then the reset sequence induced
 by the node from {\sc error} state will definitively result in the controller
 resetting the bus.
+
+\paragraph{Endless TX}
+If a TX node fails to send the Message~End~Sequence, or glitches the sending,
+or the control layer glitches while receiving it, etc the result is a TX node
+waiting for the control layer to reset the bus and a control layer waiting for
+the TX node to indicate end of message. The result will be an endless stream
+of {\tt 0}'s or {\tt 1}'s on the bus.
+
+One possible solution is for the TX layer to monitor beyond the
+acknowledgement bits. Specifically, when the TX layer receives a NAK (or ACK),
+no more than 3 more half-bits should be received before entering Reset. Thus
+after sending a Message~End~Sequnce, a TX node should start a 5~half-bit
+counter. Upon expiration of the counter, if the TX node does not enter {\sc
+reset}, it should enter {\sc error} instead.
+
+The other solution relies on the controller to detect the error. This is
+more challenging as the controller has no way to distinguish between a broken
+transmitter and a message with a lengthy run of {\tt 0}'s or {\tt 1}'s. While
+\bus does allow for arbitrary message lengths, desginers may define a maximum
+message length for a particular \bus instantiation. The control layer counts
+the number of bits received and can forcefully reset the bus if necessary.
+This maximum message length is defined as the number of {\sc drive1} edges
+seen by the controller\footnote{
+  Note that the arbitration edge is defined as a {\sc latch2}, and thus will
+  not count towards this limit.
+}. Addressing bits and the Message~End~Sequence and Message~Acknowledgement
+all count towards this limit. The intention of this limit is not to be used
+frequently, and should be set well above the maximum expected message size.
+For maximum flexibility, designers should consider making a programmable
+limit. The absolute minimum limit for a conforming \bus is 1~kB ($[1024 -
+addr\_len - 2]$ data bits).
