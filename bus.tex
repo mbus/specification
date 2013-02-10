@@ -100,7 +100,7 @@
 
 \begin{itemize}
 
-\item Revision 0.5 {\footnotesize(r2987)} -- Feb 10, 2012
+\item Revision 0.5 {\footnotesize(r2988)} -- Feb 10, 2012
 \subitem Overhaul reset design
 \subitem Upgrade RX overflow Reset to requirement from optional optimization
 
@@ -125,6 +125,11 @@
 \clearpage
 \appendix
 \section{Other MES, ACK, RST Designs}
+Some attempts at using longer Message~End~Sequence (MES),
+Message~Acknowledgement (ACK), and Bus~Reset (RST) signals to provide stronger
+guarantees in the face of transient faults. While some resulted in small
+improvements, none were sufficiently powerful to justify the overhead applied
+to every transmission.
 \label{sec:appendix-reset}
 \input{appendix_0110}
 \FloatBarrier
