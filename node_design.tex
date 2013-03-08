@@ -4,39 +4,27 @@
 \label{sec:node}
 The \bus defines two {\em physical} types of nodes: member nodes and a control
 node. An instantiation of \bus must have one and only one control node and
-must have at least one member node (N $\geq$ 1). The maximum number of member
+must have at least one member node (N$\geq$1). The maximum number of member
 nodes is a function of clock speed\footnote{
   The maximum chip-to-chip latency is defined as 10~ns. Assuming a TX node has
 similar delay to generate the next bit and clock delay to nodes is 0, then the
-minimum cycle time is N nodes * 10~ns. \bus designers are obligated to
+minimum cycle time is N nodes * 20~ns. \bus designers are obligated to
 consider all possibly delays and thus define a maximum feasible clock speed,
 however, for most designs the maximum clock speed theoretically possible will
 largely exceed the plausible speed for the given power budget.}.
 
 During a transmission, \bus defines three {\em logical} types of nodes:
 a transmitting node, a receiving node, and forwarding nodes. During a
-transmission, there must be exactly one transmit and one receive node. Any
-number (N $\geq$ 0) of forwarding nodes are permitted.
+transmission, there must be exactly one transmitting and one receiving node.
+Any number (N$\geq$0) of forwarding nodes are permitted.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Physical Design}
 \label{sec:physical}
 
-\begin{figure*}
-\begin{center}
-\includegraphics[width=0.5\linewidth]{img/stacked_layers}
-\end{center}
-\caption{High-level picture of a \bus design. Member nodes and a control node
-are connected in a loop, with a shared {\tt CLK} line running between all
-nodes.}
-\label{fig:bus}
-\end{figure*}
-
 From a package perspective, the physical design of a member and control node
-is the same, each must expose a {\tt DIN}, {\tt DOUT}, and {\tt CLK} pin. When
-considering a chip to be wirebonded, however, designers must consider that
-member nodes will require {\em two} {\tt CLK} pads, as member nodes are
-obligated to be able to forward the {\tt CLK} line.
+is the same, each must expose a {\tt DIN}, {\tt DOUT}, {\tt CLKIN} and {\tt
+CLKOUT} pad.
 
 In addition, one (or more?) chip(s) on the bus can add two additional pads to
 act as a ``splitter'' node, to allow the interjection of new devices on the
@@ -44,68 +32,54 @@ bus. This part of \bus is not yet well-defined.
 
 \subsubsection{Member Nodes}
 \label{sec:physical-member}
-A member node requires 3 signals:
+A member node requires 4 signals:
 
 \begin{itemize}
   \item {\tt DIN} -- Data In
   \item {\tt DOUT} -- Data Out
-  \item {\tt CLK} -- Clock {\em (2 Pads)}
+  \item {\tt CLKIN} -- Clock In
+  \item {\tt CLKOUT} -- Clock Out
 \end{itemize}
 
 Most of the time, a member node is in the {\sc forwarding} state. While
 forwarding, a member node must amplify and forward signals from the {\tt DIN}
-pin to the {\tt DOUT} pin. Designs should attempt to minimize effects on
-latency between {\tt DIN} and {\tt DOUT}, in a connected \bus, the maximum
-{\tt DOUT} to {\tt DOUT} latency\footnote{
+pin to the {\tt DOUT} pin and from the {\tt CLKIN} pin to the {\tt CLKOUT} pin.
+Designs should attempt to minimize latency between these pins. The maximum
+propagation latency\footnote{
   The amount of time taken to propagate a change in the output of the {\em
   previous} link in the data loop to the output of the next link in the data
   loop. This time includes all of the internal forwarding logic from {\tt DIN}
-  to {\tt DOUT}, as well as any pin/wire capacitance that the previous {\tt
-  DOUT} must overcome to drive the next link's {\tt DIN}.}
-permitted is 10~ns. \bus defines a maximum load capacitance for the {\tt DIN}
-pad to be XXX~pF for inter-operability of generalized components\footnote{
+  to {\tt DOUT} or {\tt CLKIN} to {\tt CLKOUT}, as well as any pin/wire
+  capacitance that must be overcome to drive the next input gate.
+  }
+permitted is 10~ns. \bus defines a maximum load capacitance of \hl{XXX}~pF for
+the {\tt DIN} pin and of \hl{XXX}~pF for the {\tt CLKIN} pin to enable
+inter-operability of generalized components\footnote{
   However, the only strict requirement is the 10~ns propagation delay, thus
-  careful designers may violate this requirement if necessary.}.
-
-The {\tt CLK} signal is a shared bus. Any physical design must support two
-{\tt CLK} wires, one to each neighboring node. On a common chip, this is
-simply a shared bus. Chips designed for wirebonding, however, should be sure
-to expose two {\tt CLK} pads and electrically connect them on die. The maximum
-permitted propagation delay of the {\tt CLK} signal to any layer is
-XXX\_TODO\_XXX~ns, thus designers must consider the drive strength of their
-control layer as well as the capacitive load of any bus connections and pads
-to ensure this requirement is met.
+  careful designers may violate this requirement if necessary.
+  }.
 
 \subsubsection{Control Node}
 \label{sec:physical-control}
-A control node requires 3 signals:
+A control node requires 4 signals:
 
 \begin{itemize}
   \item {\tt DIN} -- Data In
   \item {\tt DOUT} -- Data Out
-  \item {\tt CLK} -- Clock
+  \item {\tt CLKIN} -- Clock In
+  \item {\tt CLKOUT} -- Clock Out
 \end{itemize}
 
-The control node is responsible for the generation of the {\tt CLK} signal.
-Thus, unlike member nodes in a wire-bonded system, the control node has a
-minimum of one {\tt CLK} pad instead of two.
+While forwarding, the control node is subject to the same propagation latency
+constraints (10~ns) as member nodes.
+
 
 \subsubsection{Bus Connections}
 \label{sec:physical-bus}
 \begin{itemize}
-  \item {\tt CLK}
-  \begin{itemize}
-    \item The clock pins should be wired together to form an electrically
-      connected bus.
-    \item The only {\tt CLK} driver is on the control node. Designs should
-      consider the drive strength of the control node, overall bus
-      capacitance, etc.
-    \item TODO: Define minimum slew rate, per-chip max {\tt CLK} capacitance,
-      etc
-  \end{itemize}
   \item {\tt DIN}, {\tt DOUT}
   \begin{itemize}
-    \item The data lines should be connected in a round-robin fashion, the
+    \item The data pins shall be connected in a round-robin fashion, the
       {\tt DOUT} of one chip connected to the {\tt DIN} of the next.
     \item The connection of data lines must form a loop when connected
       correctly (e.g.~Figure~\ref{fig:bus}).
@@ -113,13 +87,37 @@ minimum of one {\tt CLK} pad instead of two.
       loop, but the ordering will have an impact on bus arbitration. See
       Section~\ref{sec:protocol-arbitration} for more details.
   \end{itemize}
+  \item {\tt CLK}
+  \begin{itemize}
+    \item The clock pins shall be connected in a round-robin fashion. The
+      {\tt CLKOUT} of one chip connected to the {\tt CLKIN} of the next.
+    \item The connection of clock lines must form a loop when connected
+      correctly (e.g.~Figure~\ref{fig:bus}).
+    \item The connection of clock lines must match that of data lines. That
+      is, if a node N$_{a}$ connects its {\tt DOUT} to the {\tt DIN} of node
+      N$_{b}$, the {\tt CLKOUT} of N$_{a}$ must be connected to the {\tt DIN}
+      of N$_{b}$.
+  \end{itemize}
   A \bus must have a minimum of two nodes (one control node and one
   member node). Single chips that are not connected to a bus should tie
-  {\tt CLK} and {\tt DIN} high and leave {\tt DOUT} floating.
+  {\tt CLKIN} and {\tt DIN} high and leave {\tt CLKOUT} and {\tt DOUT}
+  floating.
 \end{itemize}
 
 
 \subsubsection{Injection}
+Injection is the ability for an arbitrary additional node to temporarily (or
+permanently) interpose itself into a \bus instantiation. Two examples are a
+system programmer or a debugger.
+
+The exact method of injection is not defined by \bus. It may be as simple as
+exposing a pair of out/in pins that are normally jumpered, some packages may
+not have such luxury. Injection is mentioned here as it is an exceptionally
+useful tool for system bring-up and development. The means for performing
+injection should be considered as a \bus instantiation is designed.
+
+%% Old Injection Method
+\begin{comment}
 For a packaged system using \bus, simply providing an external {\tt DIN} and
 {\tt DOUT} that is normally jumpered, plus access to the {\tt CLK} line, is
 sufficient to allow transient bus elements (such as a programmer, debugger).
@@ -142,6 +140,8 @@ signal. Otherwise the {\tt MODE} pad is ignored and the chip {\tt DIN} pad
 routes to both the chip-internal {\tt DIN} signal and the {\tt DSNOOP} pad.
 These functions are determined during Power-On-Reset and remain fixed until a
 future chip-Reset.
+\end{comment}
+%% END Old Injection Method
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -152,10 +152,19 @@ There are three {\em logical} types of \bus nodes: transmitting, receiving,
 and forwarding. \bus can be considered multi-master, any node is capable of
 transmitting to any other node. The control node adopts these same three
 personalities, but its behavior differs slightly during
-arbitration~(\ref{sec:protocol-arbitration}) and
-Bus~Reset~(\ref{sec:protocol-reset}).
+arbitration~(\ref{sec:protocol-arbitration}).
 
-\begin{figure}[h]
+\begin{figure}
+  \begin{minipage}[b]{.48\linewidth}
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/stacked_layers}
+    \caption{High-level picture of \bus physical design. Member nodes and a
+    control node are connected in a loop, with data and clock lines forming
+    independent rings.
+    }
+    \label{fig:bus}
+  \end{minipage}
+  \hspace{1 em}
   \begin{minipage}[b]{.48\linewidth}
     \centering
     \includegraphics[width=\textwidth]{img/logical}
@@ -166,24 +175,15 @@ Bus~Reset~(\ref{sec:protocol-reset}).
     }
     \label{fig:logical}
   \end{minipage}
-  \hspace{1 em}
-  \begin{minipage}[b]{.48\linewidth}
-    \centering
-    %\includegraphics[width=\textwidth]{img/states}
-    %\caption{A FSM that needs to be drawn in something other than dot.}
-    \label{fig:states}
-  \end{minipage}
 \end{figure}
 
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{img/fsm_diagram}
-  \caption{A FSM describing the logical behavior of \bus nodes. All
-transitions except \textsc{Idle}$\rightarrow$\textsc{Arbitrate} (and
-\textsc{Arbitrate}$\rightarrow$\textsc{Not\_Connected}) occur on rising {\tt
-CLK} edge. Not shown are implicit arrows from every state returning to
-\textsc{reset} any time a Bus~Reset event occurs nor arrows to \textsc{error}
-whenever a bus error is detected.
-}
+  \caption{A FSM describing the high-level logical behavior of \bus nodes.
+    Black arrows indicate transitions that occur on bus clock edges. Not shown
+    are implicit arrows from any state to Forwarding.{\sc control}. From any
+    {\sc control} state, nodes progress to {\sc idle}.
+    }
 \end{figure}
 
 \subsubsection{Forwarding}
@@ -191,17 +191,10 @@ Forwarding is the most common state for all \bus nodes.  Observe in
 Figure~\ref{fig:logical} the very simple, short logic path from {\tt DIN} to
 {\tt DOUT}. Nodes are obligated to forward data in less than 10~ns.
 
-\paragraph{Forwarding.\textsc{reset}}
-Any time a Bus~Reset event occurs, nodes return to {\sc reset}. When in {\sc
-reset}, nodes latch every clock edge. A node is looking to match either {\tt
-11} or {\tt 011}, after either pattern a node progresses to {\sc idle}.
-
-If a node in {\sc reset} receives three pulses, but does not match one of the
-two signatures, it should return to {\sc ignore} or {\sc reset} as
-appropriate.
-
 \paragraph{Forwarding.\textsc{Idle}}
-This is the rest/idle state for \bus nodes.
+This is the rest/idle state for \bus nodes. In this state member nodes may be
+completely power-gated and asleep. The only obligation is that {\tt DIN} is
+forwarded to {\tt DOUT} and {\tt CLKIN} is forwarded to {\tt CLKOUT}.
 
 \medskip
 \noindent
@@ -216,8 +209,9 @@ mis-matched bit a forwarding node transitions to the {\sc ignore} state for
 the rest of the transaction.
 
 \paragraph{Forwarding.\textsc{Ignore}}
-In {\sc ignore} nodes simply forward data. Nodes remain in this state until a
-Bus~Reset event occurs.
+In {\sc ignore} nodes simply forward data. Nodes remain in this state until
+Interrupted. Power-concious designs may safely power gate everything
+except Interrupt detector circuitry while in {\sc ignore}.
 
 \subsubsection{Transmitting}
 
@@ -225,8 +219,8 @@ Bus~Reset event occurs.
 \label{sec:state-arbitrate}
 A node initiates a transmission by pulling its {\tt DOUT} line low. A node may
 only attempt to initiate a transmission while the bus is idle. Care must be
-taken in detecting the bus idle state when requesting to transmit, in
-particular a node requesting to transmit must ensure that the {\tt CLK} line
+taken in detecting the bus idle state when requesting to transmit. In
+particular, a node requesting to transmit must ensure that the {\tt CLK} line
 is still high, it is not sufficient to rely on the local state machine still
 being in the {\sc idle} state\footnote{To envision the case defended against
 here, picture a tall stack of nodes, where the bottom node requests the bus.
@@ -245,7 +239,12 @@ the control node. If a member node's {\tt DIN} is high on the rising clock
 edge, it has won arbitration. A node that loses arbitration should begin
 listening to see if it is the destination node. If the {\tt CLK} line never
 goes high---where never is defined as four times the minimum clock speed of
-\bus\footnote{TBD}---the node should consider itself as disconnected.
+\bus\footnote{\hl{TODO: TBD}}---the node should consider itself as
+disconnected.
+
+Details of priority arbitration are omitted here for simplicity.
+See~\ref{sec:protocol-arbitration}~\nameref{sec:protocol-arbitration} for
+details.
 
 \medskip
 \noindent
@@ -260,45 +259,41 @@ and its {\tt DIN} line never goes low, it should be considered
 
 \paragraph{Transmitting.{\sc send}}
 During {\sc send}, a transmitting node pushes bits onto the bus as described
-in~\ref{sec:protocol-transmission}. Note that even a transmitting node still
-must listen on {\tt DIN} for a Bus~Reset sequence, as the control node is
-permitted to cancel a running transmission.
+in~\ref{sec:protocol-transmission}~\nameref{sec:protocol-transmission}.
 
-A transmitting node completes its transmission by sending the
-Message~End~Sequence~(\ref{sec:protocol-end}).
+A transmitting node completes its transmission by Interrupting
+(\ref{sec:protocol-interrupt}~\nameref{sec:protocol-interrupt}) the bus and
+indicating the transmission is complete.
 
-\paragraph{Transmitting.{\sc Is\_acked?}}
-After completing its transmission, a node listens for an immediate
-acknowledgement. Regardless of whether the transmission is acknowledged, this
-ends the node's ownership of the bus. If a message is not acknowledged, the
-transmitter must again negotiate access to the bus.
+\paragraph{Transmitting.{\sc control}}
+As a transmitter, a node is responsible for the first control bit. This bit
+should be set by a transmitter to indicate that the complete message has been
+sent. The transmitter must listen to the subsequent control bits to establish
+if the message was acknowledged and if the targeted layer is sending a
+response.
 
 \subsubsection{Receiving}
 
 \paragraph{Receiving.{\sc Receive}}
 A receiving node is also obligated to forward data along the bus. In the
 sketch shown in Figure~\ref{fig:logical}, during the receiving process, a
-receiving node remains in pass-thru mode until the Message~End~Sequence.
+receiving node remains in pass-thru mode until Interrupted.
 
-\paragraph{Receiving.{\sc Send\_Acknowledge}}
+\paragraph{Receiving.{\sc control}}
 A receiver must acknowledge the successful receipt of a transmission. If a
-receiver wishes to NAK a transmission, it simply does nothing and allows the
-Message~End~Sequence Bus~Reset to occur.
+receiver wishes to NAK a transmission, it simply does nothing during the
+ACK/NAK control bit.
+
+A receiver may also possibly enter control by electing to Interrupt the bus
+itself. A receiver will Interrupt a transmission to indicate that its RX
+buffer has been overrun and the current transmission must be aborted.
 
 \subsubsection{Exception States}
-
-\paragraph{Exception.{\sc Error}}
-For some reason, a node has detected an error on the bus. In this state, the
-node's goal is to alert the control layer and to reset the bus. A node in {\sc
-error} will alternate its {\tt DOUT} line {\em every} clock edge. This will
-quickly be picked up by the control layer as it detects an unexpected edge
-transition and initiates the Reset sequence. A node progresses from {\sc error}
-to {\sc idle} once it has completed one full alternation (3~half-bits).
 
 \paragraph{Exception.{\sc Not\_Connected}}
 A robust implementation should include detection of some kind for an attempt
 to utilize the bus when the node is not actually connected to a bus (so that
 it may report failure). After a node pulls its {\tt DOUT} low there is a
-maximum possible $t_{long}$ of XXX\_TODO\_XXX before a control node must pull
+maximum possible $t_{long}$ of \hl{TODO} before a control node must pull
 {\tt CLK} low in response. If {\tt CLK} is not pulled low, the node should
 consider itself disconnected and report failure to send as appropriate.

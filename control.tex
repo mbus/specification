@@ -1,0 +1,63 @@
+\svnInfo $Id$
+
+\section{Control and Configuration Messages}
+\label{sec:control}
+
+\bus reserves three addresses: a {\em broadcast} address, the {\em control}
+address, and an {\em extension} address. A single physical chip acting as
+control node will have two addresses. The control chip should respond to
+messages addressed to the bus controller at the control address and messages
+addressed to the chip itself at the chip's unique address. This separation
+permits a standard set of commands for \bus control nodes without restricting
+the semantics of the data sent to a control node implementation.
+
+\subsection{Broadcast (Address \texttt{0x00}, \texttt{0xf0000000})}
+\label{sec:control-broadcast}
+\bus defines address 0 as the \textit{broadcast address}. Broadcast messages
+are permitted to be of arbitrary length. Messages longer than 32~bits may be
+silently dropped by nodes with small buffers. A node \textbf{must not}
+interrupt a broadcast message to indicate buffer overflow. Other interrupts
+are permitted for messages greater than 4~bytes in length.
+
+\bus reserves half of the broadcast ``data space'' as well. The MSB of the
+broadcast data (the first data bit transmitted) shall identify \bus broadcast
+operations. If the MSB is {\tt 0} it indicates an official \bus broadcast
+message as specified in this document and subsequent revisions. Broadcast
+messages with an MSB of {\tt 1} are implementation defined.
+
+A broadcast message that is not understood \textbf{must} be completely
+ignored. During acknowledgement, an ignorant node shall forward.
+
+\subsubsection{Query Devices (Data \texttt{0x00000000})}
+The query devices command is a request for all devices to broadcast their full
+address on the bus. Every \bus node should prepare a Query~Response when this
+message is received.
+
+\medskip
+\noindent
+\textit{All nodes are required to support this message.}
+
+\subsubsection{Query Response (Data \texttt{0x7xxxxxxx})}
+This message is sent in response to a Query~Devices request. As every node
+will be transmitting their address, nodes should anticipate losing arbitration
+several times before they are able to send their response.
+
+The top four bits of the data field identify the message as a Query~Response.
+The remaining 28~bits contain the full address of the responding node.
+
+\subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
+\bus defines a set of common command messages to configure the bus. The chip
+acting as the control node listens on the address {\tt 0x01} for \bus control
+messages.
+
+Control messages that seem like good ideas (get? set?):
+\begin{itemize}
+  \item Maximum message length
+  \item Clock speed
+  \item $t_{long}$ value?
+  \item \ldots?
+\end{itemize}
+
+\subsection{Extension (Address \texttt{0xffffffff})}
+This address is reserved for future extensions to \bus.
+

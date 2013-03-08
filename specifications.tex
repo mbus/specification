@@ -1,14 +1,28 @@
 \svnInfo $Id$
 
 \section{Specifications}
+\label{sec:spec}
 
-\subsection{Endianness}
+\subsection{Granularity}
+\bus sends data in units of 8~bit bytes. Transmissions must be \%~8 bits in
+length, that is they must end on byte boundaries (for rationale,
+see~\nameref{sec:design-granularity}).
 
-\subsubsection{Byte-Level}
+\subsection{Endianness: Byte-Level}
 \bus sends from Byte 0{\ldots}Byte N.
 
-\subsubsection{Bit-Level}
-\bus sends bytes most significant bit first (bit 31{\ldots}0).
+\subsection{Endianness: Bit-Level}
+\bus sends bytes most significant bit first (bit 7{\ldots}0).
+
+\subsection{Minimum Message Length}
+The minimum legal message on \bus is {\em zero}~bits long. A zero length
+message can be used to query whether a device is present on the bus. A node
+receiving a zero length message addressed to it {\bf must} ACK the message.
+Whether higher layers are indicated of a query message is implementation
+dependent.
+
+See~\ref{sec:spec-interrupt}~\nameref{sec:spec-interrupt} for details on the
+minimum uninterruptable message length.
 
 \subsection{Retransmission}
 There is no hardware re-transmission primitive. The hardware provides a
@@ -16,11 +30,86 @@ transaction-level message acknowledgement, indicating whether the complete
 message was received or not. Retransmission of failed messages is left to
 software.
 
+\subsection{Minimum Buffer Size}
+All \bus nodes are required to support both short and full
+addresses~(\ref{sec:spec-address}~\nameref{sec:spec-address}). All \bus nodes
+are further required to accept a minimum of 32~bits (4~bytes) of data in an
+individual transmission.
+
 \subsection{Buffer Overflow / Flow Control}
-There is no explicit flow control mechanism in \bus. If a receiving node does
-not have a large enough buffer to handle the incoming message, it should not
-acknowledge the message. A receiving node that overflows should issue a
-Bus~Reset when the node overflows. This has two benefits: (i) it halts a
-transmission as soon as it becomes evident that it will not succeed, (ii) it
-hints to the transmitting node the approximate maximum buffer size of the
-receiving node.
+On the average, the expectation in a \bus system is that a transmitting node
+knows the capacity of the receiving node. If a receiving node does not have
+enough space for the current transmission, it {\bf must} Interrupt the current
+transmission and indicate a receiver error (Control~Bits:~{\tt 01}).
+
+The receiver must Interrupt as soon as it is {\em certain} that it has
+exceeded its receive capacity. This detection must be performed carefully and
+must take into account that two bits beyond the complete transmission may be
+temporarily received (as is the case for Node~1 in
+Figure~\ref{fig:interrupt}). The receiving state machine should not transition
+into {\sc decided\_to\_interrupt} until the \nth{3}~bit of a byte that it does
+not have space for. The receiver may wait until the \nth{8}~bit to transition
+its state machine to request interrupt, but no later than that such that it is
+assured that it will interrupt the transmission before the transmitter
+attempts to interrupt to signal end of message even if the receiver is of
+lower priority.
+% XXX This should be a testbench.. all the specs -> tb's?
+
+\subsection{Clock Speed}
+\hl{TODO: What is appropriate specification for clock speeds?} I2C has defined
+`speed-classes'; SPI is a free-for-all; UART \& co has bauds...
+
+\subsection{Addressing}
+\label{sec:spec-address}
+\bus defines two types of addresses: \textit{short} 8-bit addresses and
+\textit{full} 32~bit addresses. No short address may begin with {\tt 1111} and
+all full addresses must begin with {\tt 1111}.  The bottom eight bits of a
+node's full address must alias the node's short address, that is a node with
+the full address {\tt 0xf0123456} by definition has a short address of {\tt
+0x56}.
+
+Addresses {\tt 0x00}, {\tt 0x01}, and {\tt 0xffffffff} are reserved. Their
+function is detailed in~\ref{sec:control}~\nameref{sec:control}. The \bus
+addressing scheme permits $2^8 - 2^4 - 2 = 238$ unique short addresses and
+$2^{28} - 2^4 - 2 \approx 268$~million unique full addresses for attached
+devices.
+
+\bus further requires that all currently assigned full addresses set
+bits~24-27 to~0. These bits are reserved for future protocol extensions (this
+reduces the address space to $2^{24} - 2^4 -2 \approx 16.7$~million).
+
+\subsection{Interrupt Rules}
+\label{sec:spec-interrupt}
+\bus permits any node to interrupt any message for any reason. To allow for
+minimal forward progress, however, \bus requires that nodes permit a minimum
+of 32~bits (4~bytes) be transmitted without interruption. An exception is made
+for the transmitting node, which is permitted to send messages shorter than
+32~bits.
+
+Nodes wishing to interrupt must wait until either 41 or 65 clocks after
+Begin~Transmission to interrupt the bus (depending on whether the current
+message was addressed to a short address or full address). The interrupting
+node must wait until it has latched the \nth{33} bit of data before attempting
+to interrupt\footnote{
+  If the node instead attempted to interrupt on the \nth{32} bit and was a
+  topologically higher-priority node, it would override the transmitter during
+  Interrupt priority arbitration, not permitting the transmitter to signal
+  End~of~Message.}.
+
+\subsection{Failed Arbitration (Spurious Wakeup)}
+\label{sec:spec-spurious}
+During normal arbitration, when the arbitration is resolved the control node's
+{\tt DIN} line should be low no matter who is participating. If the control
+node finds its {\tt DIN} line is high on the arbitration edge, it would
+indicate that no one is participating. The control node must treat this as an
+error and reset the bus.
+
+The control node {\bf must not} immediately interrupt the bus, however. As
+laid out in~\ref{sec:design-power-gated}~\nameref{sec:design-power-gated}, the
+arbitration edges may be used as input to node sleep controllers. To avoid
+potential issues related to half-waking power gated nodes, the control node
+must wait until Begin~Transmission (that is, have generated four clock pulses)
+before interrupting the bus.
+
+The control bits {\bf must} be driven by the control layer. They {\bf must} be
+{\tt 00}, general error.

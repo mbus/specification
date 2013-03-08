@@ -4,35 +4,23 @@
 \label{sec:protocol}
 During normal operation, \bus remains in Bus~Idle~(\ref{sec:protocol-idle}).
 A transmission begins with Arbitration~(\ref{sec:protocol-arbitration}), then
-Message Transmission~(\ref{sec:protocol-transmission}), then
-Message~End~Sequence~(\ref{sec:protocol-end}),
-and Message~Acknowledgement~(\ref{sec:protocol-ack}).
-All events except initiating arbitration occur on the rising
-edge of {\tt CLK}.
+Message Transmission~(\ref{sec:protocol-transmission}). The transmitter then
+Interrupts~(\ref{sec:protocol-interrupt}) the bus and indicates the complete
+message was sent. During the Control~(\ref{sec:protocol-control}) period
+acknowledgement is negotiated. After Control, \bus returns to Idle or may
+optionally send a response message.
 
-The Bus~Reset signal may occur at any time and supersedes any current state,
-resetting all nodes on a \bus. After receiving a Bus~Reset, \bus returns to
-{\sc idle} state.
+An Interrupt may occur at any time and supersedes any current state, forcing
+all nodes into Interrupt.
 
-\begin{figure*}[h!]
-\includegraphics[width=\linewidth]{img/timing}
-\caption{A complete transmission. In this system, there are
-three member nodes (1, 2, and 3) and a control node. The data loop is connected
-Ctl $\rightarrow 1 \rightarrow 2 \rightarrow 3 \rightarrow$ Ctl. This
-demonstrates arbitration between member nodes 1 and 3, which node 1 wins. Node
-3, however, has a high priority message and uses the priority cycle to
-overrule Node 1. Node 3 then transmits data ({\tt 0,1,\ldots}) to node 2,
-which ACK's the data.  Reset is elided for space, see
-Section~\ref{sec:design-reset} for details of the Reset sequence.
-}
-\label{fig:transmission}
-\end{figure*}
+\begin{figure}[h!]
+  \figTimingArbitration
+\end{figure}
 
 \subsection{Bus~Idle}
 \label{sec:protocol-idle}
-In \bus Bus~Idle, all lines ({\tt CLK}, {\tt DIN}, {\tt DOUT}) are high.
-All member nodes are in forwarding state and the control node is waiting to
-begin arbitration.
+In \bus Bus~Idle, all lines (clock and data) are high. All member nodes are in
+forwarding state and the control node is waiting to begin arbitration.
 
 \subsection{Arbitration}
 \label{sec:protocol-arbitration}
@@ -45,15 +33,16 @@ line low. The control node, however, does {\bf NOT} pull its {\tt DOUT} line
 low in response to its {\tt DIN} line going low. The control node only pulls
 its {\tt DOUT} line low when it wishes to transmit on the bus. When the
 control node's {\tt DIN} line goes low, it will pull the {\tt CLK} line low
-and hold it low for some period $t_{long}$.
+and hold it low for some period $t_{long}$. During {\sc idle} (and thus
+arbitration), member nodes must forward the clock signal.
 
 By the end of the period $t_{long}$, the effect of the arbitration is
 achieved. A member node is in one of three possible states:
 \begin{enumerate}
-  \item {\tt CLK} low, {\tt DIN} high, {\tt DOUT} high -- Lost arbitration
+  \item Clock low, {\tt DIN} high, {\tt DOUT} high -- Lost arbitration
     (didn't participate)
-  \item {\tt CLK} low, {\tt DIN} high, {\tt DOUT} low -- Won arbitration
-  \item {\tt CLK} low, {\tt DIN} low, {\tt DOUT} low -- Lost arbitration
+  \item Clock low, {\tt DIN} high, {\tt DOUT} low -- Won arbitration
+  \item Clock low, {\tt DIN} low, {\tt DOUT} low -- Lost arbitration
     (either lost, or didn't participate)
 \end{enumerate}
 If the control node wishes to transmit on the bus, all member nodes will be in
@@ -83,152 +72,128 @@ node must sample its {\tt DIN} line. If the line is still low there was no
 priority message, if the {\tt DIN} line has gone high, however, the node
 must back off and allow the priority message requester to transmit.
 
-Whichever node ultimately won arbitration
-transitions from a forwarding node to a transmitting node.
-The rising edge that established the priority arbitration winner
-is defined as a {\sc latch2} edge. This means the next clock edge will be a
-{\sc drive1}, when the transmitting node should send the first bit of the
-destination address.
+Whichever node ultimately won arbitration transitions from a forwarding node
+to a transmitting node.
+
+\begin{figure}
+  \figTimingInterrupt
+\end{figure}
+% Footnote tied to \figTimingInterrupt
+\footnotetext{This detection must occur on the falling edge since the control
+layer requires an edge to sample on and it is sampling its {\tt CLK\_IN} pin
+detecting when it is not high. A simple detector can sample this every edge
+asserting a signal which is sampled by the controller's FSM at time 8,
+transitioning the controller into interrupt mode.}
 
 \subsection{Message Transmission}
 \label{sec:protocol-transmission}
-During transmission, \bus alternates between the {\sc drive1}, {\sc latch1},
-{\sc drive2} and {\sc latch2} states on every rising {\tt CLK} edge. 
-Note, for forwarding (and receiving) nodes, the {\tt DIN} and {\tt DOUT} lines 
-are {\bf NOT} clocked, nodes should forward data signals immediately.
-
-The first rising edge after arbitration starts the first {\sc drive1} state.
-After {\tt CLK} goes high, the transmitting node should set its {\tt DOUT}
-line to {\tt 0} or {\tt 1} as appropriate. At the next rising edge, \bus
-switches to {\sc latch1} state and nodes latch the value on their {\tt DIN}
-lines. The next rising edge starts the {\sc drive2} state. During {\sc drive2}
-the transmitting node should \textbf{forward} its {\tt DIN} value as opposed
-to driving the data bit again. During a normal
-transmission, the value forwarded will not change, but if any node desires to
-reset the bus, they may do so by setting the opposite bit during {\sc drive2},
-initiating a Bus~Reset event\footnote{
-  Caution must be taken by a resetting node to not introduce a false
-  Message~End~Sequence. See the note in~\ref{sec:protocol-reset} for details.}
-The final state is {\sc latch2} at the next rising edge, where the same bit is
-read again, matching the bit read during {\sc latch1}.  It is at this
-point---when the same bit has been received during {\sc latch1} and {\sc
-latch2}---that the receiving layer records the incoming bit. The next clock
-edge starts the sequence over, returning to {\sc drive1}.
+The first edge after arbitration is defined as ``Begin~Transmission''. On this
+edge, the transmitting node should switch its {\tt DOUT} mux from forwarding
+{\tt DIN} to the transmit FIFO. Data is expected to be valid and stable during
+every subsequent clock edge.
 
 The first sequence of bits pushed onto \bus are the {\em address} bits. All
 nodes on a \bus should listen until their address:
 \begin{itemize}
-  \item Matches: Node promotes itself from forwarder to receiver.
-  \item Does Not Match: Node remains forwarder for the rest of the
-    transmission.
+  \item Matches: Node promotes itself from Forwarding.{\sc address\_match} to
+    Receiving.{\sc receive}.
+  \item Does Not Match: Node transitions from Forwarding.{\sc address\_match}
+    to Forwarding.{\sc Ignore}.
 \end{itemize}
 
 There is no protocol-level delineation between address and data bits. The
-transmitting node sends address$+$data as a continuous stream of bits until
-it terminates the message with a Message~End~Sequence.
+transmitting node sends address$+$data as a continuous stream of bits (for
+details on \bus addressing,
+see~\ref{sec:spec-address}~\nameref{sec:spec-address}). Once a transmitter has
+sent the complete transmission it Interrupts the bus.
 
-\hl{TODO:} The \bus addressing scheme has not yet been defined.
+\subsection{Interrupt}
+\label{sec:protocol-interrupt}
+Any node may interrupt \bus at any point mid-transmission. A \bus interrupt is
+defined as a series of pulses on the data line with no corresponding clock
+edges. After $N$~pulses where $N \ge 3$, a node enters Interrupt\footnote{
+  While two pulses is sufficient to distinguish an Interrupt from normal data
+  transmission, three pulses provides protection against spurious entry to
+  Interrupt from a glitch on data lines.}.
 
-\subsection{Message End Sequence}
-\label{sec:protocol-end}
-Picking up transmission from the last bit of data the transmitting node wishes
-to send, the transmitting node pushes its last bit on its {\tt DOUT} line
-during the {\sc drive1} state, and it is latched by \bus during the {\sc
-latch1} and {\sc latch2} states.  At the next {\sc drive1} state, the 
-transmitting node drives its {\tt DOUT} line low. This low half-bit is a sentinel 
-stop bit---it is not part of the transmitted message, rather the beginning of 
-the Message~End~Sequence. At the rising edge of the {\tt CLK} that starts the
-{\sc latch1} state, all \bus nodes latch {\tt 0}. The next rising edge of the
-{\tt CLK}, which starts {\sc drive2} state, the transmitting node drives its 
-{\tt DOUT} line high. At the next rising {\tt CLK} edge, which starts the next 
-{\sc latch2} state, nodes will observe that the data line differs from 
-{\sc latch1} state. The receiving and control nodes will recognize this
-{\tt 01} sequence as a Message~End~Sequence.
+The first rising clock edge after Interrupt is defined as ``Begin~Control''.
+The next two clock edges define the control bits.
 
-At the next rising edge after transmitting the stop sequence, the transmitting
-node should begin forwarding its {\tt DIN} to its {\tt DOUT} and listening for
-an acknowledgement.
+\subsubsection{Nesting Interrupts}
+In normal operation, interrupts are not permitted to ``nest'', that is, the
+bus may not be interrupted during the control bits. If an Interrupt sequence
+occurs during an existing Interrupt (which may only occur if the bus is being
+``rescued'' from some erroneous state), the new interrupt {\bf must} present
+control bits {\tt 00}. Any operations requested from the previous Interrupt
+state are aborted and the net Interrupt result is {\tt 00}~(General~Error).
 
-\subsection{Message Acknowledgement}
-\label{sec:protocol-ack}
-After the Message~End~Sequence, the receiving layer is responsible for sending a
-Message Acknowledgement. The receiver cannot detect the Message~End~Sequence
-until the {\sc latch2} that ended the previous cycle.
+\subsection{Control Bits}
+\label{sec:protocol-control}
 
-At the next rising clock edge, a {\sc drive1}, the receiving layer continues
-to forward {\tt DIN} to {\tt DOUT}, which functionally drives a {\tt 1} as the
-data ring should already be high from the end of the Message~End~Sequence. The
-value {\tt 1} is latched by \bus at the next clock edge during {\sc latch1}.
-At the next clock edge, {\sc drive2}, the receiving layer should drive {\tt 0}
-if it wishes to acknowledge the transmission. The acknowledgement is confirmed
-at the next clock edge, {\sc latch2}.
+\begin{figure}
+  \includegraphics[width=\linewidth]{img/control_bits}
+  \caption{After an Interrupt, two control bits follow. The first bit is
+    always set by the interrupter and indicates whether the Interrupt was to
+    signal the end of message (EoM). If the EoM bit is high, the receiving
+    node is responsible for driving the second bit to acknowledge the message.
+    If the EoM bit is low, the interrupter is responsible for driving the
+    second bit. The TX/RX~Error (TRE) bit is set when a transmitting or
+    receiving node encounters an error.
+  }
+  \label{fig:control-bits}
+\end{figure}
 
-This is a relatively fast turnaround for the receiving node. It has from {\sc
-latch2} when it detects the Message~End~Sequence until the next {\sc drive2} to
-determine whether or not it wishes to acknowledge the transmission. Designers
-should take care to ensure the acknowledge signal logic can be generated in
-half a bit time (2 clock pluses).
+The two bits after an Interrupt are defined as Control~Bits.
+Figure~\ref{fig:control-bits} is a flowchart indicating the semantic meaning
+of the control bits and the resulting state. The first control bit is
+unconditionally driven by the interrupting node. If a transmitting node has
+interrupted to indicate the end of transmission, it will put a {\tt 1} on the
+bus for the first control bit. In all other cases the interrupter must drive
+{\tt 0} for the first control bit.
 
+If the first control bit was {\tt 1} then the addressed receiver is
+responsible for driving the control bit. If the transmission was sent to the
+broadcast address~(\ref{sec:control-broadcast}), all nodes---excluding the
+transmitter which forwards---should drive the second control bit low to
+acknowledge. The semantic provided to the transmitter of a broadcast message
+then is either (1) no nodes received the message or (0) {\em at least} one
+node received the message.
 
-\subsection{Bus Reset}
-\label{sec:protocol-reset}
-The \bus Reset is designed to be particularly robust. For details on Reset
-design decisions, see~\ref{sec:design-reset}~\nameref{sec:design-reset}. Here
-we describe Reset functionally.
+If instead the first control bit was {\tt 0} then the interrupter is
+responsible for driving the second control bit. If the interrupter is the
+transmitter or receiver {\bf and} the issue is related to the current
+transmission (e.g. receiver buffer overflow) then the second bit should be set
+high. If the purpose of the interruption is unrelated to the current
+transmission (e.g. a high-priority, time-critical message) then the second bit
+should be set low.
 
-A Bus Reset can only be performed by the control node. Member nodes can
-request that the control node reset the bus by generating illegal signals such
-as transitions during {\sc latch} cycles are a {\tt 10} sequence any time
-except Acknowledgement.
+Unless the interruption carries a specific meaning as outlined in this
+section, the {\sc 00: Interrupted} state should be used for general or
+unclassified interruptions as it carriers the least semantic meaning
 
-During reset, the control node halves the speed of the \bus~{\tt CLK} line.
-The controller's internal clock is still running at full speed. The control
-layer uses these extra edges to reliably drive values onto the data lines in
-the face of unreliable nodes, see Figure~\ref{fig:reset-normal} for details of
-the timing of the extra edges.
+\subsection{Return to Idle}
+After latching the final Control~Bit (time~20 in
+Figure~\ref{fig:interrupt}), one final edge (time~22) is generated to formally
+enter {\sc idle}. If, however, the data line is low at this edge, then it
+shall be considered the start of a new arbitration cycle instead. The control
+node will pull the clock low again in response and begin waiting for
+$t_{long}$.
 
-The control node begins reset by driving {\tt 0}. It alternates between
-driving {\tt 0} and {\tt 1} until its {\tt DIN} history buffer contains the
-sequence {\tt 010}. For any member node, latching the sequence {\tt 010} {\em
-unconditionally} transitions the node to {\sc reset}. The robustness of this
-detection is paramount. The recommended practice is a small 3-bit shift
-register that records every latched bit. If the pattern {\tt 010} ever appears
-in this register, a signal should be asserted that directly moves the node
-into {\sc reset}, conceptually:
+By providing this edge, \bus enables member nodes with absolutely no sense of
+time the ability to receive, react to, and respond to messages (albeit with
+tight timing constraints).
 
 \begin{quote}
-\lstset{
-  language=Verilog,
-  basicstyle=\ttfamily,
-  keywordstyle=\color{OliveGreen}\textbf,
-  literate={`}{{\`{}}}1 {'}{{\'{}}}1
-}
-\begin{lstlisting}
-wire reset_history = (reset_history_reg == 3'b010);
+\textit{M3 Implementation Note:} (Referring to
+Figure~\ref{fig:interrupt}) A broadcast sleep message cannot be considered a
+sleep until time~18 when the transmitter asserts that all the sent bits were
+desired to be sent. This leaves edges at time~20 and time~22 as the required
+two edges to power gate the layer.
 
-always @(posedge clock) begin
-  state <= (reset_history) ? `STATE_RESET : next_state;
-\end{lstlisting}
+This could be complicated, however, if a node elects (for some reason) to send
+a response to the broadcast sleep message. The sleep controller will still
+have four edges (Arbitration, Priority~Drive, Priority~Latch,
+Begin~Transmission) to wake its bus controller, but the timing between arming
+its {\tt CLK\_IN} fall detector and the control node pulling {\tt CLK\_IN} low
+in response could cause the sleep controller to miss wakeup.
 \end{quote}
-
-As the only clock driving state machines in \bus is the \bus~{\tt CLK} line,
-an edge is required to actually push the state machine into {\sc reset} after
-detecting the need in {\sc latch1/2}. We call this edge Phase-Align for reasons
-exaplined in~\ref{sec:design-reset-phase}~\nameref{sec:design-reset-phase} and
-continue to hold data low during this cycle. After the Phase-Align edge,
-member nodes sample on {\em every} edge.
-
-Finally, the control node drives the data line high and drives two cycles. The
-{\tt 11} (or possibly {\tt 011} if a node is $1\phi$ or $3\phi$) marks the
-completion of reset. The final clock edge finishes the transaction, returning
-\bus to Idle.
-
-If a node records a sequence other than {\tt 11} or {\tt 011} during Reset, an
-error has occurred. If the node is simply forwarding, it should return to
-forwarding and await the real Reset so as to avoid needlessly interrupting an
-otherwise succeeding transmission. If the node was transmitting or receiving
-it should enter into {\sc error} to abort the current transaction as it is no
-longer salvageable.
-
-More details and subtleties of Reset are covered
-in~\ref{sec:design-reset}~\nameref{sec:design-reset}.

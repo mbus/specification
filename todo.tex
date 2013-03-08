@@ -2,27 +2,31 @@
 
 \section{ToDo}
 \label{sec:todo}
-\subsection{Issues}
-\begin{description}
-  \item[Maximum length?] \hfil \\
-  Should there be some built-in (high, several~kB-MB) message length, just in
-  case the controller happens to miss a Message~End~Sequence or something?
-  (Answer: almost certainly yes). The real question: What is a reasonable such
-  maximum?
 
-  \item[Power-Gated Member Wake-up] \hfil \\
-  Layers (member nodes) in the M3 system are all power gated, this means they
-  require non-zero time to wake up and stabilize at the beginning of
-  transmissions. In particular, this wakeup requires a few states:
-  \begin{itemize}
-    \item Power on (remove power-gating)
-    \item Warm up local oscillators
-    \item De-assert Reset
-    \item Remove isolation
-  \end{itemize}
-  In practice there are 4 states required in the most extreme to safely wake
-  up a system. The TODO: Is this true in a general sense? If so, should waking
-  nodes at the beginning of transmission be part of the protocol itself that's
-  required or an unofficial M3 extension? See some of the more detailed
-  current thoughts in~\ref{todo:wakeup}.
-\end{description}
+\subsection{Future Extensions}
+\label{sec:todo-extensions}
+There are properties that would be nice to have, but introduce greater
+complexity. While they are not in the current design, some methods for
+designing them are considered here such that they are still feasible for
+future implementation in a backwards-compatible manner.
+
+\subsubsection{Resuming Interrupted Transfers}
+\label{sec:todo-extensions-resume}
+Consider a separate `bulk-transfer' address such that nodes which support
+resumable transfers have two addresses (and a corresponding broadcast query
+for such addresses).
+
+A bulk transfer always begins with the sending node's full address both as
+unique token and so the bulk protocol can respond if needed. Transfers begin
+with both ends' counters syncrhonized at 0~bits. If an interruption occurs,
+the RX node saves as much as it has RX'd thus far. After the bus is available
+again the RX node is responsible for sending the TX node a message composed of
+RX\_address+bits\_thus\_far. If the RX node does not send such a message, the
+TX node may solicit one; if the RX node has dropped the suspended transaction
+for any reason, it simply responds 0~bits.
+
+Nodes that wish to permit multiple simultaneous bulk transfers could expose
+several bulk addresses. If an A$\rightarrow$B transfer is interrupted and C
+attempts a C$\rightarrow$B transfer, B would indicate busy by interrupting
+immediately after the bulk address was received with a {\tt 01} RX~Error
+Interrupt sequence.

@@ -10,7 +10,6 @@
 \usepackage{subcaption}
 \usepackage{comment}
 \usepackage{soul} % provides \hl{}
-\usepackage[normalem]{ulem} % provides \uline{}
 \usepackage{listings}
 \usepackage{amssymb} % For \checkmark
 
@@ -48,7 +47,7 @@
 
 \definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
 
-\newcommand{\bus}{MBus\xspace}
+\newcommand{\bus}{ULPB\xspace}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -59,47 +58,26 @@
 \fancyfoot[R]{\footnotesize{\em (svn: \svnInfoFile::r\svnInfoRevision)}}
 \pagestyle{fancyplain}
 
-\title{Ultra Low Power Bus v2}
-\author{(I like MBus as a name?)}
-\date{The {\em MBedded} Bus? Ah ha ha...}
+\title{Ultra Low Power Bus v1 to v2 Changes Document}
+\author{Now with 1/4 the clocking!}
+\date{(But still in need of a better name...)}
 \maketitle
 
-% Timing figures are defined in a separate file for readability
-\input{timing}
-
-\input{overview}
-
 \tableofcontents
-\clearpage
 
-\input{requirements}
-\clearpage
-
-\input{node_design}
-\clearpage
-
-\input{bus_design}
-\clearpage
-
-\input{specifications}
-\clearpage
-
-\input{control}
-\clearpage
-
-\input{todo}
+\input{protocol}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\clearpage
-\section{Document Revision History}
-\label{sec:revisions}
-
-\begin{itemize}
-
-\item Revision 0.1 {\footnotesize(rXXXX)} -- Feb 19, 2012
-\subitem Initial revision
-
-\end{itemize}
+%\clearpage
+%\section{Document Revision History}
+%\label{sec:revisions}
+%
+%\begin{itemize}
+%
+%\item Revision 0.1 {\footnotesize(r3008)} -- Feb 11, 2013
+%\subitem Initial revision
+%
+%\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\clearpage
