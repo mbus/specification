@@ -1,16 +1,104 @@
 \newcommand{\figTimingArbitration}{%
-  \includegraphics[width=\linewidth]{img/arbitration}
+  \centering
+  \footnotesize
+  \begin{tikztimingtable}[timing/wscale=6.0,timing/slope=.3]
+    %          IrrrrrrRLLL A dddddddddD L ttttttttT 0
+    CLK In   & H      HHHC C          C C         C C\\
+    CLK Out  & H      HHHC C          C C         C C\\
+    Data In  & H      HHHH H .2H.2L.6H  H .4H.6L    L\\
+    Data Out & H.5H.5L LLL L L          L .4H.6L    L\\
+             & \\
+    \\
+    CLK In   & H      HHHC C           CC         C C\\
+    CLK Out  & H      HHHC C           CC         C C\\
+    Data In  & H.7H.3L LLL L L          L .4L.2H.4L L\\
+    Data Out & H.7H.3L LLL L L          L .4L.2H.4L L\\
+             & \\
+    \\
+    CLK In   & H      HHHC C           CC         C C\\
+    CLK Out  & H      HHHC C           CC         C C\\
+    Data In  & H.8H.2L LLL L L          L .6L.2H.2L L\\
+    Data Out & H      LLLL L H          H L         L\\
+             & \\
+    \\
+    CLK In   & H      HHHC C           CC         C C\\
+    CLK Out  & H      HHHC C           CC         C C\\
+    Data In  & H.2H.8L LLL L .2L.8 H    H .2H.8L    L\\
+    Data Out & H      HHHH H .2L.8 H    H .2H.8L    L\\
+    Int Clk  & X      XXCC C           CC         C C\\
+             & \\
+  \extracode
+    \begin{pgfonlayer}{background}
+      \begin{scope}[semithick,dashed]
+        \vertlines[color=gray]{6,30,36,...,\twidth}
+        \vertlines[color=red]{36,48,...,\twidth}
+      \end{scope}
+    \end{pgfonlayer}
+
+    \begin{scope}
+      [font=\bf\sffamily,shift={(-5.5em,-1.5)},anchor=east,color=blue]
+      \node [rotate=45] at (  0,   0) {1};
+      \node [rotate=45] at (  0, -12) {2};
+      \node [rotate=45] at (  0, -24) {3};
+      \node [rotate=45] at (  0, -36) {Ctl};
+    \end{scope}
+
+    \begin{scope}
+      [font=\sc\scriptsize,shift={(-1,5.5)},anchor=north,align=center]
+      \node [rotate=45] at (30, 0) {Arbi-\\tration};
+      \node [rotate=45] at (36, 0) {Prio\\Drive};
+      \node [rotate=45] at (42, 0) {Prio\\Latch};
+      \node [rotate=45] at (48, 0) {Drive\\Bit~0};
+      \node [rotate=45] at (54, 0) {Latch\\Bit~0};
+      \node [rotate=45] at (60, 0) {Drive\\Bit~1\ldots};
+    \end{scope}
+
+    \begin{scope}
+      [font=\scriptsize]
+      \draw[orange,thick]  (30,  -5) ellipse (1.25 and 2.5);
+      \draw[orange,thick]  (30, -29) ellipse (1.25 and 2.5);
+      \draw(26.5,-8.5)  node[align=center] {Won\\Arbitration};
+      \draw(26.5,-32.5) node[align=center] {Lost\\Arbitration};
+
+      \draw[cyan,thick]    (36,  -5) ellipse (1.25 and 2.5);
+      \draw(36, -9) node[align=center,fill=white,fill opacity=.75] {Does Not\\Forward};
+
+      \draw[olive,thick]   (42,  -5) ellipse (1.25 and 2.5);
+      \draw[olive,thick]   (42, -29) ellipse (1.25 and 2.5);
+      \draw(45,-8.5)  node[align=center] {Prio Req\\Back Off};
+      \draw(45,-32.5) node[align=center] {Won Prio\\Arbitration};
+    \end{scope}
+
+    \begin{scope}
+      [color=blue]
+      \draw
+        (7.2,-39) node[] (TL) {}
+        (7.2,-50) node[] (BL) {}
+        ( 24,-36) node[] (TR) {}
+        ( 24,-50) node[] (BR) {};
+      \node[right=6 of BL] (tlong) {$t_{long}$};
+      \draw[<-] (BL.east) -- (tlong.west);
+      \draw[->] (tlong.east) -- (BR.west);
+      \draw[dashed] (TL) -- (BL);
+      \draw[dashed] (TR) -- (BR);
+    \end{scope}
+
+    \draw (6, -46.5) -- +(0,-.2)
+      node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize0}};
+    \foreach \n [evaluate=\n as \l using int((\n-24)/6)] in {30,36,...,\twidth}
+      \draw (\n,-46.5) -- +(0,-.2)
+        node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
+  \end{tikztimingtable}
   \caption{
     \bus Arbitration. To begin a transaction, nodes pull down on data.
-    Here we show node~1 and node~3 simulataneously requesting the bus.
-    Node~1 initially wins arbitration, but node~3 uses the priority
-    arbitration cycle to claim the bus. In implementation, nodes may begin
-    driving data lines at the Begin~Transmission edge but all subsequent
-    data transitions must take place on the falling edge of {\tt CLK}.
+    Here we show node~1 and node~3 requesting the bus at nearly the same time
+    (node~1 shortly after node~3). Node~1 initially wins arbitration, but
+    node~3 uses the priority arbitration cycle to claim the bus. The
+    propogation delay of the data line between nodes is exaggurated to show
+    the shoot-through nature of \bus.
   }
   \label{fig:arbitration}
 } % End \figTimingArbitration
-
 
 
 \newcommand{\figTimingInterrupt}{%
