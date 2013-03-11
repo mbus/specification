@@ -113,34 +113,34 @@
     Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
              & {1D{Data 1}}{2D{Data 0}}{2D{Data 1}}
                {2D{Data 1}}{2D{Data 1}}{6D{Interrupt}}{2D{Switch Role}}
-               {2D{Control 1}}{2D{ACK=True}}{2D{Idle}}{1D{\ldots}} \\
+               {2D{Ctl Bit 0}}{2D{ACK=True}}{2D{Idle}}{1D{\ldots}} \\
     \\
     % TX Node
     CLK In   & CCCCC CC CC CHHHHH HC CCCC CCC\\
-    CLK Out  & CCCCC CC LL LLLLLL LL CCCC CCC\\
+    CLK Out  & CCCCC CH HH HHHHHH HH CCCC CCC\\
     Data In  & HHLLH HH HH HCCCCC CH HHHL LHH\\
     Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
              & {1D{Data 1}}{2D{Data 0}}{2D{Data 1}}
                {4D{Req Interrupt}}{6D{Interrupt}}{2D{Switch Role}}
-               {2D{EoM=True}}{2D{Control 0}}{2D{Idle}}{1D{\ldots}} \\
+               {2D{EoM=True}}{2D{Ctl Bit 1}}{2D{Idle}}{1D{\ldots}} \\
     \\
-    CLK In   & CCCCC CC LL LLLLLL LL CCCC CCC\\
-    CLK Out  & CCCCC CC LL LLLLLL LL CCCC CCC\\
+    CLK In   & CCCCC CH HH HHHHHH HH CCCC CCC\\
+    CLK Out  & CCCCC CH HH HHHHHH HH CCCC CCC\\
     Data In  & HHLLH HH HH HCCCCC CH HHHL LHH\\
     Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
              & {1D{Data 1}}{2D{Data 0}}{2D{Data 1}}
                {10D{Interrupt}}{2D{Switch Role}}
-               {2D{Control 1}}{2D{Control 0}}{2D{Idle}}{1D{\ldots}} \\
+               {2D{Ctl Bit 0}}{2D{Ctl Bit 1}}{2D{Idle}}{1D{\ldots}} \\
     \\
     % CTL Node
-    CLK In   & CCCCC CC LLL LLLLL LL CCCC CCC\\
-    CLK Out  & CCCCC CC CCC HHHHH HC CCCC CCC\\
-    Data In  & HHLLH HH HHH CCCCC CH HHHL LHH\\
-    Data Out & HHLLH HH HHH CCCCC CH HHHL LHH\\
-    Int Clk  & CCCCC CC CCC CCCCC CC CCCC CCC\\
+    CLK In   & CCCCC CH HH HHHHHH HH CCCC CCC\\
+    CLK Out  & CCCCC CC CC CHHHHH HC CCCC CCC\\
+    Data In  & HHLLH HH HH HCCCCC CH HHHL LHH\\
+    Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
+    Int Clk  & CCCCC CC CC CCCCCC CC CCCC CCC\\
              & {1D{Data 1}}{2D{Data 0}}{2D{Data 1}}
                {4D{Enter Interrupt}}{6D{Interrupt}}{2D{Switch Role}}
-               {2D{Control 1}}{2D{Control 0}}{2D{Idle}}{1D{\ldots}} \\
+               {2D{Ctl Bit 0}}{2D{Ctl Bit 1}}{2D{Idle}}{1D{\ldots}} \\
   \extracode
     \begin{pgfonlayer}{background}
       \begin{scope}[semithick,dashed]
@@ -157,8 +157,8 @@
     \draw[red,thick]    (27,  -2.5) ellipse (1.25 and 4.5);
     \draw[blue,thick]   (45,  -2.5) ellipse (1.25 and 4.5);
     \draw[green,thick]  (45, -26.5) ellipse (1.25 and 4.5);
-    \draw[cyan,thick]   (24, -36.5) ellipse (1.25 and 2.5);
-    \draw[cyan,semithick,dashed] (24,-44.5) to (24,-33.25); % .25 better dash
+    \draw[cyan,thick]   (21, -36.5) ellipse (1.25 and 2.5);
+    %\draw[cyan,semithick,dashed] (21,-44.5) to (21,-33.25); % .25 better dash
     \node at (18, -7.5)  {\huge\color{blue} X};
     \node at (24, -7.5)  {\huge\color{blue} X};
     \node at (18, -31.5) {\huge\color{green} $\checkmark$};
@@ -172,6 +172,23 @@
       \node [rotate=45] at (  0, -36) {Ctl};
     \end{scope}
 
+    \begin{scope}
+      [font=\sc\scriptsize,shift={(-1,5.5)},anchor=north,align=center]
+      \node [rotate=45] at ( 3, 0) {Latch\\Bit~6};
+      %\node [rotate=45] at ( 6, 0) {Drive\\Bit~7};
+      \node [rotate=45] at ( 9, 0) {Latch\\Bit~7};
+      %\node [rotate=45] at (12, 0) {Drive\\Bit~8};
+      \node [rotate=45] at (15, 0) {Latch~\textbar~Req\\Bit~8~\textbar~Int};
+      \node [rotate=45] at (21, 0) {Detect\\Int Req};
+      \node [rotate=45] at (27, 0) {Begin\\Interrupt};
+
+      \node [rotate=45] at (45, 0) {Interrupt\\Asserted};
+      \node [rotate=45] at (51, 0) {Begin\\Control};
+      \node [rotate=45] at (57, 0) {Latch\\Ctl Bit~0};
+      \node [rotate=45] at (63, 0) {Latch\\Ctl Bit~1};
+      \node [rotate=45] at (69, 0) {Begin\\Idle};
+    \end{scope}
+
     \foreach \n [evaluate=\n as \l using int((\n-1)/3)] in {3,6,...,\twidth}
       \draw (\n,-46.5) -- +(0,-.2)
         node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
@@ -181,11 +198,14 @@
     Detail of the Interrupt entry procedure and control bits. In this example,
     Node~2 is the TX node, thus when it elects to enter Interrupt it is
     already forwarding its data lines. Node~2 decides to enter Interrupt at
-    time~4. At time~6 Node~2 suppresses the clock edge, requesting Interrupt.
-    The control layer detects this at time~7\protect\footnotemark.  At this
-    point the control node begins toggling the {\em data} lines to interrupt
-    the bus. After three data pulses, all nodes will enter Interrupt. Two
-    control bits are sent, after which the bus returns to Idle.
+    time~4 by switching its {\tt CLK\_OUT} mux from {\tt CLK\_IN} to {\tt 1}.
+    At time~6, the control layer detects that its {\tt CLK\_IN} line never
+    went low, and prepares to Interrupt the bus. At time~8 the control node
+    stops driving clock edges and begins toggling the {\em data} line to
+    interrupt the bus. After three data pulses, all nodes will enter
+    Interrupt. Once the control layer receives three pulses on {\tt DATA\_IN},
+    it begins driving the clock again. Two control bits are sent, after which
+    the bus returns to Idle.
   }
   \label{fig:interrupt}
 } % End \figTimingInterrupt

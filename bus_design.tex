@@ -82,12 +82,6 @@ Forwading.{\sc Address\_Match}.
 \begin{figure}
   \figTimingInterrupt
 \end{figure}
-% Footnote tied to \figTimingInterrupt
-\footnotetext{This detection must occur on the falling edge since the control
-layer requires an edge to sample on and it is sampling its {\tt CLK\_IN} pin
-detecting when it is not high. A simple detector can sample this every edge
-asserting a signal which is sampled by the controller's FSM at time 8,
-transitioning the controller into interrupt mode.}
 
 \subsection{Message Transmission}
 \label{sec:protocol-transmission}
@@ -110,6 +104,14 @@ transmitting node sends address$+$data as a continuous stream of bits (for
 details on \bus addressing,
 see~\ref{sec:spec-address}~\nameref{sec:spec-address}). Once a transmitter has
 sent the complete transmission it Interrupts the bus.
+
+Legal transmissions on \bus must be byte-aligned
+(\ref{sec:spec-granularity}~\nameref{sec:spec-granularity}). The requirement
+allows receiving nodes such as node~1 and node~3 in Figure~\ref{fig:interrupt}
+to disambiguate the significance of the last two bits received. A legal
+transmission will end cleanly on a byte boundary if the node topologically
+follows the transmitter (e.g.~node~3) or will end on a byte+2-bit boundary if
+the node topologically precedes the transmitter (e.g.~node~1).
 
 \subsection{Interrupt}
 \label{sec:protocol-interrupt}
