@@ -42,6 +42,10 @@ achieved. A member node is in one of three possible states:
   \item Clock low, {\tt DIN} low, {\tt DOUT} low -- Lost arbitration
     (either lost, or didn't participate)
 \end{enumerate}
+The rising edge of clock that follows $t_{long}$ commits the results of
+arbitration and all participating member nodes advance their state machines
+appropriately.
+
 If the control node wishes to transmit on the bus, all member nodes will be in
 the third state. Note this arbitration protocol introduces a {\em
 topology-dependent priority}. Firstly, the control node has a greater priority
@@ -53,24 +57,27 @@ control node, the node whose {\tt DIN} is connected to the control node's
 control node, the node whose {\tt DOUT} is connected to the control node's
 {\tt DIN}, has the lowest priority.
 
-At the end of $t_{long}$, the control node drives the {\tt CLK} line high. The
+At the end of $t_{long}$, the control node drives the clock high. The
 normal arbitration phase ends on this rising edge. The next two clock edges
 allow for a high-priority arbitration. As \bus priority is topology-dependent,
 we provide a priority arbitration cycle to allow a low priority member node to
 preempt transmissions. This priority mechanism is still topology-dependent,
-that is, if Node~1 in Figure~\ref{fig:transmission} had also attempted to send
+that is, if Node~1 in Figure~\ref{fig:arbitration} had also attempted to send
 a priority message, it would have won that arbitration as well. The priority
-arbitration cycle is two clock edges, the first edge is for nodes to drive
-their priority requests onto the bus and the second is to latch the results.
-During priority arbitration, the node that won the original arbitration should
-{\bf not} forward its {\tt DIN} to {\tt DOUT}. At the end of priority
+arbitration cycle is two clock edges (one clock cycle), the falling edge after
+arbitration is for nodes to drive their priority requests onto the bus and the
+rising edge is used to latch the results.  During priority arbitration, the
+node that won the original arbitration {\bf must not} forward its {\tt DIN} to
+{\tt DOUT}. At the end of priority
 arbitration, if the original winner did not request a priority message, the
 node must sample its {\tt DIN} line. If the line is still low there was no
 priority message, if the {\tt DIN} line has gone high, however, the node
-must back off and allow the priority message requester to transmit.
+has lost priority arbitration and must back off to allow the priority message
+requester to transmit.
 
 Whichever node ultimately won arbitration transitions from a forwarding node
-to a transmitting node.
+to a transmitting node. Nodes that lost arbitration revert to
+Forwading.{\sc Address\_Match}.
 
 \begin{figure}
   \figTimingInterrupt
@@ -84,10 +91,10 @@ transitioning the controller into interrupt mode.}
 
 \subsection{Message Transmission}
 \label{sec:protocol-transmission}
-The first edge after arbitration is defined as ``Begin~Transmission''. On this
+The falling edge after arbitration is defined as ``Begin~Transmission''. On this
 edge, the transmitting node should switch its {\tt DOUT} mux from forwarding
 {\tt DIN} to the transmit FIFO. Data is expected to be valid and stable during
-every subsequent clock edge.
+every subsequent rising clock edge.
 
 The first sequence of bits pushed onto \bus are the {\em address} bits. All
 nodes on a \bus should listen until their address:
@@ -106,9 +113,15 @@ sent the complete transmission it Interrupts the bus.
 
 \subsection{Interrupt}
 \label{sec:protocol-interrupt}
-Any node may interrupt \bus at any point mid-transmission. A \bus interrupt is
-defined as a series of pulses on the data line with no corresponding clock
-edges. After $N$~pulses where $N \ge 3$, a node enters Interrupt\footnote{
+During normal operation, Interrupt is only permitted after the first 32~bits
+of data have been transmitted
+(\ref{sec:spec-interrupt}~\nameref{sec:spec-interrupt}). The Interrupt
+mechanism, however, is also the \bus reset mechanism, and as such member node
+interrupt detectors {\bf must} always be active whenever a node is not Idle.
+
+A \bus interrupt is defined as a series of pulses on the data line while the
+clock line remains high. After $N$~pulses where $N \ge 3$, a node enters
+Interrupt\footnote{
   While two pulses is sufficient to distinguish an Interrupt from normal data
   transmission, three pulses provides protection against spurious entry to
   Interrupt from a glitch on data lines.}.
@@ -118,11 +131,12 @@ The next two clock edges define the control bits.
 
 \subsubsection{Nesting Interrupts}
 In normal operation, interrupts are not permitted to ``nest'', that is, the
-bus may not be interrupted during the control bits. If an Interrupt sequence
-occurs during an existing Interrupt (which may only occur if the bus is being
-``rescued'' from some erroneous state), the new interrupt {\bf must} present
-control bits {\tt 00}. Any operations requested from the previous Interrupt
-state are aborted and the net Interrupt result is {\tt 00}~(General~Error).
+bus may not be interrupted while the control bits are being sent. If an
+Interrupt sequence occurs during an existing Interrupt (which may only occur
+if the bus is being ``rescued'' from some erroneous state), the new interrupt
+{\bf must} present control bits {\tt 00}. Any operations requested from the
+previous Interrupt state are aborted and the net Interrupt result is
+{\tt 00}~(General~Error).
 
 \subsection{Control Bits}
 \label{sec:protocol-control}
@@ -149,9 +163,9 @@ bus for the first control bit. In all other cases the interrupter must drive
 {\tt 0} for the first control bit.
 
 If the first control bit was {\tt 1} then the addressed receiver is
-responsible for driving the control bit. If the transmission was sent to the
-broadcast address~(\ref{sec:control-broadcast}), all nodes---excluding the
-transmitter which forwards---should drive the second control bit low to
+responsible for driving the second control bit. If the transmission was sent
+to the broadcast address~(\ref{sec:control-broadcast}), all nodes---excluding
+the transmitter which forwards---should drive the second control bit low to
 acknowledge. The semantic provided to the transmitter of a broadcast message
 then is either (1) no nodes received the message or (0) {\em at least} one
 node received the message.
@@ -161,8 +175,8 @@ responsible for driving the second control bit. If the interrupter is the
 transmitter or receiver {\bf and} the issue is related to the current
 transmission (e.g. receiver buffer overflow) then the second bit should be set
 high. If the purpose of the interruption is unrelated to the current
-transmission (e.g. a high-priority, time-critical message) then the second bit
-should be set low.
+transmission (e.g. an external, high-priority, time-critical message) then the
+second bit should be set low.
 
 Unless the interruption carries a specific meaning as outlined in this
 section, the {\sc 00: Interrupted} state should be used for general or

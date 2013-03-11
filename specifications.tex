@@ -4,8 +4,8 @@
 \label{sec:spec}
 
 \subsection{Granularity}
-\bus sends data in units of 8~bit bytes. Transmissions must be \%~8 bits in
-length, that is they must end on byte boundaries (for rationale,
+\bus sends data in units of 8~bit bytes. Transmissions must be modulo~8 bits
+in length, that is they must end on byte boundaries (for rationale,
 see~\nameref{sec:design-granularity}).
 
 \subsection{Endianness: Byte-Level}
