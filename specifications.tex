@@ -109,7 +109,7 @@ The control node {\bf must not} immediately interrupt the bus, however. As
 laid out in~\ref{sec:design-power-gated}~\nameref{sec:design-power-gated}, the
 arbitration edges may be used as input to node sleep controllers. To avoid
 potential issues related to half-waking power gated nodes, the control node
-must wait until Begin~Transmission (that is, have generated four clock pulses)
+must wait until Begin~Transmission (that is, have generated four clock edges)
 before interrupting the bus.
 
 The control bits {\bf must} be driven by the control layer. They {\bf must} be

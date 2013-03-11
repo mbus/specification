@@ -127,6 +127,9 @@ Interrupt\footnote{
   While two pulses is sufficient to distinguish an Interrupt from normal data
   transmission, three pulses provides protection against spurious entry to
   Interrupt from a glitch on data lines.}.
+Edges on the data line while the clock is low are ignored. This permits
+potentially racy changes of {\tt DOUT} drivers to safely change on the falling
+edge of the clock without potentially introducing spurious interrupts.
 
 The first rising clock edge after Interrupt is defined as ``Begin~Control''.
 The next two clock edges define the control bits.
