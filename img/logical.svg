@@ -53,17 +53,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="7.9195959"
-     inkscape:cx="65.935596"
-     inkscape:cy="36.62659"
+     inkscape:zoom="11.313709"
+     inkscape:cx="80.484625"
+     inkscape:cy="30.685706"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1839"
-     inkscape:window-height="1129"
-     inkscape:window-x="2783"
-     inkscape:window-y="136"
-     inkscape:window-maximized="0"
+     inkscape:window-width="2560"
+     inkscape:window-height="1385"
+     inkscape:window-x="2560"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -120,9 +120,10 @@
        transform="translate(344.5,216.9532)" />
     <path
        style="fill:none;stroke:#666666;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 360,272.36219 0,-20 10,0"
+       d="m 360,272.36219 0,-20 7,0"
        id="path4059"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
     <path
        style="fill:none;stroke:#666666;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 440,237.36219 15,0"
@@ -273,5 +274,15 @@
          id="tspan3799"
          x="395"
          y="250.00922">ACK?</tspan></text>
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#666666;stroke-width:1.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path3018"
+       sodipodi:cx="37.5"
+       sodipodi:cy="35.486561"
+       sodipodi:rx="2"
+       sodipodi:ry="2"
+       d="m 39.5,35.486561 a 2,2 0 1 1 -4,0 2,2 0 1 1 4,0 z"
+       transform="matrix(0.5,0,0,0.5,349.38281,234.61891)" />
   </g>
 </svg>
