@@ -273,6 +273,7 @@ implementation details of its control node.
 \end{quote}
 
 \paragraph{Endless TX}
+\label{sec:reset-hung-endless-tx}
 If a transmitter enters an error state and never interrupts the bus, other
 nodes will not be able to distinguish an endless transmission from a
 transmission with a long string of {\tt 0}'s (or {\tt 1}'s). \bus relies on

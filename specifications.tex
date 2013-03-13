@@ -25,6 +25,20 @@ dependent.
 See~\ref{sec:spec-interrupt}~\nameref{sec:spec-interrupt} for details on the
 minimum uninterruptable message length.
 
+\subsection{Minimum Maximum Message Length}
+All \bus control nodes must permit a minimum of 1~K (1024~bits) of data to be
+transmitted before aborting a transaction due to a hung transmitter.
+
+The message length counter shall count the number of positive clock edges
+received after Begin~Transmission at the control node's {\tt CLK\_IN} port up
+to and including the last bit latched (Request~Interrupt in
+Figure~\ref{fig:interrupt}). The counter shall be an {\em inclusive} counter,
+that is the control node shall not Interrupt until it receives the $N+1$th
+bit.
+
+Section \ref{sec:control-control}~\nameref{sec:control-control} details
+querying and configuring the upper bound.
+
 \subsection{Retransmission}
 There is no hardware re-transmission primitive. The hardware provides a
 transaction-level message acknowledgement, indicating whether the complete

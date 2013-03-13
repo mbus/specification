@@ -46,6 +46,7 @@ The top four bits of the data field identify the message as a Query~Response.
 The remaining 28~bits contain the full address of the responding node.
 
 \subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
+\label{sec:control-control}
 \bus defines a set of common command messages to configure the bus. The chip
 acting as the control node listens on the address {\tt 0x01} for \bus control
 messages.
