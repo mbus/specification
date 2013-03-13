@@ -9,11 +9,11 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="146.60878"
-   height="60.986561"
+   width="148.70045"
+   height="62.986561"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="logical.svg">
   <defs
      id="defs4">
@@ -54,20 +54,20 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="11.313709"
-     inkscape:cx="80.484625"
-     inkscape:cy="30.685706"
+     inkscape:cx="60.363097"
+     inkscape:cy="31.685702"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="2560"
-     inkscape:window-height="1385"
-     inkscape:window-x="2560"
-     inkscape:window-y="27"
+     inkscape:window-width="1676"
+     inkscape:window-height="1006"
+     inkscape:window-x="4"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0"
+     fit-margin-top="1"
+     fit-margin-left="1"
+     fit-margin-right="1"
+     fit-margin-bottom="1"
      showguides="true">
     <inkscape:grid
        type="xygrid"
@@ -95,7 +95,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-329.5,-216.87563)">
+     transform="translate(-328.40833,-215.87563)">
     <path
        style="fill:none;stroke:#666666;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 85.5,30.408993 -15,0"
@@ -104,9 +104,10 @@
        transform="translate(344.5,216.9532)" />
     <path
        style="fill:none;stroke:#666666;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 426,272.36219 -76,0"
+       d="m 426,272.36219 -71,0"
        id="path4053"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#666666;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 420,227.36219 0,40 6,0"
@@ -213,14 +214,14 @@
     <text
        xml:space="preserve"
        style="font-size:7.27178812px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="335"
+       x="329"
        y="275.00922"
        id="text4004"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan4006"
-         x="335"
-         y="275.00922">CLK</tspan></text>
+         x="329"
+         y="275.00922">CLK_IN</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:7.27178812px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Sans"
@@ -282,7 +283,7 @@
        sodipodi:cy="35.486561"
        sodipodi:rx="2"
        sodipodi:ry="2"
-       d="m 39.5,35.486561 a 2,2 0 1 1 -4,0 2,2 0 1 1 4,0 z"
+       d="m 39.5,35.486561 c 0,1.104569 -0.895431,2 -2,2 -1.104569,0 -2,-0.895431 -2,-2 0,-1.10457 0.895431,-2 2,-2 1.104569,0 2,0.89543 2,2 z"
        transform="matrix(0.5,0,0,0.5,349.38281,234.61891)" />
   </g>
 </svg>
