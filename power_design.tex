@@ -1,0 +1,23 @@
+%\svnInfo $Id$
+
+\section{Power Design}
+\label{sec:power}
+The purpose of \bus is to support very low power operation. As such, it is
+expected that systems leveraging \bus may need to support power-gating all or
+part of the system. In this section, we discuss the requirements to support
+power-gated systems, how such systems integrate with \bus, and how
+power-oblivious chips can still interact with hyper power-conscious chips,
+promoting interoperability.
+
+\subsection{A Brief Background on Power-Gating}
+
+\begin{quote}
+\begin{tabular}{r l l c c}
+  Signal Name        & Function  & Power-Up & Power-Down \\
+  \hline \hline
+  {\tt POWER\_ON}    & Controls Power-Gating           & \nth{1} & \nth{2} \\
+  {\tt RELEASE\_CLK} & Supply Clock to Internal Logic  & \nth{2} & \nth{2} \\
+  {\tt RELEASE\_RST} & (De)Assert Reset                & \nth{3} & \nth{2} \\
+  {\tt RELEASE\_ISO} & Electrically Isolate Module I/O & \nth{4} & \nth{1} \\
+\end{tabular}
+\end{quote}
