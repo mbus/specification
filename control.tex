@@ -36,7 +36,7 @@ ignored. During acknowledgement, an ignorant node shall forward.
 
 \subsubsection{Query Devices (Data \texttt{0x00000000})}
 The query devices command is a request for all devices to broadcast their full
-address on the bus. Every \bus node should prepare a Query~Response when this
+address on the bus. Every \bus node must prepare a Query~Response when this
 message is received.
 
 \medskip
@@ -49,7 +49,8 @@ will be transmitting their address, nodes should anticipate losing arbitration
 several times before they are able to send their response.
 
 The top four bits of the data field identify the message as a Query~Response.
-The remaining 28~bits contain the full address of the responding node.
+The remaining 28~bits contain the full address of the responding node less the
+leading {\tt 0xf} full address identifier.
 
 This message may only be sent in response to Query~Devices. The node that
 issued Query~Devices \textbf{must} acknowledge the response message, other
