@@ -1,4 +1,4 @@
-%\svnInfo $Id$
+\svnInfo $Id$
 
 \section{Power Design}
 \label{sec:power}
@@ -6,10 +6,27 @@ The purpose of \bus is to support very low power operation. As such, it is
 expected that systems leveraging \bus may need to support power-gating all or
 part of the system. In this section, we discuss the requirements to support
 power-gated systems, how such systems integrate with \bus, and how
-power-oblivious chips can still interact with hyper power-conscious chips,
-promoting interoperability.
+power-oblivious chips can seamlessly interact with hyper power-conscious
+chips, promoting interoperability.
 
 \subsection{A Brief Background on Power-Gating}
+In the low-power design space, a simple and important concept is the ability
+to power-gate, or selectively disable, portions of a system that would
+otherwise be idle. By power-gating---removing power from that section of a
+chip---, the power consumption of idle silicon goes to zero.
+
+Several challenges with power-gating include: how to preserve state during
+idle windows, how to connect power-gated modules to other powered or
+power-gated modules, and how to wake and sleep power-gated modules
+deterministically. This document does not seek to address all these issues,
+%                                              You can get a PhD for that!
+rather to demonstrate how \bus can help system designers and the signals that
+are ``safe'' to utilize. For a more detailed reference power-gated design with
+MBus, consult the {\em \bus~M3~Implementation~Specification}.
+
+In general, sleeping and waking power-gated modules requires a series of
+events to occur. In particular, the following signals define common power
+control design:
 
 \begin{quote}
 \begin{tabular}{r l l c c}
@@ -21,3 +38,89 @@ promoting interoperability.
   {\tt RELEASE\_ISO} & Electrically Isolate Module I/O & \nth{4} & \nth{1} \\
 \end{tabular}
 \end{quote}
+
+For the purposes of this document, we are concerned with two modules: (i) The
+block that interface with the bus itself---we define this as the {\tt Bus
+Controller}---, and (ii) the node that is attached to the bus. With \bus, a
+completely power-gated node can seamlessly awaken its {\tt Bus~Controller}
+with no special assitance from the sending node or the control node. A {\tt
+Bus~Controller} can filter addresses, only waking the entire node for a mesage
+destined for that node. Additionally, a power-gated node with a simple
+always-on low power interrupt generater can exploit \bus features to generate
+the required edges with no specilization or externally synchronized knowlege
+of chip status. Finally, devices can reliably detect a shutdown message sent
+on the bus and use remaining control edges to shut down both the node and the
+node's {\tt Bus~Controller}.
+
+\subsection{Waking the \texttt{Bus~Controller}}
+\label{sec:power-bus-controller-wakeup}
+Referring to edges from Figure~\ref{fig:arbitration}, edges 1, 2, 3, and~4
+provide the required signals. Mapping power edges to \bus protocol edges:
+
+\begin{quote}
+\begin{tabular}{r c l}
+  Arbitration    & $\rightarrow$ & {\tt POWER\_ON} \\
+  Priority Drive & $\rightarrow$ & {\tt RELEASE\_CLK} \\
+  Priority Latch & $\rightarrow$ & {\tt RELEASE\_RST} \\
+  Drive Bit 0    & $\rightarrow$ & {\tt RELEASE\_ISO} \\
+\end{tabular}
+\end{quote}
+
+In practice, most {\tt Bus~Controller} implementations will not require the
+{\tt RELEASE\_CLK} signal as the \bus clock is (by definition) sufficient for
+all bus operations, however it is included in considerations for designs that
+may require it. A {\tt Bus~Controller} that is awoken using \bus edges will
+find its first rising clock edge to be Latch~Bit~0, the MSB of the address,
+and should design state machines appropriately.
+
+\subsubsection{Handling Interrupts During Wakeup}
+\label{sec:power-bus-controller-wakeup-int}
+By specficiation, Interrupts are not permitted during arbitration. If an
+Interrupt occurred, an ignorant {\tt Bus~Controller} would hang, unable to
+make forward progress as the remaining edges would have been driven from
+clocking the control bits, causing the {\tt Bus~Controller} to interperet
+either Latch Control Bit~0 or Latch Control Bit~1 as the MSB of the
+destination address. After one or two more cycles, the bus would become idle
+while the local {\tt Bus~Controller} waits indefinitely for more bits. This
+condition would eventually resovle itself if any other node elected to send a
+message but could not be resolved by any other means\footnote{
+  Excepting things such as a local timeout and an external reset, but such
+  a design is outside the scope of the discussion for a \bus member node.}.
+
+As the {\tt Bus~Controller} was previously powered down, powering it down
+again before releasing isolation is by definition a null operation. As
+isolation is released on the final falling edge of arbitration and Interrupt
+may only occur while the clock is high, a wake-up that is not Interrupted is
+safe and cancelling (re-power-gating) a wake-up that is Interrupted is safe.
+The challenge is then that the sleep controller module that generates the
+power control edges must also be capable of detecting an Interrupt. Whether
+this level of robustness is required is left as an implementation decision.
+
+\subsection{Waking the Node}
+If the {\tt Bus~Controller}'s address matches the destination address, it must
+wake whatever it is attached next up the chain, this means the clockless
+{\tt Bus~Controller} module must harvest clock edges from \bus to generate the
+power control signals.
+
+One design point explicitly required by \bus is the acknowledgement of
+zero-length messages. Depending on application, a node may not require
+awakening for a zero-length message. Due to the nature of \bus Interrupt
+procedure, however, as many as two bits may be received that will be discarded
+(Figure~\ref{fig:interrupt}). A {\tt Bus~Controller} design that attempts to
+minimize wakeups should therefore not begin the wakeup process until latching
+the {\em \nth{3}} data bit.
+
+\subsubsection{Handling Interrupts During Wakeup}
+As the control bits provide ample edges, designers have more options for
+handling interrupted wakeup. In particular, the same argument regarding wakeup
+cancellation and arbitration from~\ref{sec:power-bus-controller-wakeup-int}
+applies: if isolation has not been removed, the node may simply be
+re-power-gated without issue.
+
+A possibly simpler implementation can unconditionally complete the wakeup
+sequence while indicating that a transaction was started, but failed.
+
+Ultimately, the important consideration is to draw attention to the fact that
+an Interrupt {\em may} occur during the {\tt Bus~Controller}'s issuing of
+wakeup signals (at any point) and a robust {\tt Bus~Controller} implementation
+must consider and handle the cases surrounding Interrupt.
