@@ -28,6 +28,12 @@ messages with an MSB of {\tt 1} are implementation defined.
 A broadcast message that is not understood \textbf{must} be completely
 ignored. During acknowledgement, an ignorant node shall forward.
 
+\hl{TODO: Semantics of broadcast messages in the face of power-gated nodes.}
+
+% Defining ``Data Space'' Map..
+% Single "Command" type messages 0x000000XX (256 total)
+% Query Response has 0x7xx..
+
 \subsubsection{Query Devices (Data \texttt{0x00000000})}
 The query devices command is a request for all devices to broadcast their full
 address on the bus. Every \bus node should prepare a Query~Response when this
@@ -35,7 +41,7 @@ message is received.
 
 \medskip
 \noindent
-\textit{All nodes are required to support this message.}
+\textit{All nodes are required to support this message and respond.}
 
 \subsubsection{Query Response (Data \texttt{0x7xxxxxxx})}
 This message is sent in response to a Query~Devices request. As every node
@@ -44,6 +50,16 @@ several times before they are able to send their response.
 
 The top four bits of the data field identify the message as a Query~Response.
 The remaining 28~bits contain the full address of the responding node.
+
+This message may only be sent in response to Query~Devices. The node that
+issued Query~Devices \textbf{must} acknowledge the response message, other
+nodes may ignore or acknowledge a Query~Response. A NAK'd Query~Response is
+\textbf{not} retried. An Interrupted Querty~Response \textbf{must} be retried
+until a ACK or NAK is received.
+
+\medskip
+\noindent
+\textit{All nodes are required to support this message.}
 
 \subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
 \label{sec:control-control}
