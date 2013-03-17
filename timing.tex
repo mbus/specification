@@ -259,7 +259,7 @@
     Induced Glitch. A node inducing a glitch uses the edge at time~3 to
     de-assert its bus request, instead electing to forward again. At time~4,
     the control node detects no winner of arbitration. The control node
-    finishes the arbitration cycle as required by~\label{spec:spurious}. The
+    finishes the arbitration cycle as required by~\ref{sec:spec-spurious}. The
     control node then immedaitely Interrupts the bus, indicating failure. An
     inducing node can harvest these clock edges to wake itself. The first set
     of power edges are used to wake the {\tt Bus~Controller}, the second set
