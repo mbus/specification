@@ -211,9 +211,11 @@
 } % End \figTimingInterrupt
 
 \newcommand{\figTimingInducedGlitch}{%
+\subcaptionbox{Induced Glitch Timing\label{fig:induced-timing}}
+{
   \centering
   \footnotesize
-  \begin{tikztimingtable}[timing/wscale=3.0,timing/slope=.3]
+  \begin{tikztimingtable}[timing/wscale=2.5,timing/slope=.3]
     %       IiiiAA EE IIIIII SS X110 0II
     Clock & HHHHCC CC CCHHHH HC CCCC CCC\\
     Data  & HLLLHH HH HCCCCC CH HHHL LHH\\
@@ -222,27 +224,37 @@
   \extracode
     \begin{pgfonlayer}{background}
       \begin{scope}[semithick,dashed]
-        \vertlines[color=gray]{3,6,...,\twidth}
+        \vertlines[color=gray]{2.5,5,...,\twidth}
       \end{scope}
     \end{pgfonlayer}
 
     \begin{scope}
       [font=\sc\scriptsize,shift={(-1,2)},anchor=west]
-      \node [rotate=45] at (15, 0) {Power Gate};
-      \node [rotate=45] at (18, 0) {Release Clock};
-      \node [rotate=45] at (21, 0) {Release Reset};
-      \node [rotate=45] at (24, 0) {Release Isolation};
-      \node [rotate=45] at (27, 0) {Power Gate};
+      \def\mult{2.5}
+      \node [rotate=45] at (5*\mult, 0) {Power Gate};
+      \node [rotate=45] at (6*\mult, 0) {Release Clock};
+      \node [rotate=45] at (7*\mult, 0) {Release Reset};
+      \node [rotate=45] at (8*\mult, 0) {Release Isolation};
+      \node [rotate=45] at (9*\mult, 0) {Power Gate};
 
-      \node [rotate=45] at (45, 0) {Release Clock};
-      \node [rotate=45] at (48, 0) {Release Reset};
-      \node [rotate=45] at (51, 0) {Release Isolation};
+      \node [rotate=45] at (15*\mult, 0) {Release Clock};
+      \node [rotate=45] at (16*\mult, 0) {Release Reset};
+      \node [rotate=45] at (17*\mult, 0) {Release Isolation};
     \end{scope}
 
-    \foreach \n [evaluate=\n as \l using int((\n-1)/3)] in {3,6,...,\twidth}
+    \foreach \n [evaluate=\n as \l using int((\n-1)/2.5)] in {2.5,5,...,\twidth}
       \draw (\n,-4.5) -- +(0,-.2)
         node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
   \end{tikztimingtable}
+}
+%
+\subcaptionbox{Inducer\label{fig:induced-inducer}}
+{
+  \setlength\fboxsep{2pt}
+  \setlength\fboxrule{0pt}
+  \fbox{\includegraphics[width=.1\linewidth]{img/glitch_inducer}}
+}
+%
   \caption{
     Induced Glitch. A node inducing a glitch uses the edge at time~3 to
     de-assert its bus request, instead electing to forward again. At time~4,
@@ -252,6 +264,7 @@
     inducing node can harvest these clock edges to wake itself. The first set
     of power edges are used to wake the {\tt Bus~Controller}, the second set
     are used by the {\tt Bus~Controller} to wake the entire node.
+    Figure~\ref{fig:induced-inducer} shows a simple glitch inducer circuit.
   }
   \label{fig:induced}
 } % End \figTimingInducedGlitch
