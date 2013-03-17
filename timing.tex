@@ -209,3 +209,50 @@
   }
   \label{fig:interrupt}
 } % End \figTimingInterrupt
+
+\newcommand{\figTimingInducedGlitch}{%
+  \centering
+  \footnotesize
+  \begin{tikztimingtable}[timing/wscale=3.0,timing/slope=.3]
+    %       IiiiAA EE IIIIII SS X110 0II
+    Clock & HHHHCC CC CCHHHH HC CCCC CCC\\
+    Data  & HLLLHH HH HCCCCC CH HHHL LHH\\
+          & {1D{Idle}}{3D{$t_{long}$}}{5D{Arbitration}}
+            {6D{Interrupt}}{7D{Control Bits}}{1D{Idle}}\\
+  \extracode
+    \begin{pgfonlayer}{background}
+      \begin{scope}[semithick,dashed]
+        \vertlines[color=gray]{3,6,...,\twidth}
+      \end{scope}
+    \end{pgfonlayer}
+
+    \begin{scope}
+      [font=\sc\scriptsize,shift={(-1,2)},anchor=west]
+      \node [rotate=45] at (15, 0) {Power Gate};
+      \node [rotate=45] at (18, 0) {Release Clock};
+      \node [rotate=45] at (21, 0) {Release Reset};
+      \node [rotate=45] at (24, 0) {Release Isolation};
+      \node [rotate=45] at (27, 0) {Power Gate};
+
+      \node [rotate=45] at (45, 0) {Release Clock};
+      \node [rotate=45] at (48, 0) {Release Reset};
+      \node [rotate=45] at (51, 0) {Release Isolation};
+    \end{scope}
+
+    \foreach \n [evaluate=\n as \l using int((\n-1)/3)] in {3,6,...,\twidth}
+      \draw (\n,-4.5) -- +(0,-.2)
+        node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
+  \end{tikztimingtable}
+  \caption{
+    Induced Glitch. A node inducing a glitch uses the edge at time~3 to
+    de-assert its bus request, instead electing to forward again. At time~4,
+    the control node detects no winner of arbitration. The control node
+    finishes the arbitration cycle as required by~\label{spec:spurious}. The
+    control node then immedaitely Interrupts the bus, indicating failure. An
+    inducing node can harvest these clock edges to wake itself. The first set
+    of power edges are used to wake the {\tt Bus~Controller}, the second set
+    are used by the {\tt Bus~Controller} to wake the entire node.
+  }
+  \label{fig:induced}
+} % End \figTimingInducedGlitch
+

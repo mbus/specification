@@ -124,3 +124,28 @@ Ultimately, the important consideration is to draw attention to the fact that
 an Interrupt {\em may} occur during the {\tt Bus~Controller}'s issuing of
 wakeup signals (at any point) and a robust {\tt Bus~Controller} implementation
 must consider and handle the cases surrounding Interrupt.
+
+\subsection{Waking via Local Interrupt}
+It is also desirable for a clockless, power-gated \bus node to generate an
+interrupt and send a message\footnote{
+  As example, consider an ultrasonic transducer, which can be used as a near
+  zero-energy wakeup source by harvesting energy from an ultrasonic wakeup
+  chirp.}.
+As the node now wishes to send a message, it cannot use the arbitration edges
+as wakeup edges as it must be participating in the same arbitration to wake
+itself up. Bus-level solutions, such as extra initial wakeup edges, require a
+global sense of the current ``power-state'' of the bus as well as sacrificing
+the ability of power conscious sensors to be used with power oblivious
+designs.
+
+Instead, power conscious nodes can exploit a robustness property of every \bus
+control node to generate wakeup edges.
+Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines control
+node behavior in response to a glitch on the data line causing a spurious
+wakeup. By deliberatly inducing such a glitch, a power-gated member node can
+generate enough pulses to wake itself up. Figure~\ref{fig:induced} shows an
+example waveform of an induced glitch, annotated with power control signals.
+
+\begin{figure}
+  \figTimingInducedGlitch
+\end{figure}
