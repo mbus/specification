@@ -143,8 +143,16 @@ control node to generate wakeup edges.
 Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines control
 node behavior in response to a glitch on the data line causing a spurious
 wakeup. By deliberatly inducing such a glitch, a power-gated member node can
-generate enough pulses to wake itself up. Figure~\ref{fig:induced} shows an
-example waveform of an induced glitch, annotated with power control signals.
+generate enough pulses to wake itself up. Figure~\ref{fig:induced-timing}
+shows an example waveform of an induced glitch, annotated with power control
+signals. Figure~\ref{fig:induced-inducer} demonstrates a simple inducer
+circuit.
+
+Details on how the {\tt Bus~Controller} disambiguates between an RX-induced
+wakeup and an interrupt requested wakeup and other implementation details are
+outside the scope of this document, but persons developing a power-gated
+system are highly encouraged to read the {\em \bus M3 Implementation
+Specification} as an example of how to design a power-gated system.
 
 \begin{figure}
   \figTimingInducedGlitch
