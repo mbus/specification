@@ -34,8 +34,8 @@ control design:
   \hline \hline
   {\tt POWER\_ON}    & Controls Power-Gating           & \nth{1} & \nth{2} \\
   {\tt RELEASE\_CLK} & Supply Clock to Internal Logic  & \nth{2} & \nth{2} \\
-  {\tt RELEASE\_RST} & (De)Assert Reset                & \nth{3} & \nth{2} \\
-  {\tt RELEASE\_ISO} & Electrically Isolate Module I/O & \nth{4} & \nth{1} \\
+  {\tt RELEASE\_ISO} & Electrically Isolate Module I/O & \nth{3} & \nth{1} \\
+  {\tt RELEASE\_RST} & (De)Assert Reset                & \nth{4} & \nth{2} \\
 \end{tabular}
 \end{quote}
 
@@ -61,8 +61,8 @@ provide the required signals. Mapping power edges to \bus protocol edges:
 \begin{tabular}{r c l}
   Arbitration    & $\rightarrow$ & {\tt POWER\_ON} \\
   Priority Drive & $\rightarrow$ & {\tt RELEASE\_CLK} \\
-  Priority Latch & $\rightarrow$ & {\tt RELEASE\_RST} \\
-  Drive Bit 0    & $\rightarrow$ & {\tt RELEASE\_ISO} \\
+  Priority Latch & $\rightarrow$ & {\tt RELEASE\_ISO} \\
+  Drive Bit 0    & $\rightarrow$ & {\tt RELEASE\_RST} \\
 \end{tabular}
 \end{quote}
 
@@ -157,3 +157,35 @@ Specification} as an example of how to design a power-gated system.
 \begin{figure}
   \figTimingInducedGlitch
 \end{figure}
+
+\subsection{Sleeping the {\tt Bus Controller}, Node}
+\bus edges can also be harvested to return both the node and the bus
+controller to sleep mode. While the exact message structure is left as
+implementation defined, \autoref{fig:shutdown} demonstrates how the control
+edges following the End~of~Message bit may be used to put both the node and
+the {\tt Bus~Controller} to sleep.
+
+\autoref{fig:shutdown} delays the shutdown procedure until the transmitter
+asserts End~of~Message, indicating the shutdown message was not in error.
+In addition, \autoref{fig:shutdown} has the advantage that a node transmitting
+a shutdown request can itself shut down with no further intervention or
+knowledge by the control node.
+
+\begin{figure}
+  \figTimingShutdown
+\end{figure}
+
+\subsection{The Control Node, In Breif}
+Explicitly not discussed in this document is any indication of how a
+power-gated control node is implemented. The period $t_{long}$ is permitted to
+be arbitrary in length with the express intent of allowing sleeping control
+nodes to wake themselves using the falling edge of {\tt DIN} as a trigger. The
+actual means for waking the control node are outside the scope of this
+document however.
+
+Similarly, sleeping a control node is outside the scope of \bus functionality.
+A control node must sample its {\tt DIN} line upon returning to Idle (time~9
+in \autoref{fig:shutdown}) by the rules laid out
+in~\ref{sec:protocol-return-idle}~\nameref{sec:protocol-return-idle}. If the
+{\tt DIN} line is high at that time after an implementation-defined shutdown
+message, the control node may safely enter sleep mode.

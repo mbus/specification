@@ -188,6 +188,7 @@ section, the {\sc 00: Interrupted} state should be used for general or
 unclassified interruptions as it carriers the least semantic meaning
 
 \subsection{Return to Idle}
+\label{sec:protocol-return-idle}
 After latching the final Control~Bit (time~20 in
 Figure~\ref{fig:interrupt}), one final edge (time~22) is generated to formally
 enter {\sc idle}. If, however, the data line is low at this edge, then it
