@@ -9,8 +9,8 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="78.207077"
-   height="113.25034"
+   width="70.958054"
+   height="109.03355"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
@@ -24,9 +24,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.2"
-     inkscape:cx="77.439848"
-     inkscape:cy="58.371039"
+     inkscape:zoom="7.919596"
+     inkscape:cx="83.881215"
+     inkscape:cy="58.277552"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -36,10 +36,10 @@
      inkscape:window-x="2560"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     fit-margin-left="1"
-     fit-margin-right="1"
-     fit-margin-bottom="1"
-     fit-margin-top="1"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     fit-margin-top="0"
      inkscape:snap-object-midpoints="true">
     <inkscape:grid
        type="xygrid"
@@ -48,8 +48,8 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       originx="-208.54195px"
-       originy="-901.64161px" />
+       originx="-209.54195px"
+       originy="-904.85841px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -67,7 +67,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-208.54195,-37.470241)">
+     transform="translate(-209.54195,-38.470241)">
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
@@ -142,7 +142,7 @@
          id="tspan3041"
          x="218"
          y="147.36218"
-         style="font-size:10px">INTERRUPT_N</tspan></text>
+         style="font-size:10px">INTERRUPTn</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 215.06697,82.014946 c 0,0 0,-10 10,-10 10,0 10,10 10,10 l 0,10 -20,0 z"
@@ -238,13 +238,14 @@
        sodipodi:cy="147.36218"
        sodipodi:rx="2"
        sodipodi:ry="2"
-       d="m 267,147.36218 a 2,2 0 1 1 -4,0 2,2 0 1 1 4,0 z"
+       d="m 267,147.36218 c 0,1.10457 -0.89543,2 -2,2 -1.10457,0 -2,-0.89543 -2,-2 0,-1.10457 0.89543,-2 2,-2 1.10457,0 2,0.89543 2,2 z"
        transform="matrix(0,1,-1,0,412.36218,-190.63781)" />
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 66.45805,39.891953 0,-10 10,0"
+       d="m 66.45805,39.891953 0,-10 5,0"
        id="path3078"
        inkscape:connector-curvature="0"
-       transform="translate(208.54195,37.470241)" />
+       transform="translate(208.54195,37.470241)"
+       sodipodi:nodetypes="ccc" />
   </g>
 </svg>
