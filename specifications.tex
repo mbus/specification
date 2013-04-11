@@ -85,6 +85,13 @@ and~\ref{sec:addressing-full}~\nameref{sec:addressing-full} respectively.
 Addresses {\tt 0x00}, {\tt 0x01}, and {\tt 0xffffffff} are reserved. Their
 function is detailed in~\ref{sec:control}~\nameref{sec:control}.
 
+\subsection{Unassigned Short Prefix: \texttt{0b1111}}
+\label{sec:spec-unassigned-short-prefix}
+Out of reset, nodes self-assign a short prefix of {\tt 0b1111}. This short
+prefix shall be considered as a sentinel value where short prefixes are
+reported, indicating that the node does not currently have a short prefix
+assigned.
+
 \subsection{Interrupt Rules}
 \label{sec:spec-interrupt}
 \bus permits any node to interrupt any message for any reason. To allow for

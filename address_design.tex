@@ -91,5 +91,8 @@ given a unique short prefix. If a node has greater than 16 functional units
 it will be assigned multiple short prefixes, each mapping to one of the node's
 full prefixes.
 
-Short prefixes are assigned dynamically.
+In a \bus instantiation, short prefixes are assigned dynamically. Out of
+reset, all member nodes are assigned the short prefix
+\nameref{sec:spec-unassigned-short-prefix}. After system power-on, a node
+shall send a series of \nameref{cmd:enumerate-device} commands.
 
