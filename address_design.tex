@@ -43,7 +43,8 @@ header is thus always {\tt 0b1111}.
   \colorbitbox{lightgreen}{4}{0xF}
   \colorbitbox{lightergreen}{4}{0x0 (RSVD)}
   \bitbox{20}{Full Prefix}
-  \colorbitbox{lightcyan}{4}{Func Unit ID}
+  \colorbitbox{lightcyan}{4}{Func Unit ID} \\
+  \bitbox[t]{8}{$\underbrace{\hspace{13em}}_{\text{\normalsize Header}}$}
 \end{bytefield}
 \end{center}
 
@@ -94,5 +95,5 @@ full prefixes.
 In a \bus instantiation, short prefixes are assigned dynamically. Out of
 reset, all member nodes are assigned the short prefix
 \nameref{sec:spec-unassigned-short-prefix}. After system power-on, a node
-shall send a series of \nameref{cmd:enumerate-device} commands.
+shall send a series of \nameref{cmd:enumerate-node} commands.
 
