@@ -1,0 +1,59 @@
+%\svnInfo $Id$
+
+\section{Addressing Design}
+\label{sec:addressing}
+
+One of the \bus design points is to serve as a system interconnect for a
+physically constrained system. With that in mind, \bus attempts to optimize
+for a system of complex connected components. In particular, \bus expects that
+an individual member node may itself be composed of multiple functional units,
+which may each be individually addressed.
+
+Supporing multiple, addressable functional units with only one set of exposed
+\bus signal pins could also be done by instantiating several copies of a
+member node on each die, but this requires a bus interface module for every
+functional unit within an integrated chip. Instead, the bottom four bits of
+addresses are reserved to identify functional units. Nodes with more than
+sixteen functional units will require multiple addresses.
+
+\subsection{Address Types}
+\label{sec:addressing-types}
+
+\bus defines the term {\em prefix} to refer to the portion of the address that
+specifies which node is being addressed and reserves the term {\em address} to
+refer to a complete addres---one that specifies a functional unit within a
+node. An address is the composition of a prefix with a functional unit
+identifier.
+
+Every \bus node has two prefixes, a {\em full} prefix and a {\em short}
+prefix. With a functional unit identifier, these become a full address and a
+short address. A short prefix is 4~bits long and a full prefix is 28~bits
+long. To distinguish full and short prefixes, the short prefix {\tt 0b1111} is
+reserved to identify a full prefix. All long prefixes begin with {\tt 0b1111}
+and therefore have only $2^{24}$ unique bits.
+
+
+\subsection{Full Prefix Assignment}
+\label{sec:addressing-full}
+
+\begin{bytefield}[bitwidth=1.5em]{32}
+  \bitheader{0-31} \\
+  \colorbitbox{lightgreen}{4}{0xF}
+  \colorbitbox{lightergreen}{4}{0x0 (RSVD)}
+  \bitbox{20}{Full Prefix}
+  \bitbox{4}{Func Unit ID}
+\end{bytefield}
+
+The purpose of full prefixes is to serve as a unique identifier for a node,
+akin to a product identifier. Full prefixes do not distinguish instantiations
+of a node, that is, multiple copies of a unique part will all have the same
+full prefix. Bits~24-27 of the full address are reserved for other purposes
+(\ref{sec:todo-extensions-resume}~\nameref{sec:todo-extensions-resume}). The
+remaining range, bits~4-23, are available to be utilized as full prefixes.
+
+The full prefixes ranging {\tt 0x00000-0x0000F} are reserved for legacy M3
+devices. \hl{An allocation scheme for new full prefixes is currently
+undefined.}
+
+\subsection{Short Prefix Assignment}
+\label{sec:addressing-short}
