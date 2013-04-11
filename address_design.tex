@@ -10,7 +10,7 @@ an individual member node may itself be composed of multiple functional units,
 which may each be individually addressed.
 
 Supporing multiple, addressable functional units with only one set of exposed
-\bus signal pins could also be done by instantiating several copies of a
+\bus signal pins could be done by instantiating several copies of a
 member node on each die, but this requires a bus interface module for every
 functional unit within an integrated chip. Instead, the bottom four bits of
 addresses are reserved to identify functional units. Nodes with more than
@@ -57,6 +57,10 @@ other purposes
 remaining range, bits~4-23, are available to be utilized as full prefixes.
 If a node has more than 16 functional units, it may have multiple full
 prefixes. These full prefixes should be sequential.
+\begin{itemize}
+\item The full prefix {\tt 0x00000} is reserved as the broadcast prefix.
+\item The full prefix {\tt 0x00001} is reserved as the control node prefix.
+\end{itemize}
 
 The full prefixes ranging {\tt 0x00000-0x0000F} are reserved for legacy M3
 devices. \hl{An allocation scheme for new full prefixes is currently
@@ -76,10 +80,11 @@ undefined.}
 The purpose of short prefixes is to uniquly identify nodes in an \bus system.
 Multiple nodes in a \bus instantiation MUST NOT have the same short prefix.
 \begin{itemize}
-\item The short prefix {\tt 0b0000} is reserved as the braodcast prefix.
+\item The short prefix {\tt 0b0000} is reserved as the broadcast prefix.
+\item The short prefix {\tt 0b0001} is reserved as the control node prefix.
 \item The short prefix {\tt 0b1111} is reserved to distinguish full addresses.
 \end{itemize}
-This leaves a remainder of 14 unique short prefixes. These short prefixes map
+This leaves a remainder of 13 unique short prefixes. These short prefixes map
 to actual nodes instantiated in a \bus system. If there are multiple copies of
 the same node type (e.g. several external memory chips), each instance is
 given a unique short prefix. If a node has greater than 16 functional units

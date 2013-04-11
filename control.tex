@@ -5,25 +5,31 @@
 
 \bus reserves three addresses: a {\em broadcast} address, the {\em control}
 address, and an {\em extension} address. A single physical chip acting as
-control node will have two addresses. The control chip should respond to
-messages addressed to the bus controller at the control address and messages
-addressed to the chip itself at the chip's unique address. This separation
-permits a standard set of commands for \bus control nodes without restricting
-the semantics of the data sent to a control node implementation.
+control node will have (at least) two addresses. The control chip should
+respond to messages addressed to the bus controller at the control address and
+messages addressed to the chip itself at the chip's unique address. This
+separation permits a standard set of commands for \bus control nodes without
+imposing limits on the messages sent to the chip that happens to house the
+\bus controller.
 
-\subsection{Broadcast (Address \texttt{0x00}, \texttt{0xf0000000})}
+\subsection{Broadcast (Address \texttt{0x0X}, \texttt{0xf000000X})}
 \label{sec:control-broadcast}
-\bus defines address 0 as the \textit{broadcast address}. Broadcast messages
+\bus defines prefix 0 as the \textit{broadcast prefix}. Broadcast messages
 are permitted to be of arbitrary length. Messages longer than 32~bits may be
 silently dropped by nodes with small buffers. A node \textbf{must not}
 interrupt a broadcast message to indicate buffer overflow. Other interrupts
-are permitted for messages greater than 4~bytes in length.
+are permitted for broadcast messages greater than 4~bytes in length.
 
-\bus reserves half of the broadcast ``data space'' as well. The MSB of the
-broadcast data (the first data bit transmitted) shall identify \bus broadcast
-operations. If the MSB is {\tt 0} it indicates an official \bus broadcast
-message as specified in this document and subsequent revisions. Broadcast
-messages with an MSB of {\tt 1} are implementation defined.
+As broadcast messages by definition target all endpoints, assigning functional
+unit ID targets does not make sense. Instead, the functional unit ID field is
+used to define broadcast {\em channels}. Broadcast channel selection is used
+to differentiate between the different types of broadcast messages. \bus
+reserves half of these channels and leaves the rest as implementation defined.
+%
+The MSB of the broadcast channel identifier (address bit~3) shall identify
+\bus broadcast operations. If the MSB is {\tt 0} it indicates an official \bus
+broadcast message as specified in this document and subsequent revisions.
+Broadcast messages with an MSB of {\tt 1} are implementation defined.
 
 A broadcast message that is not understood \textbf{must} be completely
 ignored. During acknowledgement, an ignorant node shall forward.
