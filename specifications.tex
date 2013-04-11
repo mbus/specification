@@ -78,20 +78,12 @@ lower priority.
 \label{sec:spec-address}
 \bus defines two types of addresses: \textit{short} 8-bit addresses and
 \textit{full} 32~bit addresses. No short address may begin with {\tt 1111} and
-all full addresses must begin with {\tt 1111}.  The bottom eight bits of a
-node's full address must alias the node's short address, that is a node with
-the full address {\tt 0xf0123456} by definition has a short address of {\tt
-0x56}.
-
+all full addresses must begin with {\tt 1111}. Address assignment is laid out
+in~\ref{sec:addressing-short}~\nameref{sec:addressing-short}
+and~\ref{sec:addressing-full}~\nameref{sec:addressing-full} respectively.
+%
 Addresses {\tt 0x00}, {\tt 0x01}, and {\tt 0xffffffff} are reserved. Their
-function is detailed in~\ref{sec:control}~\nameref{sec:control}. The \bus
-addressing scheme permits $2^8 - 2^4 - 2 = 238$ unique short addresses and
-$2^{28} - 2^4 - 2 \approx 268$~million unique full addresses for attached
-devices.
-
-\bus further requires that all currently assigned full addresses set
-bits~24-27 to~0. These bits are reserved for future protocol extensions (this
-reduces the address space to $2^{24} - 2^4 -2 \approx 16.7$~million).
+function is detailed in~\ref{sec:control}~\nameref{sec:control}.
 
 \subsection{Interrupt Rules}
 \label{sec:spec-interrupt}

@@ -1,4 +1,4 @@
-%\svnInfo $Id$
+\svnInfo $Id$
 
 \section{Addressing Design}
 \label{sec:addressing}
@@ -21,35 +21,42 @@ sixteen functional units will require multiple addresses.
 
 \bus defines the term {\em prefix} to refer to the portion of the address that
 specifies which node is being addressed and reserves the term {\em address} to
-refer to a complete addres---one that specifies a functional unit within a
-node. An address is the composition of a prefix with a functional unit
-identifier.
+refer to a complete address---one that specifies a functional unit within a
+node.
 
-Every \bus node has two prefixes, a {\em full} prefix and a {\em short}
-prefix. With a functional unit identifier, these become a full address and a
-short address. A short prefix is 4~bits long and a full prefix is 28~bits
-long. To distinguish full and short prefixes, the short prefix {\tt 0b1111} is
-reserved to identify a full prefix. All long prefixes begin with {\tt 0b1111}
-and therefore have only $2^{24}$ unique bits.
+Every \bus node has two prefixes, a {\em full} prefix and a {\em short} prefix.
+A short prefix is 4~bits long and a full prefix is 20~bits long.
+A short address is the composition of short prefix and a functional
+unit identifier. A full address is the composition of a header, a full prefix,
+and a functional unit identifier.
+To distinguish full and short addresses, the short prefix {\tt 0b1111} is
+reserved to identify a full address. The first four bits of the full address
+header is thus always {\tt 0b1111}.
 
 
 \subsection{Full Prefix Assignment}
 \label{sec:addressing-full}
 
-\begin{bytefield}[bitwidth=1.5em]{32}
+\begin{center}
+\begin{bytefield}[bitwidth=1.4em]{32}
   \bitheader{0-31} \\
   \colorbitbox{lightgreen}{4}{0xF}
   \colorbitbox{lightergreen}{4}{0x0 (RSVD)}
   \bitbox{20}{Full Prefix}
-  \bitbox{4}{Func Unit ID}
+  \colorbitbox{lightcyan}{4}{Func Unit ID}
 \end{bytefield}
+\end{center}
 
 The purpose of full prefixes is to serve as a unique identifier for a node,
 akin to a product identifier. Full prefixes do not distinguish instantiations
 of a node, that is, multiple copies of a unique part will all have the same
-full prefix. Bits~24-27 of the full address are reserved for other purposes
+full prefix. This implies that multiple nodes in a single \bus instantiation
+may have the same full prefix. Bits~24-27 of the full address are reserved for
+other purposes
 (\ref{sec:todo-extensions-resume}~\nameref{sec:todo-extensions-resume}). The
 remaining range, bits~4-23, are available to be utilized as full prefixes.
+If a node has more than 16 functional units, it may have multiple full
+prefixes. These full prefixes should be sequential.
 
 The full prefixes ranging {\tt 0x00000-0x0000F} are reserved for legacy M3
 devices. \hl{An allocation scheme for new full prefixes is currently
@@ -57,3 +64,27 @@ undefined.}
 
 \subsection{Short Prefix Assignment}
 \label{sec:addressing-short}
+
+\begin{center}
+\begin{bytefield}[bitwidth=1.5em]{8}
+  \bitheader{0-7} \\
+  \bitbox{4}{Short Prefix}
+  \colorbitbox{lightcyan}{4}{Func Unit ID}
+\end{bytefield}
+\end{center}
+
+The purpose of short prefixes is to uniquly identify nodes in an \bus system.
+Multiple nodes in a \bus instantiation MUST NOT have the same short prefix.
+\begin{itemize}
+\item The short prefix {\tt 0b0000} is reserved as the braodcast prefix.
+\item The short prefix {\tt 0b1111} is reserved to distinguish full addresses.
+\end{itemize}
+This leaves a remainder of 14 unique short prefixes. These short prefixes map
+to actual nodes instantiated in a \bus system. If there are multiple copies of
+the same node type (e.g. several external memory chips), each instance is
+given a unique short prefix. If a node has greater than 16 functional units
+it will be assigned multiple short prefixes, each mapping to one of the node's
+full prefixes.
+
+Short prefixes are assigned dynamically.
+
