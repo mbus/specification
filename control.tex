@@ -36,9 +36,44 @@ ignored. During acknowledgement, an ignorant node shall forward.
 
 \hl{TODO: Semantics of broadcast messages in the face of power-gated nodes.}
 
-% Defining ``Data Space'' Map..
-% Single "Command" type messages 0x000000XX (256 total)
-% Query Response has 0x7xx..
+\subsubsection{Broadcast Messages and Power-Gating}
+As power-gating of nodes is a \bus design consideration, \bus also defines the
+responsibilities of power-gated nodes for broadcast messages. The {\tt
+Bus~Controller} {\bf must} wake for every message. Wakeup shall occur during
+the arbitration phase of a message. For non-broadcast messages, the {\tt
+Bus~Controller} decides whether it will wake the node once it has received the
+entire address. To simplify {\tt Bus~Controller} design, the same constraint
+is imposed on broadcast messages: the {\tt Bus~Controller} should be able to
+decide whether it will wake the node after receiving the complete address.
+The implication is that the rules for waking nodes in response to broadcast
+messages are grouped by broadcast channel. This requirement {\bf must} hold
+true for all \bus broadcast channels and should hold true for any
+implementation-defined channels.
+
+Some messages (e.g. \nameref{cmd:query-devices}) require a response, but may
+not require waking the node. The message semantics take priority over the
+channel power rules. That is, if a message must be responded to and the {\tt
+Bus~Controller} logic is too simple to respond, the {\tt Bus~Controller} {\bf
+must} wake the node to respond.
+
+The \bus broadcast channel power rules are summarized here:
+\begin{itemize}
+  \item \nameref{sec:channel-0}
+  \begin{itemize}
+    \item Nodes responsible for performing enumeration {\bf must} be woken.
+    \item All other nodes may be woken.
+  \end{itemize}
+  \item \nameref{sec:channel-1}
+  \begin{itemize}
+    \item \dots
+  \end{itemize}
+  \item \nameref{sec:channel-2-7}
+  \begin{itemize}
+    \item Nodes capable of receiving arbitrary messages (e.g. CPU) may be
+             woken.
+    \item Fixed-function nodes (no software) {\bf must not} be woken.
+  \end{itemize}
+\end{itemize}
 
 \subsubsection{Broadcast Channels and Messages}
 This section breaks down all of the defined broadcast channels and messages.
@@ -52,6 +87,7 @@ All examples are shown with short addresses for space. There is no distinction
 between the use of the short or full broadcast address.
 
 \paragraph{Broadcast Channel 0: Node Discovery and Enumeration}
+\label{sec:channel-0}
 
 \subparagraph{Query Devices (Data \texttt{0x00000000})}
 \label{cmd:query-devices}
@@ -211,8 +247,10 @@ retried until a ACK or NAK is received.
 \textit{All nodes are required to support this message.}
 
 \paragraph{Broadcast Channel 1: Power}
+\label{sec:channel-1}
 
 \paragraph{Broadcast Channels 2-7: Reserved}
+\label{sec:channel-2-7}
 
 \subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
 \label{sec:control-control}
