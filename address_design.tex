@@ -36,8 +36,8 @@ header is thus always {\tt 0b1111}.
 
 \subsection{Full Prefix Assignment}
 \label{sec:addressing-full}
+~
 
-\begin{center}
 \begin{bytefield}[bitwidth=1.4em]{32}
   \bitheader{0-31} \\
   \colorbitbox{lightgreen}{4}{0xF}
@@ -46,7 +46,6 @@ header is thus always {\tt 0b1111}.
   \colorbitbox{lightcyan}{4}{Func Unit ID} \\
   \bitbox[t]{8}{$\underbrace{\hspace{13em}}_{\text{\normalsize Header}}$}
 \end{bytefield}
-\end{center}
 
 The purpose of full prefixes is to serve as a unique identifier for a node,
 akin to a product identifier. Full prefixes do not distinguish instantiations
@@ -69,17 +68,18 @@ undefined.}
 
 \subsection{Short Prefix Assignment}
 \label{sec:addressing-short}
+~
 
-\begin{center}
 \begin{bytefield}[bitwidth=1.5em]{8}
   \bitheader{0-7} \\
   \bitbox{4}{Short Prefix}
   \colorbitbox{lightcyan}{4}{Func Unit ID}
 \end{bytefield}
-\end{center}
+\medskip
 
 The purpose of short prefixes is to uniquly identify nodes in an \bus system.
-Multiple nodes in a \bus instantiation MUST NOT have the same short prefix.
+Multiple nodes in a \bus instantiation {\bf must not} have the same short
+prefix.
 \begin{itemize}
 \item The short prefix {\tt 0b0000} is reserved as the broadcast prefix.
 \item The short prefix {\tt 0b0001} is reserved as the control node prefix.
@@ -95,5 +95,38 @@ full prefixes.
 In a \bus instantiation, short prefixes are assigned dynamically. Out of
 reset, all member nodes are assigned the short prefix
 \nameref{sec:spec-unassigned-short-prefix}. After system power-on, a node
-shall send a series of \nameref{cmd:enumerate-node} commands.
+shall send a series of \nameref{cmd:enumerate-node} commands. \bus does not
+require that the control node send the \nameref{cmd:enumerate-node} commands,
+however any node containing the control node should be capable of enumerating
+bus members. Any node capable of performing enumeration {\bf must} be capable
+of snooping another node's performing of enumeration and {\bf must} update its
+local enumeration state from the snooped data.
+
+Short prefixes should be assigned in ascending numerical order beginning with
+prefix {\tt 0b0010}.
+It is the responsibility of the
+node(s) performing enumeration to ensure no duplicate short prefixes are
+assigned.
+As enumeration assignments are resolved by the
+topological priority arbitration, the short prefix assigned to a node should
+also correspond to its topological priority.
+This constraint may be violated in systems that do not enumerate prefixes in
+order, that use the
+\nameref{cmd:invalidate-prefix} command to re-order short prefixes, or
+that use \nameref{sec:addressing-static-short-prefix} where the statically
+assigned prefixes do not match the topology. Short prefixes cannot be used to
+affect priority. Priority is determined exclusively by physical topology.
+
+Short prefix assignments {\bf must} be preserved when nodes are powered gated.
+
+\subsubsection{Static Short Prefix Assignments}
+\label{sec:addressing-static-short-prefix}
+All \bus nodes {\bf must} support dynamic short prefix assignments. A node may
+have a default short prefix assignment. Upon the receipt of any
+\nameref{cmd:enumerate-node} commands, a node with a default short prefix {\bf
+must} immediately invalidate its default short prefix and participate in the
+enumeration process. A node with a default short prefix that receieves an
+\nameref{cmd:invalidate-prefix} command shall set its short prefix to
+\nameref{sec:spec-unassigned-short-prefix}.
+\hl{An allocation for default short prefixes is not yet defined.}
 
