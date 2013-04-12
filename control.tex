@@ -59,6 +59,7 @@ channel power rules. That is, if a message must be responded to and the {\tt
 Bus~Controller} logic is too simple to respond, the {\tt Bus~Controller} {\bf
 must} wake the node to respond.
 
+\medskip\noindent
 The \bus broadcast channel power rules are summarized here:
 \begin{itemize}
   \item \nameref{sec:channel-0}
@@ -71,13 +72,21 @@ The \bus broadcast channel power rules are summarized here:
     \item Nodes {\bf must} obey the indicated power request.
     \item Nodes interested in snooping not affected by the request may be woken.
   \end{itemize}
-  \item \nameref{sec:channel-2-7}
+  \item \nameref{sec:channel-2-6}
   \begin{itemize}
     \item Nodes capable of receiving arbitrary messages (e.g. CPU) may be
              woken.
     \item Fixed-function nodes (no software) {\bf must not} be woken.
   \end{itemize}
+  \item \nameref{sec:channel-7}
+  \begin{itemize}
+    \item Nodes that ignore the Data channel {\bf must not} be woken.
+    \item All other nodes may be woken.
+  \end{itemize}
 \end{itemize}
+%
+In all cases where a node may wake up, nodes shall be assumed to not wake up
+unless explicitly stated otherwise.
 
 \subsubsection{Broadcast Channels and Messages}
 This section breaks down all of the defined broadcast channels and messages.
@@ -88,7 +97,14 @@ acknowledgement cycle. It should not wake a power-gated node to alert of the
 broadcast message.
 
 All examples are shown with short addresses for space. There is no distinction
-between the use of the short or full broadcast address. In the bitfields,
+between the use of the short or full broadcast address.
+Bitfields are presented \textbf{\color{blue} Address}~+~\textbf{\color{OliveGreen} Data}.
+Addresses are broken down into the \hlc[lightblue]{Broadcast Prefix} and the
+\hlc[lightcyan]{Broadcast Channel}. Data is broken down into a
+\hlc[lightgreen]{Message Type Specifier} and the message itself.
+\nameref{sec:channel-7} does not have a Message Type Specifier.
+%
+In the bitfields,
 {\tt 0} and {\tt 1} indicate bits that must be set to that value, {\tt X}
 indicates bits that depend on the current message, and {\tt Z} indicates bits
 that should be {\em ignored}---accept any value, send as {\tt 0}.
@@ -107,27 +123,28 @@ enumeration controller is power-gated, it must be woken for these messages.
 \label{cmd:query-devices}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0000}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0000}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
-    \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0000}
-      \bitbox{28}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
+    \begin{bytefield}[bitwidth=1.25em]{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightgreen}{4}{0000}
+      \bitbox{4}{ZZZZ}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
+
+~
 
 The query devices command is a request for all devices to broadcast their
 static full prefix and currently assigned short prefix on the bus. Every \bus
@@ -142,45 +159,51 @@ received.
 \label{cmd:query-response}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0000}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0000}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
     \begin{bytefield}[bitwidth=1.25em]{32}
       \bitheader{0-31} \\
-      \bitbox{4}{0001}
+      \colorbitbox{lightgreen}{4}{0001}
       \bitbox{4}{ZZZZ}
       \bitbox{20}{Full Prefix}
       \bitbox{4}{Short Prefix}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
 
-This message is sent in response to a \nameref{cmd:query-devices} request. As every node
-will be transmitting their address, nodes should anticipate losing arbitration
-several times before they are able to send their response.
+~
+
+This message is sent in response to a \nameref{cmd:query-devices} or
+\nameref{cmd:invalidate-prefix} request. When responding to
+\nameref{cmd:query-devices}, every node will be transmitting their address,
+and nodes should anticipate losing arbitration several times before they are
+able to send their response.
 
 The top four bits of the data field identify the message as a Query~Response.
-The next four bits are reserved. The following 20~bits contain the full prefix
+The next four bits are ignored. The following 20~bits contain the full prefix
 of the node. The final 4~bits are the currently assigned short prefix. Nodes
 that have not been enumerated should report a short prefix of {\tt 0b1111}.
 
 This message must be sent in response to \nameref{cmd:query-devices} or
-\nameref{cmd:enumerate-device}. The node that
-issued Query~Devices \textbf{must} acknowledge the response message, other
-nodes may ignore or acknowledge a Query~Response. A NAK'd Query~Response is
-\textbf{not} retried. An Query~Response that is Interrupted be \textbf{must}
-retried until a ACK or NAK is received.
+\nameref{cmd:enumerate-node}. When responding to \nameref{cmd:query-devices},
+nodes {\bf must} retry until the message is sent. When responding to
+\nameref{cmd:enumerate-node}, nodes {\bf must not} retry sending if
+arbitration is lost and {\bf must} retry sending if interrupted\footnote{
+  An iterrupt should not occur during this message. Such an interrupt would be
+  an error.
+  }.
 
 \medskip
 \noindent
@@ -190,28 +213,29 @@ retried until a ACK or NAK is received.
 \label{cmd:enumerate-node}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0000}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0000}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0010}
-      \bitbox{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+    \begin{bytefield}[bitwidth=1.25em]{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightgreen}{4}{0010}
       \bitbox{4}{Short Prefix}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
+
+~
 
 This message assigns a short prefix to a device. All nodes that receive this
 message and do not have an assigned short prefix {\bf must} attempt to reply
@@ -231,28 +255,29 @@ appropriate.}
 \label{cmd:invalidate-prefix}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0000}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0000}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0011}
-      \bitbox{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+    \begin{bytefield}[bitwidth=1.25em]{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightgreen}{4}{0011}
       \bitbox{4}{Short Prefix}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
+
+~
 
 This message clears the assignment of a short prefix. The bottom 4~bits
 specifiy the node whose prefix shall be reset. A node shall reset its prefix
@@ -281,27 +306,29 @@ snoop in the process of instructing itself to sleep.
 \label{cmd:all-sleep}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0001}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0001}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0000}
-      \bitbox{28}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+    \begin{bytefield}[bitwidth=1.25em]{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightgreen}{4}{0000}
+      \bitbox{4}{ZZZZ}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
+
+~
 
 All nodes receiving this message {\bf must} immediately enter their lowest
 possible power state. The bottom~28 bits of this message are reserved and
@@ -315,108 +342,189 @@ should be {\em ignored}.
 \label{cmd:all-wake}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0001}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0001}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0001}
-      \bitbox{28}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+    \begin{bytefield}[bitwidth=1.25em]{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightgreen}{4}{0001}
+      \bitbox{4}{ZZZZ}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
+
+~
 
 All nodes receiving this message {\bf must} immediately wake up. The bottom
 28~bits of this message are reserved and should be {\em ignored}.
 
-\subparagraph{Selective Sleep}
-\label{cmd:selective-sleep}
+\subparagraph{Selective Sleep By Short Prefix}
+\label{cmd:selective-sleep-short}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0001}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0001}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0010}
-      \bitbox{12}{ZZZZ ZZZZ ZZZZ}
+    \begin{bytefield}[bitwidth=1.25em]{24}
+      \bitheader{0-23} \\
+      \colorbitbox{lightgreen}{4}{0010}
       \bitbox{1}{Z}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{Z}
+      \bitbox{4}{ZZZZ}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
 
-This message instructs selected nodes to sleep. The bottom 16~bits of data are
+~
+
+This message instructs selected nodes to sleep. The 16~bits of data are
 treated as a bit vector, mapping short prefixes to bit indicies. That is, the
-node with short prefix {\tt 0b0011} is controlled by bit~3. If a bit is set to
+node with short prefix {\tt 0b1101} is controlled by the second bit received
+(bit~18 in the bit vector above). If a bit is set to
 {\tt 1}, the selected node {\bf must} enter sleep mode. If a bit is set to
-{\tt 0}, the selected node should not change power state. Bits 0 and 15 are
-ignored.
+{\tt 0}, the selected node should not change power state. The bits for
+prefixes {\tt 0b1111} and {\tt 0b0000} are ignored.
 
-\subparagraph{Selective Wake}
+\subparagraph{Selective Wake By Short Prefix}
 \label{cmd:selective-wake}
 ~
 
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
     \centering
     \begin{bytefield}{8}
       \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0001}
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0001}
     \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0011}
-      \bitbox{12}{ZZZZ ZZZZ ZZZZ}
+    \begin{bytefield}[bitwidth=1.25em]{24}
+      \bitheader{0-23} \\
+      \colorbitbox{lightgreen}{4}{0011}
       \bitbox{1}{Z}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{Z}
+      \bitbox{4}{ZZZZ}
     \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
+  \end{varwidth}
+\end{minipage}
 
-This message instructs selected nodes to wake. The bottom 16~bits of data are
+~
+
+This message instructs selected nodes to wake. The 16~bits of data are
 treated as a bit vector, mapping short prefixes to bit indicies. That is, the
-node with short prefix {\tt 0b0011} is controlled by bit~3. If a bit is set to
-{\tt 1}, the selected node {\bf must} wake up. If a bit is set to {\tt 0}, the
-selected node should not change power state. Bits 0 and 15 are ignored.
+node with short prefix {\tt 0b1101} is controlled by the second bit received
+(bit~18 in the bit vector above). If a bit is set to
+{\tt 1}, the selected node {\bf must} wake up. If a bit is set to
+{\tt 0}, the selected node should not change power state. The bits for
+prefixes {\tt 0b1111} and {\tt 0b0000} are ignored.
 
-\paragraph{Broadcast Channels 2-7: Reserved}
-\label{sec:channel-2-7}
+\subparagraph{Selective Sleep By Full Prefix}
+\label{cmd:selective-sleep-full}
+~
+
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0001}
+    \end{bytefield}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \colorbitbox{lightgreen}{4}{0100}
+      \bitbox{4}{ZZZZ}
+      \bitbox{20}{Full Prefix}
+      \bitbox{4}{ZZZZ}
+    \end{bytefield}
+  \end{varwidth}
+\end{minipage}
+
+~
+
+This message instructs selected nodes to sleep. Any node whose full prefix
+matches {\bf must} enter sleep.
+
+\subparagraph{Selective Wake By Full Prefix}
+\label{cmd:selective-wake-full}
+~
+
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0001}
+    \end{bytefield}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \colorbitbox{lightgreen}{4}{0100}
+      \bitbox{4}{ZZZZ}
+      \bitbox{20}{Full Prefix}
+      \bitbox{4}{ZZZZ}
+    \end{bytefield}
+  \end{varwidth}
+\end{minipage}
+
+~
+
+This message instructs selected nodes to wake. Any node whose full prefix
+matches {\bf must} wake up.
+
+\paragraph{Broadcast Channels 2-6: Reserved}
+\label{sec:channel-2-6}
+
+\paragraph{Broadcast Channel 7: Data}
+\label{sec:channel-7}
+~
+
+\textbf{\hl{Not implementated in generation 1.}}
 
 \subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
 \label{sec:control-control}
