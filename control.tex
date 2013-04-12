@@ -30,6 +30,9 @@ The MSB of the broadcast channel identifier (address bit~3) shall identify
 \bus broadcast operations. If the MSB is {\tt 0} it indicates an official \bus
 broadcast message as specified in this document and subsequent revisions.
 Broadcast messages with a channel MSB of {\tt 1} are implementation defined.
+It is recommended that nodes leveraging implementation-defined broadcast
+channels provide a mechanism to dynamically select broadcast channel to help
+mitigate conflicts.
 
 A broadcast message that is not understood \textbf{must} be completely
 ignored. During acknowledgement, an ignorant node shall forward.
@@ -65,7 +68,8 @@ The \bus broadcast channel power rules are summarized here:
   \end{itemize}
   \item \nameref{sec:channel-1}
   \begin{itemize}
-    \item \dots
+    \item Nodes {\bf must} obey the indicated power request.
+    \item Nodes interested in snooping not affected by the request may be woken.
   \end{itemize}
   \item \nameref{sec:channel-2-7}
   \begin{itemize}
@@ -84,12 +88,22 @@ acknowledgement cycle. It should not wake a power-gated node to alert of the
 broadcast message.
 
 All examples are shown with short addresses for space. There is no distinction
-between the use of the short or full broadcast address.
+between the use of the short or full broadcast address. In the bitfields,
+{\tt 0} and {\tt 1} indicate bits that must be set to that value, {\tt X}
+indicates bits that depend on the current message, and {\tt Z} indicates bits
+that should be {\em ignored}---accept any value, send as {\tt 0}.
 
 \paragraph{Broadcast Channel 0: Node Discovery and Enumeration}
 \label{sec:channel-0}
 
-\subparagraph{Query Devices (Data \texttt{0x00000000})}
+Channel~0 is used for messages related to node discovery and enumeration.
+Channel~0 messages either require a response or are a response. Channel~0
+response messages should not be sent unless solicited. Nodes that are capable
+of performing enumeration {\bf must} snoop all enumeration related messages
+(\nameref{cmd:enumerate-node}, \nameref{cmd:query-response}). If a node's
+enumeration controller is power-gated, it must be woken for these messages.
+
+\subparagraph{Query Devices}
 \label{cmd:query-devices}
 ~
 
@@ -109,8 +123,7 @@ between the use of the short or full broadcast address.
     \begin{bytefield}[bitwidth=1.25em]{32}
       \bitheader{0-31} \\
       \bitbox{4}{0000}
-      \bitbox{24}{0000 0000 0000 0000 0000 0000 0001}
-      \bitbox{4}{0000}
+      \bitbox{28}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
     \end{bytefield}
     \caption{Data}
   \end{subfigure}
@@ -125,80 +138,7 @@ received.
 \noindent
 \textit{All nodes are required to support this message and respond.}
 
-\subparagraph{Enumerate Node (Data \texttt{0x0000001x})}
-\label{cmd:enumerate-node}
-~
-
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
-    \centering
-    \begin{bytefield}{8}
-      \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0000}
-    \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
-    \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{4}{0000}
-      \bitbox{24}{0000 0000 0000 0000 0000 0000 0001}
-      \bitbox{4}{Short Prefix}
-    \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
-
-This message assigns a short prefix to a device. All nodes that receive this
-message and do not have an assigned short prefix {\bf must} attempt to reply
-with a \nameref{cmd:query-response}. Nodes shall perform exactly one attempt
-to reply to this message. The node that wins arbitration shall be assigned the
-short prefix from this message. Nodes that lose arbitration shall remain
-unchanged.
-
-Nodes that have an assigned short prefix shall ignore this message.
-
-\medskip
-\noindent
-\textit{All nodes are required to support this message and respond if
-appropriate.}
-
-\subparagraph{Invalidate Prefix (Data \texttt{0x0000002x})}
-\label{cmd:invalidate-prefix}
-~
-
-\begin{figure}[h]
-  \begin{subfigure}{.2\linewidth}
-    \centering
-    \begin{bytefield}{8}
-      \bitheader{0-7} \\
-      \bitbox{4}{0000}
-      \bitbox{4}{0000}
-    \end{bytefield}
-    \caption{Address}
-  \end{subfigure}
-%
-  \begin{subfigure}{.8\linewidth}
-    \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \bitbox{28}{0000 0000 0000 0000 0000 0000 0002}
-      \bitbox{4}{Short Prefix}
-    \end{bytefield}
-    \caption{Data}
-  \end{subfigure}
-\end{figure}
-
-This message clears the assignment of a short prefix. The bottom 4~bits
-specifiy the node whose prefix shall be reset. A node shall reset its prefix
-to \nameref{sec:spec-unassigned-short-prefix}. If the prefix to clear is set
-to \nameref{sec:spec-unassigned-short-prefix}, then all nodes shall reset
-their prefixes.
-
-\subparagraph{Query/Enumerate Response (Data \texttt{0x1xxxxxxx})}
+\subparagraph{Query/Enumerate Response}
 \label{cmd:query-response}
 ~
 
@@ -218,7 +158,7 @@ their prefixes.
     \begin{bytefield}[bitwidth=1.25em]{32}
       \bitheader{0-31} \\
       \bitbox{4}{0001}
-      \colorbitbox{lightred}{4}{0000}
+      \bitbox{4}{ZZZZ}
       \bitbox{20}{Full Prefix}
       \bitbox{4}{Short Prefix}
     \end{bytefield}
@@ -246,8 +186,234 @@ retried until a ACK or NAK is received.
 \noindent
 \textit{All nodes are required to support this message.}
 
+\subparagraph{Enumerate Node}
+\label{cmd:enumerate-node}
+~
+
+\begin{figure}[h]
+  \begin{subfigure}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{0000}
+    \end{bytefield}
+    \caption{Address}
+  \end{subfigure}
+%
+  \begin{subfigure}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \bitbox{4}{0010}
+      \bitbox{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+      \bitbox{4}{Short Prefix}
+    \end{bytefield}
+    \caption{Data}
+  \end{subfigure}
+\end{figure}
+
+This message assigns a short prefix to a device. All nodes that receive this
+message and do not have an assigned short prefix {\bf must} attempt to reply
+with a \nameref{cmd:query-response}. Nodes shall perform exactly one attempt
+to reply to this message. The node that wins arbitration shall be assigned the
+short prefix from this message. Nodes that lose arbitration shall remain
+unchanged.
+
+Nodes that have an assigned short prefix shall ignore this message.
+
+\medskip
+\noindent
+\textit{All nodes are required to support this message and respond if
+appropriate.}
+
+\subparagraph{Invalidate Prefix}
+\label{cmd:invalidate-prefix}
+~
+
+\begin{figure}[h]
+  \begin{subfigure}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{0000}
+    \end{bytefield}
+    \caption{Address}
+  \end{subfigure}
+%
+  \begin{subfigure}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \bitbox{4}{0011}
+      \bitbox{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+      \bitbox{4}{Short Prefix}
+    \end{bytefield}
+    \caption{Data}
+  \end{subfigure}
+\end{figure}
+
+This message clears the assignment of a short prefix. The bottom 4~bits
+specifiy the node whose prefix shall be reset. A node shall reset its prefix
+to \nameref{sec:spec-unassigned-short-prefix}. If the prefix to clear is set
+to \nameref{sec:spec-unassigned-short-prefix}, then all nodes shall reset
+their prefixes.
+
 \paragraph{Broadcast Channel 1: Power}
 \label{sec:channel-1}
+
+Channel~1 is used to query and command the power state of \bus nodes.
+Power-oblivious nodes may ignore channel~1. Power-aware nodes whose power
+model does not align well with these commands may ignore channel~1 messages
+{\em except} \nameref{cmd:all-sleep}. All nodes capable of entering a
+low-power state {\bf must} enter its lowest power state in response to an
+\nameref{cmd:all-sleep} message.
+
+Nodes are implicitly waked when a message is addressed to them, explicitly
+waking a node is unnecessary to communicate with it.
+The definition of ``wake'' and ``sleep'' are implementation-defined.
+Nodes interested in snooping power status may be woken for channel~1 messages,
+but care should be taken to ensure that a node does not wake itself up to
+snoop in the process of instructing itself to sleep.
+
+\subparagraph{All Sleep}
+\label{cmd:all-sleep}
+~
+
+\begin{figure}[h]
+  \begin{subfigure}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{0001}
+    \end{bytefield}
+    \caption{Address}
+  \end{subfigure}
+%
+  \begin{subfigure}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \bitbox{4}{0000}
+      \bitbox{28}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+    \end{bytefield}
+    \caption{Data}
+  \end{subfigure}
+\end{figure}
+
+All nodes receiving this message {\bf must} immediately enter their lowest
+possible power state. The bottom~28 bits of this message are reserved and
+should be {\em ignored}.
+
+\medskip
+\noindent
+\textit{All power-aware nodes are required to support this message.}
+
+\subparagraph{All Wake}
+\label{cmd:all-wake}
+~
+
+\begin{figure}[h]
+  \begin{subfigure}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{0001}
+    \end{bytefield}
+    \caption{Address}
+  \end{subfigure}
+%
+  \begin{subfigure}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \bitbox{4}{0001}
+      \bitbox{28}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
+    \end{bytefield}
+    \caption{Data}
+  \end{subfigure}
+\end{figure}
+
+All nodes receiving this message {\bf must} immediately wake up. The bottom
+28~bits of this message are reserved and should be {\em ignored}.
+
+\subparagraph{Selective Sleep}
+\label{cmd:selective-sleep}
+~
+
+\begin{figure}[h]
+  \begin{subfigure}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{0001}
+    \end{bytefield}
+    \caption{Address}
+  \end{subfigure}
+%
+  \begin{subfigure}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \bitbox{4}{0010}
+      \bitbox{12}{ZZZZ ZZZZ ZZZZ}
+      \bitbox{1}{Z}
+      \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
+      \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
+      \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
+      \bitbox{1}{Z}
+    \end{bytefield}
+    \caption{Data}
+  \end{subfigure}
+\end{figure}
+
+This message instructs selected nodes to sleep. The bottom 16~bits of data are
+treated as a bit vector, mapping short prefixes to bit indicies. That is, the
+node with short prefix {\tt 0b0011} is controlled by bit~3. If a bit is set to
+{\tt 1}, the selected node {\bf must} enter sleep mode. If a bit is set to
+{\tt 0}, the selected node should not change power state. Bits 0 and 15 are
+ignored.
+
+\subparagraph{Selective Wake}
+\label{cmd:selective-wake}
+~
+
+\begin{figure}[h]
+  \begin{subfigure}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{0001}
+    \end{bytefield}
+    \caption{Address}
+  \end{subfigure}
+%
+  \begin{subfigure}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \bitbox{4}{0011}
+      \bitbox{12}{ZZZZ ZZZZ ZZZZ}
+      \bitbox{1}{Z}
+      \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
+      \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
+      \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
+      \bitbox{1}{Z}
+    \end{bytefield}
+    \caption{Data}
+  \end{subfigure}
+\end{figure}
+
+This message instructs selected nodes to wake. The bottom 16~bits of data are
+treated as a bit vector, mapping short prefixes to bit indicies. That is, the
+node with short prefix {\tt 0b0011} is controlled by bit~3. If a bit is set to
+{\tt 1}, the selected node {\bf must} wake up. If a bit is set to {\tt 0}, the
+selected node should not change power state. Bits 0 and 15 are ignored.
 
 \paragraph{Broadcast Channels 2-7: Reserved}
 \label{sec:channel-2-7}
