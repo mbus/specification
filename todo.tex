@@ -30,3 +30,7 @@ several bulk addresses. If an A$\rightarrow$B transfer is interrupted and C
 attempts a C$\rightarrow$B transfer, B would indicate busy by interrupting
 immediately after the bulk address was received with a {\tt 01} RX~Error
 Interrupt sequence.
+
+\paragraph{Full addresses not unique?} Probably fair to make the assertion
+that only one functional unit per node can accept bulk transfers. Repurpose
+the functional unit id field to contain the short prefix?

@@ -59,7 +59,6 @@ If a node has more than 16 functional units, it may have multiple full
 prefixes. These full prefixes should be sequential.
 \begin{itemize}
 \item The full prefix {\tt 0x00000} is reserved as the broadcast prefix.
-\item The full prefix {\tt 0x00001} is reserved as the control node prefix.
 \end{itemize}
 
 The full prefixes ranging {\tt 0x00000-0x0000F} are reserved for legacy M3
@@ -82,10 +81,9 @@ Multiple nodes in a \bus instantiation {\bf must not} have the same short
 prefix.
 \begin{itemize}
 \item The short prefix {\tt 0b0000} is reserved as the broadcast prefix.
-\item The short prefix {\tt 0b0001} is reserved as the control node prefix.
 \item The short prefix {\tt 0b1111} is reserved to distinguish full addresses.
 \end{itemize}
-This leaves a remainder of 13 unique short prefixes. These short prefixes map
+This leaves a remainder of 14 unique short prefixes. These short prefixes map
 to actual nodes instantiated in a \bus system. If there are multiple copies of
 the same node type (e.g. several external memory chips), each instance is
 given a unique short prefix. If a node has greater than 16 functional units
@@ -94,7 +92,7 @@ full prefixes.
 
 In a \bus instantiation, short prefixes are assigned dynamically. Out of
 reset, all member nodes are assigned the short prefix
-\nameref{sec:spec-unassigned-short-prefix}. After system power-on, a node
+\nameref{sec:spec-unassigned-short-prefix}. After system power-on, some node
 shall send a series of \nameref{cmd:enumerate-node} commands. \bus does not
 require that the control node send the \nameref{cmd:enumerate-node} commands,
 however any node containing the control node should be capable of enumerating
@@ -127,6 +125,9 @@ have a default short prefix assignment. Upon the receipt of any
 must} immediately invalidate its default short prefix and participate in the
 enumeration process. A node with a default short prefix that receieves an
 \nameref{cmd:invalidate-prefix} command shall set its short prefix to
-\nameref{sec:spec-unassigned-short-prefix}.
-\hl{An allocation for default short prefixes is not yet defined.}
+\nameref{sec:spec-unassigned-short-prefix}. A node with a default short prefix
+shall otherwise make no distinction from a dynamically assigned short prefix
+(e.g., it shall respond to a \nameref{cmd:query-devices} command with its
+curret short prefix, the static short prefix).
+\hl{An allocation scheme for default short prefixes is not yet defined.}
 

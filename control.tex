@@ -3,18 +3,16 @@
 \section{Control and Configuration Messages}
 \label{sec:control}
 
-\bus reserves three addresses: a {\em broadcast} address, the {\em control}
-address, and an {\em extension} address. A single physical chip acting as
-control node will have (at least) two addresses. The control chip should
-respond to messages addressed to the bus controller at the control address and
-messages addressed to the chip itself at the chip's unique address. This
-separation permits a standard set of commands for \bus control nodes without
-imposing limits on the messages sent to the chip that happens to house the
-\bus controller.
+\bus reserves two prefixes: a {\em broadcast} prefix and an {\em extension}
+prefix. The broadcast prefix is used to command an control bus state on a
+clean channel, isolated from other users of the bus. The extension prefix is
+used in the short prefix space to identify full addresses. It is currently
+unused and reserved in the full prefix space.
 
 \subsection{Broadcast (Address \texttt{0x0X}, \texttt{0xf000000X})}
 \label{sec:control-broadcast}
-\bus defines prefix 0 as the \textit{broadcast prefix}. Broadcast messages
+\bus defines the broadcast short prefix as {\tt 0b0000} and the broadcast full
+prefix as {\tt 0x00000}. Broadcast messages
 are permitted to be of arbitrary length. Messages longer than 32~bits may be
 silently dropped by nodes with small buffers. A node \textbf{must not}
 interrupt a broadcast message to indicate buffer overflow. Other interrupts
@@ -37,8 +35,6 @@ mitigate conflicts.
 A broadcast message that is not understood \textbf{must} be completely
 ignored. During acknowledgement, an ignorant node shall forward.
 
-\hl{TODO: Semantics of broadcast messages in the face of power-gated nodes.}
-
 \subsubsection{Broadcast Messages and Power-Gating}
 As power-gating of nodes is a \bus design consideration, \bus also defines the
 responsibilities of power-gated nodes for broadcast messages. The {\tt
@@ -53,11 +49,11 @@ messages are grouped by broadcast channel. This requirement {\bf must} hold
 true for all \bus broadcast channels and should hold true for any
 implementation-defined channels.
 
-Some messages (e.g. \nameref{cmd:query-devices}) require a response, but may
+Some messages (e.g. \nameref{cmd:query-devices}) require a response but may
 not require waking the node. The message semantics take priority over the
 channel power rules. That is, if a message must be responded to and the {\tt
-Bus~Controller} logic is too simple to respond, the {\tt Bus~Controller} {\bf
-must} wake the node to respond.
+Bus~Controller} logic implementation is too simple to respond, the {\tt
+Bus~Controller} {\bf must} wake the node to respond.
 
 \medskip\noindent
 The \bus broadcast channel power rules are summarized here:
@@ -72,7 +68,14 @@ The \bus broadcast channel power rules are summarized here:
     \item Nodes {\bf must} obey the indicated power request.
     \item Nodes interested in snooping not affected by the request may be woken.
   \end{itemize}
-  \item \nameref{sec:channel-2-6}
+  \item \nameref{sec:channel-2}
+  \begin{itemize}
+    \item The control node {\bf must} wake to handle the request.
+    \item If a node's behavior would change as a result of the request, it
+          {\bf must} wake and handle the request.
+    \item Nodes interested in snooping not affected by the request may be woken.
+  \end{itemize}
+  \item \nameref{sec:channel-3-6}
   \begin{itemize}
     \item Nodes capable of receiving arbitrary messages (e.g. CPU) may be
              woken.
@@ -117,7 +120,7 @@ indicates bits that depend on the current message, and {\tt Z} indicates bits
 that should be {\em ignored}---accept any value, send as {\tt 0}.
 \hlc[lightgray]{Insignificant Bits} are also indicated as {\tt Z}.
 
-\paragraph{Broadcast Channel 0: Node Discovery and Enumeration}
+\paragraph{Broadcast Channel~0: Node Discovery and Enumeration}
 \label{sec:channel-0}
 
 Channel~0 is used for messages related to node discovery and enumeration.
@@ -296,7 +299,7 @@ to \nameref{sec:spec-unassigned-short-prefix}. If the prefix to clear is set
 to \nameref{sec:spec-unassigned-short-prefix}, then all nodes shall reset
 their prefixes.
 
-\paragraph{Broadcast Channel 1: Power}
+\paragraph{Broadcast Channel~1: Power}
 \label{sec:channel-1}
 
 Channel~1 is used to query and command the power state of \bus nodes.
@@ -532,35 +535,33 @@ matches {\bf must} enter sleep.
 This message instructs selected nodes to wake. Any node whose full prefix
 matches {\bf must} wake up.
 
-\paragraph{Broadcast Channels 2-6: Reserved}
-\label{sec:channel-2-6}
+\paragraph{Broadcast Channel~2: \bus Configuration}
+\label{sec:channel-2}
 
-\paragraph{Broadcast Channel 7: Data}
-\label{sec:channel-7}
-Channel~7 is used to send arbitrary data to every addressable entity on the
-bus. \bus places no further restrictions or structure on channel~7 messages.
-Channel~7 is intended for use by more flexible software nodes, though any node
-may listen or transmit on channel~7.
+The purpose of this channel is to configure any \bus parameters. Commands
+issued on channel~2 {\bf must} be targeted for the control node. By utilizing
+a broadcast channel all interested nodes can easily ``subscribe'' to
+configuration messages. Using a broadcast channel also permits nodes to
+hard-code the address for configuration messages.
 
-\subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
-\label{sec:control-control}
-
-\hl{Thought: Should controller address actually exist? Or should control
-messages all be put on a broadcast channel? Is there any type of control
-message that wouldn't make more sense alerting every node to the change
-implicitly?}
-
-\bus defines a set of common command messages to configure the bus. The chip
-acting as the control node listens on the address {\tt 0x01} for \bus control
-messages.
-
-Control messages that seem like good ideas (get? set?):
+The current \bus specification does not define any channel~2 messages.
+Possible future messages include:
 \begin{itemize}
   \item Maximum message length
   \item Clock speed
   \item $t_{long}$ value?
   \item \ldots?
 \end{itemize}
+
+\paragraph{Broadcast Channels~3-6: Reserved}
+\label{sec:channel-3-6}
+
+\paragraph{Broadcast Channel~7: Data}
+\label{sec:channel-7}
+Channel~7 is used to send arbitrary data to every addressable entity on the
+bus. \bus places no further restrictions or structure on channel~7 messages.
+Channel~7 is intended for use by more flexible software nodes, though any node
+may listen or transmit on channel~7.
 
 \subsection{Extension (Address \texttt{0xffffffff})}
 This address is reserved for future extensions to \bus.
