@@ -537,12 +537,19 @@ matches {\bf must} wake up.
 
 \paragraph{Broadcast Channel 7: Data}
 \label{sec:channel-7}
-~
-
-\textbf{\hl{Not implementated in generation 1.}}
+Channel~7 is used to send arbitrary data to every addressable entity on the
+bus. \bus places no further restrictions or structure on channel~7 messages.
+Channel~7 is intended for use by more flexible software nodes, though any node
+may listen or transmit on channel~7.
 
 \subsection{Control (Address \texttt{0x01}, \texttt{0xf0000001})}
 \label{sec:control-control}
+
+\hl{Thought: Should controller address actually exist? Or should control
+messages all be put on a broadcast channel? Is there any type of control
+message that wouldn't make more sense alerting every node to the change
+implicitly?}
+
 \bus defines a set of common command messages to configure the bus. The chip
 acting as the control node listens on the address {\tt 0x01} for \bus control
 messages.
