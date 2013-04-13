@@ -89,12 +89,20 @@ In all cases where a node may wake up, nodes shall be assumed to not wake up
 unless explicitly stated otherwise.
 
 \subsubsection{Broadcast Channels and Messages}
-This section breaks down all of the defined broadcast channels and messages.
+This section breaks down all of the defined \bus broadcast channels and messages.
 All undefined channels are reserved and shall not be used. A node receiving a
 broadcast message for a reserved channel shall ignore the message. It {\bf
-must not} acknowledge the message, it {\bf must} forward during the
-acknowledgement cycle. It should not wake a power-gated node to alert of the
-broadcast message.
+must not} acknowledge a message on a reserved channel and {\bf must} forward
+during the acknowledgement cycle.
+
+All \bus broadcast messages, except those sent on \nameref{sec:channel-7},
+follow a common template. The messages are 32~bits long. The four most
+significant bits identify the message~type/command. Some messages do not
+require all 32~bits. The unused bits are names {\em insignificant bits}.
+Messages may be truncated, omitting the insignificant bits on the
+wire\footnote{
+  With the caveat that all \bus messages must be byte-aligned. Some
+insignificant bits may still be sent on the wire as a consequence.}.
 
 All examples are shown with short addresses for space. There is no distinction
 between the use of the short or full broadcast address.
@@ -102,12 +110,12 @@ Bitfields are presented \textbf{\color{blue} Address}~+~\textbf{\color{OliveGree
 Addresses are broken down into the \hlc[lightblue]{Broadcast Prefix} and the
 \hlc[lightcyan]{Broadcast Channel}. Data is broken down into a
 \hlc[lightgreen]{Message Type Specifier} and the message itself.
-\nameref{sec:channel-7} does not have a Message Type Specifier.
 %
 In the bitfields,
 {\tt 0} and {\tt 1} indicate bits that must be set to that value, {\tt X}
 indicates bits that depend on the current message, and {\tt Z} indicates bits
 that should be {\em ignored}---accept any value, send as {\tt 0}.
+\hlc[lightgray]{Insignificant Bits} are also indicated as {\tt Z}.
 
 \paragraph{Broadcast Channel 0: Node Discovery and Enumeration}
 \label{sec:channel-0}
@@ -136,10 +144,11 @@ enumeration controller is power-gated, it must be woken for these messages.
   \end{varwidth}
 +
   \begin{varwidth}{.8\linewidth}
-    \begin{bytefield}[bitwidth=1.25em]{8}
-      \bitheader{0-7} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0000}
       \bitbox{4}{ZZZZ}
+      \colorbitbox{lightgray}{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
@@ -227,10 +236,11 @@ arbitration is lost and {\bf must} retry sending if interrupted\footnote{
 +
   \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{8}
-      \bitheader{0-7} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0010}
       \bitbox{4}{Short Prefix}
+      \colorbitbox{lightgray}{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
@@ -269,10 +279,11 @@ appropriate.}
 +
   \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{8}
-      \bitheader{0-7} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0011}
       \bitbox{4}{Short Prefix}
+      \colorbitbox{lightgray}{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
@@ -320,10 +331,11 @@ snoop in the process of instructing itself to sleep.
 +
   \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{8}
-      \bitheader{0-7} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0000}
       \bitbox{4}{ZZZZ}
+      \colorbitbox{lightgray}{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
@@ -356,10 +368,11 @@ should be {\em ignored}.
 +
   \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{8}
-      \bitheader{0-7} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0001}
       \bitbox{4}{ZZZZ}
+      \colorbitbox{lightgray}{24}{ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
@@ -387,8 +400,8 @@ All nodes receiving this message {\bf must} immediately wake up. The bottom
 +
   \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{24}
-      \bitheader{0-23} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0010}
       \bitbox{1}{Z}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
@@ -396,6 +409,7 @@ All nodes receiving this message {\bf must} immediately wake up. The bottom
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{Z}
       \bitbox{4}{ZZZZ}
+      \colorbitbox{lightgray}{8}{ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
@@ -428,8 +442,8 @@ prefixes {\tt 0b1111} and {\tt 0b0000} are ignored.
 +
   \begin{varwidth}{.8\linewidth}
     \centering
-    \begin{bytefield}[bitwidth=1.25em]{24}
-      \bitheader{0-23} \\
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
       \colorbitbox{lightgreen}{4}{0011}
       \bitbox{1}{Z}
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
@@ -437,6 +451,7 @@ prefixes {\tt 0b1111} and {\tt 0b0000} are ignored.
       \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X} \bitbox{1}{X}
       \bitbox{1}{Z}
       \bitbox{4}{ZZZZ}
+      \colorbitbox{lightgray}{8}{ZZZZ ZZZZ}
     \end{bytefield}
   \end{varwidth}
 \end{minipage}
