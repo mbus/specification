@@ -98,7 +98,7 @@ during the acknowledgement cycle.
 All \bus broadcast messages, except those sent on \nameref{sec:channel-7},
 follow a common template. The messages are 32~bits long. The four most
 significant bits identify the message~type/command. Some messages do not
-require all 32~bits. The unused bits are names {\em insignificant bits}.
+require all 32~bits. The unused bits are named {\em insignificant bits}.
 Messages may be truncated, omitting the insignificant bits on the
 wire\footnote{
   With the caveat that all \bus messages must be byte-aligned. Some
