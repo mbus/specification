@@ -75,7 +75,7 @@ The \bus broadcast channel power rules are summarized here:
           {\bf must} wake and handle the request.
     \item Nodes interested in snooping not affected by the request may be woken.
   \end{itemize}
-  \item \nameref{sec:channel-3-6}
+  \item \nameref{sec:channel-4-6}
   \begin{itemize}
     \item Nodes capable of receiving arbitrary messages (e.g. CPU) may be
              woken.
@@ -553,8 +553,117 @@ Possible future messages include:
   \item \ldots?
 \end{itemize}
 
-\paragraph{Broadcast Channels~3-6: Reserved}
-\label{sec:channel-3-6}
+\paragraph{Broadcast Channel~3: Member Node Events}
+\label{sec:channel-3}
+
+The purpose of this channel is for member nodes to announce information to
+multiple interested parties. It also permits the simplification of a member
+node design by permitting the member node to hard-code a destination address
+for certain classes of messages (e.g. interrupts).
+
+Member node event messages {\bf must} also include a \hlc[lightergreen]{Member
+Node Identifier}---the node's current short prefix---to disambiguate member
+node events. It is possible, and acceptable, for a member node to generate a
+member node event message before enumeration has completed. In this case, a
+member node shall send its current short prefix:
+\nameref{sec:spec-unassigned-short-prefix}.
+
+
+\subparagraph{Member Node Level Interrupt}
+\label{cmd:level-interrupt}
+~
+
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0011}
+    \end{bytefield}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \colorbitbox{lightgreen}{4}{0000}
+      \colorbitbox{lightergreen}{4}{\scriptsize Member Node Short Prefix}
+      \bitbox{24}{Interrupt Status Vector}
+    \end{bytefield}
+  \end{varwidth}
+\end{minipage}
+
+~
+
+This message announces that an interrupt has occured on this member node. The
+semantics of a \bus level interrupt dictacte that an interrupt must be
+explicitly cleared. A member node {\bf must not} genereate another level
+interrupt message {\em for the same interrupt} until that interrupt is
+explicitly cleared. A {\em different} interrupt may occur before the first
+interrupt is cleared, in which case the bit vector {\bf must} indicate both
+interrupts as active. Member nodes are permitted to batch or delay interrupts
+if appropriate, that is, a single level interrupt message may indicate the
+multiple interrupts have occurred.
+
+Clearing interrupts is {\bf not} a Channel~3 message, as doing so would
+require all member nodes to wake for every Channel~3 message.  As a
+consequence, systems with multiple nodes capable of clearing a member node
+interrupt should develop another means of coordinating the responsibility. A
+member node designed to have multiple potential controlling nodes should
+consider defining a broadcast control channel.
+
+\bus defines active to be logical {\tt 1}. Member nodes whose internal
+interrupts are active low must invert the signal before broadcasting the
+interrupt vector. The remaining 24~bits of this message are defined as a bit
+vector representing the current status of 24~interrupts.
+
+
+\subparagraph{Member Node Edge Interrupt}
+\label{cmd:edge-interrupt}
+~
+
+~
+
+\begin{minipage}{\linewidth}
+  \begin{varwidth}{.2\linewidth}
+    \centering
+    \begin{bytefield}{8}
+      \bitheader{0-7} \\
+      \colorbitbox{lightblue}{4}{0000}
+      \colorbitbox{lightcyan}{4}{0011}
+    \end{bytefield}
+  \end{varwidth}
++
+  \begin{varwidth}{.8\linewidth}
+    \centering
+    \begin{bytefield}[bitwidth=1.25em]{32}
+      \bitheader{0-31} \\
+      \colorbitbox{lightgreen}{4}{0001}
+      \colorbitbox{lightergreen}{4}{\scriptsize Member Node Short Prefix}
+      \bitbox{24}{Interrupt Status Vector}
+    \end{bytefield}
+  \end{varwidth}
+\end{minipage}
+
+~
+
+This message announces that an interrupt has occured on this member node. The
+semantics of a \bus edge interrupt dictate that the interrupt is implicitly
+cleared. That is, after the broadcast message announcing the interrupt has
+been sent the same interrupt is eligible to fire again. Member nodes are
+permitted to batch or delay interrupts if appropriate, that is, a single edge
+interrupt message may indicate multiple interrupts have occurred.
+
+\bus defines active to be logical {\tt 1}. Member nodes whose internal
+interrupts are active low must invert the signal before broadcasting the
+interrupt vector. The remaining 24~bits of this message are defined as a bit
+vector representing the current status of 24~interrupts.
+
+\paragraph{Broadcast Channels~4-6: Reserved}
+\label{sec:channel-4-6}
 
 \paragraph{Broadcast Channel~7: Data}
 \label{sec:channel-7}
