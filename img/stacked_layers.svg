@@ -13,7 +13,7 @@
    height="307.70972"
    id="svg3592"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="stacked_layers.svg">
   <defs
      id="defs3594">
@@ -54,14 +54,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.4558281"
-     inkscape:cx="33.920727"
+     inkscape:cx="34.499459"
      inkscape:cy="159.85519"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="2560"
-     inkscape:window-height="1385"
-     inkscape:window-x="0"
+     inkscape:window-height="1389"
+     inkscape:window-x="2560"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      fit-margin-top="1"
@@ -202,7 +202,7 @@
          y="121.60144"
          x="85"
          id="tspan4429"
-         sodipodi:role="line">Control</tspan></text>
+         sodipodi:role="line">Master</tspan></text>
     <rect
        style="fill:none;stroke:#000008;stroke-width:0.80000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect4433"
