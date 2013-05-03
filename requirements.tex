@@ -258,7 +258,7 @@ mechanism is outside the scope of this document. The \bus neither prohibits
 nor requires clock stretching. A minimum clock period is specified as a
 function of \bus topology, but a maximum is not. If building a design with
 such an escape mechanism then, designers must be conscious of the
-implementation details of its control node.
+implementation details of its master node.
 \end{quote}
 
 \paragraph{Endless TX}
@@ -267,13 +267,13 @@ If a transmitter enters an error state and never interrupts the bus, other
 nodes will not be able to distinguish an endless transmission from a
 transmission with a long string of {\tt 0}'s (or {\tt 1}'s). \bus relies on
 the controller to detect the error.  While \bus does allow for arbitrary
-message lengths, a control node must define a maximum message length for a
+message lengths, a master node must define a maximum message length for a
 particular \bus instantiation\footnote{
   It is suggested that this value be programmable, for maximum flexibility.
-  }. The control layer counts the number of bits received and can forcefully
+  }. The master node counts the number of bits received and can forcefully
 reset the bus if necessary. Address bits count towards this limit. Interrupt
 entry edges do not count towards this total as the rising clock edges will not
-be seen by the control node's {\tt CLK\_IN}. The intention of the limit is not
+be seen by the master node's {\tt CLK\_IN}. The intention of the limit is not
 to be used ever during correct \bus function, and thus should be set well
 above the maximum expected message size. The absolute minimum limit for a
 conforming \bus is 1~kb ($[1024 - addr\_len]$ data bits).

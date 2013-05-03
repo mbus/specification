@@ -94,8 +94,8 @@ In a \bus instantiation, short prefixes are assigned dynamically. Out of
 reset, all member nodes are assigned the short prefix
 \nameref{sec:spec-unassigned-short-prefix}. After system power-on, some node
 shall send a series of \nameref{cmd:enumerate-node} commands. \bus does not
-require that the control node send the \nameref{cmd:enumerate-node} commands,
-however any node containing the control node should be capable of enumerating
+require that the master node send the \nameref{cmd:enumerate-node} commands,
+however any node containing the master node should be capable of enumerating
 bus members. Any node capable of performing enumeration {\bf must} be capable
 of snooping another node's performing of enumeration and {\bf must} update its
 local enumeration state from the snooped data.

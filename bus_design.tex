@@ -17,7 +17,7 @@ optionally send a response message.
 \subsection{Bus~Idle}
 \label{sec:protocol-idle}
 In \bus Bus~Idle, all lines (clock and data) are high. All member nodes are in
-forwarding state and the control node is waiting to begin arbitration.
+forwarding state and the master node is waiting to begin arbitration.
 
 \subsection{Arbitration}
 \label{sec:protocol-arbitration}
@@ -26,10 +26,10 @@ To begin arbitration, the bus must be in idle state.
 To request to transmit on the bus, a node should pull its {\tt DOUT} line low.
 All member nodes remain in forwarding state during arbitration, thus when
 their {\tt DIN} line goes low, they are obligated to pull their {\tt DOUT}
-line low. The control node, however, does {\bf NOT} pull its {\tt DOUT} line
-low in response to its {\tt DIN} line going low. The control node only pulls
+line low. The master node, however, does {\bf NOT} pull its {\tt DOUT} line
+low in response to its {\tt DIN} line going low. The master node only pulls
 its {\tt DOUT} line low when it wishes to transmit on the bus. When the
-control node's {\tt DIN} line goes low, it will pull the {\tt CLK} line low
+master node's {\tt DIN} line goes low, it will pull the {\tt CLK} line low
 and hold it low for some period $t_{long}$. During {\sc idle} (and thus
 arbitration), member nodes must forward the clock signal.
 
@@ -46,18 +46,18 @@ The rising edge of clock that follows $t_{long}$ commits the results of
 arbitration and all participating member nodes advance their state machines
 appropriately.
 
-If the control node wishes to transmit on the bus, all member nodes will be in
+If the master node wishes to transmit on the bus, all member nodes will be in
 the third state. Note this arbitration protocol introduces a {\em
-topology-dependent priority}. Firstly, the control node has a greater priority
+topology-dependent priority}. Firstly, the master node has a greater priority
 than any member node as its {\tt DOUT} will propagate around the entire data
 loop. The priority of the member nodes is inversely related to their proximity
-to the control node in the data loop. That is, the furthest node from the
-control node, the node whose {\tt DIN} is connected to the control node's
+to the master node in the data loop. That is, the furthest node from the
+master node, the node whose {\tt DIN} is connected to the master node's
 {\tt DOUT}, has the highest priority of member nodes. The closest node to the
-control node, the node whose {\tt DOUT} is connected to the control node's
+master node, the node whose {\tt DOUT} is connected to the master node's
 {\tt DIN}, has the lowest priority.
 
-At the end of $t_{long}$, the control node drives the clock high. The
+At the end of $t_{long}$, the master node drives the clock high. The
 normal arbitration phase ends on this rising edge. The next two clock edges
 allow for a high-priority arbitration. As \bus priority is topology-dependent,
 we provide a priority arbitration cycle to allow a low priority member node to
@@ -192,7 +192,7 @@ unclassified interruptions as it carriers the least semantic meaning
 After latching the final Control~Bit (time~20 in
 Figure~\ref{fig:interrupt}), one final edge (time~22) is generated to formally
 enter {\sc idle}. If, however, the data line is low at this edge, then it
-shall be considered the start of a new arbitration cycle instead. The control
+shall be considered the start of a new arbitration cycle instead. The master
 node will pull the clock low again in response and begin waiting for
 $t_{long}$.
 
@@ -211,6 +211,6 @@ This could be complicated, however, if a node elects (for some reason) to send
 a response to the broadcast sleep message. The sleep controller will still
 have four edges (Arbitration, Priority~Drive, Priority~Latch,
 Begin~Transmission) to wake its bus controller, but the timing between arming
-its {\tt CLK\_IN} fall detector and the control node pulling {\tt CLK\_IN} low
+its {\tt CLK\_IN} fall detector and the master node pulling {\tt CLK\_IN} low
 in response could cause the sleep controller to miss wakeup.
 \end{quote}

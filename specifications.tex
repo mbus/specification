@@ -26,14 +26,14 @@ See~\ref{sec:spec-interrupt}~\nameref{sec:spec-interrupt} for details on the
 minimum uninterruptable message length.
 
 \subsection{Minimum Maximum Message Length}
-All \bus control nodes must permit a minimum of 1~K (1024~bits) of data to be
+All \bus master nodes must permit a minimum of 1~K (1024~bits) of data to be
 transmitted before aborting a transaction due to a hung transmitter.
 
 The message length counter shall count the number of positive clock edges
-received after Begin~Transmission at the control node's {\tt CLK\_IN} port up
+received after Begin~Transmission at the master node's {\tt CLK\_IN} port up
 to and including the last bit latched (Request~Interrupt in
 Figure~\ref{fig:interrupt}). The counter shall be an {\em inclusive} counter,
-that is the control node shall not Interrupt until it receives the $N+1$th
+that is the master node shall not Interrupt until it receives the $N+1$th
 bit.
 
 Commands to query and configure the upper bound are specified in
@@ -112,18 +112,18 @@ to interrupt\footnote{
 
 \subsection{Failed Arbitration (Spurious Wakeup)}
 \label{sec:spec-spurious}
-During normal arbitration, when the arbitration is resolved the control node's
-{\tt DIN} line should be low no matter who is participating. If the control
+During normal arbitration, when the arbitration is resolved the master node's
+{\tt DIN} line should be low no matter who is participating. If the master
 node finds its {\tt DIN} line is high on the arbitration edge, it would
-indicate that no one is participating. The control node must treat this as an
+indicate that no one is participating. The master node must treat this as an
 error and reset the bus.
 
-The control node {\bf must not} immediately interrupt the bus, however. As
+The master node {\bf must not} immediately interrupt the bus, however. As
 laid out in~\ref{sec:design-power-gated}~\nameref{sec:design-power-gated}, the
 arbitration edges may be used as input to node sleep controllers. To avoid
-potential issues related to half-waking power gated nodes, the control node
+potential issues related to half-waking power gated nodes, the master node
 must wait until Begin~Transmission (that is, have generated four clock edges)
 before interrupting the bus.
 
-The control bits {\bf must} be driven by the control layer. They {\bf must} be
+The control bits {\bf must} be driven by the master node. They {\bf must} be
 {\tt 00}, general error.

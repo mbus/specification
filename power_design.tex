@@ -43,7 +43,7 @@ For the purposes of this document, we are concerned with two modules: (i) The
 block that interfaces with the bus itself---we define this as the {\tt Bus
 Controller}---, and (ii) the node that is attached to the bus. With \bus, a
 completely power-gated node can seamlessly awaken its {\tt Bus~Controller}
-with no special assitance from the sending node or the control node. A {\tt
+with no special assitance from the sending node or the master node. A {\tt
 Bus~Controller} can filter addresses, only waking the entire node for a mesage
 destined for that node. Additionally, a power-gated node with a simple
 always-on low power interrupt generater can exploit \bus features to generate
@@ -139,8 +139,8 @@ the ability of power conscious sensors to be used with power oblivious
 designs.
 
 Instead, power conscious nodes can exploit a robustness property of every \bus
-control node to generate wakeup edges.
-Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines control
+master node to generate wakeup edges.
+Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines master
 node behavior in response to a glitch on the data line causing a spurious
 wakeup. By deliberatly inducing such a glitch, a power-gated member node can
 generate enough pulses to wake itself up. \autoref{fig:induced-timing}
@@ -169,23 +169,23 @@ the {\tt Bus~Controller} to sleep.
 asserts End~of~Message, indicating the shutdown message was not in error.
 In addition, \autoref{fig:shutdown} has the advantage that a node transmitting
 a shutdown request can itself shut down with no further intervention or
-knowledge by the control node.
+knowledge by the master node.
 
 \begin{figure}
   \figTimingShutdown
 \end{figure}
 
-\subsection{The Control Node, In Breif}
+\subsection{The Master Node, In Breif}
 Explicitly not discussed in this document is any indication of how a
-power-gated control node is implemented. The period $t_{long}$ is permitted to
-be arbitrary in length with the express intent of allowing sleeping control
+power-gated master node is implemented. The period $t_{long}$ is permitted to
+be arbitrary in length with the express intent of allowing sleeping master
 nodes to wake themselves using the falling edge of {\tt DIN} as a trigger. The
-actual means for waking the control node are outside the scope of this
+actual means for waking the master node are outside the scope of this
 document however.
 
-Similarly, sleeping a control node is outside the scope of \bus functionality.
-A control node must sample its {\tt DIN} line upon returning to Idle (time~9
+Similarly, sleeping a master node is outside the scope of \bus functionality.
+A master node must sample its {\tt DIN} line upon returning to Idle (time~9
 in \autoref{fig:shutdown}) by the rules laid out
 in~\ref{sec:protocol-return-idle}~\nameref{sec:protocol-return-idle}. If the
 {\tt DIN} line is high at that time after an implementation-defined shutdown
-message, the control node may safely enter sleep mode.
+message, the master node may safely enter sleep mode.

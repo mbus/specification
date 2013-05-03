@@ -199,11 +199,11 @@
     Node~2 is the TX node, thus when it elects to enter Interrupt it is
     already forwarding its data lines. Node~2 decides to enter Interrupt at
     time~4 by switching its {\tt CLK\_OUT} mux from {\tt CLK\_IN} to {\tt 1}.
-    At time~6, the control layer detects that its {\tt CLK\_IN} line never
-    went low, and prepares to Interrupt the bus. At time~8 the control node
+    At time~6, the master node detects that its {\tt CLK\_IN} line never
+    went low, and prepares to Interrupt the bus. At time~8 the master node
     stops driving clock edges and begins toggling the {\em data} line to
     interrupt the bus. After three data pulses, all nodes will enter
-    Interrupt. Once the control layer receives three pulses on {\tt DATA\_IN},
+    Interrupt. Once the master node receives three pulses on {\tt DATA\_IN},
     it begins driving the clock again. Two control bits are sent, after which
     the bus returns to Idle.
   }
@@ -258,9 +258,9 @@
   \caption{
     Induced Glitch. A node inducing a glitch uses the edge at time~3 to
     de-assert its bus request, instead electing to forward again. At time~4,
-    the control node detects no winner of arbitration. The control node
+    the master node detects no winner of arbitration. The master node
     finishes the arbitration cycle as required by~\ref{sec:spec-spurious}. The
-    control node then immedaitely Interrupts the bus, indicating failure. An
+    master node then immedaitely Interrupts the bus, indicating failure. An
     inducing node can harvest these clock edges to wake itself. The first set
     of power edges are used to wake the {\tt Bus~Controller}, the second set
     are used by the {\tt Bus~Controller} to wake the entire node.
