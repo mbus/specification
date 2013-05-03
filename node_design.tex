@@ -2,8 +2,8 @@
 
 \section{Node Design}
 \label{sec:node}
-The \bus defines two {\em physical} types of nodes: member nodes and a control
-node. An instantiation of \bus must have one and only one control node and
+The \bus defines two {\em physical} types of nodes: member nodes and a master
+node. An instantiation of \bus must have one and only one master node and
 must have at least one member node (N$\geq$1). The maximum number of member
 nodes is a function of clock speed\footnote{
   The maximum chip-to-chip latency is defined as 10~ns. Assuming a TX node has
@@ -22,7 +22,7 @@ Any number (N$\geq$0) of forwarding nodes are permitted.
 \subsection{Physical Design}
 \label{sec:physical}
 
-From a package perspective, the physical design of a member and control node
+From a package perspective, the physical design of a member and master node
 is the same, each must expose a {\tt DIN}, {\tt DOUT}, {\tt CLKIN} and {\tt
 CLKOUT} pad.
 
@@ -60,8 +60,8 @@ inter-operability of generalized components\footnote{
   }.
 
 \subsubsection{Control Node}
-\label{sec:physical-control}
-A control node requires 4 signals:
+\label{sec:physical-master}
+A master node requires 4 signals:
 
 \begin{itemize}
   \item {\tt DIN} -- Data In
@@ -70,7 +70,7 @@ A control node requires 4 signals:
   \item {\tt CLKOUT} -- Clock Out
 \end{itemize}
 
-While forwarding, the control node is subject to the same propagation latency
+While forwarding, the master node is subject to the same propagation latency
 constraints (10~ns) as member nodes.
 
 
@@ -98,7 +98,7 @@ constraints (10~ns) as member nodes.
       N$_{b}$, the {\tt CLKOUT} of N$_{a}$ must be connected to the {\tt DIN}
       of N$_{b}$.
   \end{itemize}
-  A \bus must have a minimum of two nodes (one control node and one
+  A \bus must have a minimum of two nodes (one master node and one
   member node). Single chips that are not connected to a bus should tie
   {\tt CLKIN} and {\tt DIN} high and leave {\tt CLKOUT} and {\tt DOUT}
   floating.
@@ -150,7 +150,7 @@ future chip-Reset.
 
 There are three {\em logical} types of \bus nodes: transmitting, receiving,
 and forwarding. \bus can be considered multi-master, any node is capable of
-transmitting to any other node. The control node adopts these same three
+transmitting to any other node. The master node adopts these same three
 personalities, but its behavior differs slightly during
 arbitration~(\ref{sec:protocol-arbitration}).
 
@@ -198,7 +198,7 @@ forwarded to {\tt DOUT} and {\tt CLKIN} is forwarded to {\tt CLKOUT}.
 
 \medskip
 \noindent
-{\em Control Node Exception:} In \textsc{idle}, the control node does not
+{\em Master Node Exception:} In \textsc{idle}, the master node does not
 forward {\tt DIN} to {\tt DOUT}.
 
 \paragraph{Forwarding.\textsc{Address\_Match}}
@@ -224,7 +224,7 @@ particular, a node requesting to transmit must ensure that the {\tt CLK} line
 is still high, it is not sufficient to rely on the local state machine still
 being in the {\sc idle} state\footnote{To envision the case defended against
 here, picture a tall stack of nodes, where the bottom node requests the bus.
-The control node pulls {\tt CLK} low in response. Shortly before the control
+The master node pulls {\tt CLK} low in response. Shortly before the master
 node pulls {\tt CLK} high, a node at the top of the stack (still in the {\sc
 idle} state) elects to transmit. There is not enough time for his {\tt DOUT}
 to propagate to the bottom node, however, thus when {\tt CLK} goes high, both
@@ -235,7 +235,7 @@ furthest node + furthest node's {\tt DOUT} back to closest node) of the system
 should be sufficient.}.
 
 The {\sc arbitrate} state is left when the {\tt CLK} line is pulled high by
-the control node. If a member node's {\tt DIN} is high on the rising clock
+the master node. If a member node's {\tt DIN} is high on the rising clock
 edge, it has won arbitration. A node that loses arbitration should begin
 listening to see if it is the destination node. If the {\tt CLK} line never
 goes high---where never is defined as four times the minimum clock speed of
@@ -248,12 +248,12 @@ details.
 
 \medskip
 \noindent
-{\em Control Node Exception:} The control node always wins arbitration. Note
-that when this occurs, the control node's {\tt DIN} will be low.
+{\em Master Node Exception:} The master node always wins arbitration. Note
+that when this occurs, the master node's {\tt DIN} will be low.
 
 \medskip
 \noindent
-{\em Control Node Exception:} If a control node pulls its {\tt DOUT} line low
+{\em Master Node Exception:} If a master node pulls its {\tt DOUT} line low
 and its {\tt DIN} line never goes low, it should be considered
 {\sc Not\_Connected}.
 
@@ -294,6 +294,6 @@ buffer has been overrun and the current transmission must be aborted.
 A robust implementation should include detection of some kind for an attempt
 to utilize the bus when the node is not actually connected to a bus (so that
 it may report failure). After a node pulls its {\tt DOUT} low there is a
-maximum possible $t_{long}$ of \hl{TODO} before a control node must pull
+maximum possible $t_{long}$ of \hl{TODO} before a master node must pull
 {\tt CLK} low in response. If {\tt CLK} is not pulled low, the node should
 consider itself disconnected and report failure to send as appropriate.
