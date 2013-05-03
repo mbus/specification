@@ -14,7 +14,7 @@ our further design constraints.
 In an effort to make \bus ubiquitous, it is important that other designers can
 easily add \bus to their systems/chips. In practice, this means a
 fully-synthesizable design such that simple, pure Verilog can be given to any
-individual wishing to implement \bus. The provides added advantages in
+individual wishing to implement \bus. This provides added advantages in
 pre-silicon testing and validation.
 
 \paragraph{Optimize for synthesis simplicity over speed}
@@ -52,7 +52,7 @@ acquire the bus.
 
 \paragraph{Minimize pins}
 \paragraph{Minimize gates}
-\paragraph{Limit to four I/O pads}
+\paragraph{Limit the number of I/O pads}
 The physical area of the M3 system is extremely constrained. There is only
 room for four I/O {\em pads} on each layer of the system (keep in mind that
 forming a net/bus still requires two {\em pads} when wirebonding).
@@ -113,30 +113,19 @@ harder requirement. There is great motivation for transient connection of
 devices (programmer, debugger, etc), and also some motivation for the ability
 to permanently add new devices to an existing bus.
 
-A reasonable argument for the permanent addition is that the addition /
-removal is so infrequent that it can be an intrusive process; unless something
-like a pre-packaged IC had a \bus internally and there was desire to allow the
-possible addition of external components? In that case though, why not simply
-use a separate bus, or leverage the same mechanism as...
-
-Transient additions to the bus are much less negotiable. It's not immediately
-obvious if there are examples beyond a programmer / debugger, but those two
-are sufficiently critical as to motivate the need for some kind of external
-transient device.
-
-A \bus employs a ring style connection, injecting a new device in an existing
+As \bus employs a ring style connection, injecting a new device in an existing
 bus may not be trivial. Interposition of external devices is not seen as a
 requirement for \bus to define, however, simply as something to caution system
 implementors as desirable. For one example of bus injection with minimal
 pad/pin overhead, consult the M3~Implementation document.
 
-\paragraph{Must be uni-directional}
+\paragraph{All wires must be uni-directional}
 Bi-Directional analog hardware is complex and not synthesizable.
 
 \paragraph{Granularity}
 \label{sec:design-granularity}
-Transmissions are required to be \%~8 bits in length. The motivation for this
-is largely a function of the arbitrary nature of the last two bits
+Transmissions are required to be modulo 8 bits in length. The motivation for
+this is largely a function of the arbitrary nature of the last two bits
 received. It truly arbitrary lengths were allowed, an interruption occurring
 after 9~bits were transmitted could be any of 0, 1, or 2~bytes long
 (0~bytes: out-of-band interruption, 1~byte: End~of~Message where receiver
@@ -182,8 +171,8 @@ prohibitively complex to implement.
 
 As \bus supports arbitrary interruptions, a simpler design is possible.
 If a receiving node's RX buffer is overrun, it interrupts the bus and
-indicates a buffer overrun.
-
+indicates a buffer overrun. Not interrupting the bus acts as an {\em implicit}
+flow control.
 In practice, transmitting nodes should consider sending some form of {\em
 ping} message to a destination node to validate its presence before sending a
 large transmission to minimize waste if the destination node is not actually
