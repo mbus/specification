@@ -7,7 +7,7 @@ A transmission begins with Arbitration~(\ref{sec:protocol-arbitration}), then
 Message Transmission~(\ref{sec:protocol-transmission}). The transmitter then
 Interrupts~(\ref{sec:protocol-interrupt}) the bus and indicates the complete
 message was sent. During the Control~(\ref{sec:protocol-control}) period
-acknowledgement is negotiated. After Control, \bus returns to Idle or may
+acknowledgment is negotiated. After Control, \bus returns to Idle or may
 optionally send a response message.
 
 \begin{figure}[h!]
@@ -77,7 +77,7 @@ requester to transmit.
 
 Whichever node ultimately won arbitration transitions from a forwarding node
 to a transmitting node. Nodes that lost arbitration revert to
-Forwading.{\sc Address\_Match}.
+Forwarding.{\sc Address\_Match}.
 
 \begin{figure}
   \figTimingInterrupt

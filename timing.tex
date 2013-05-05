@@ -94,7 +94,7 @@
     Here we show node~1 and node~3 requesting the bus at nearly the same time
     (node~1 shortly after node~3). Node~1 initially wins arbitration, but
     node~3 uses the priority arbitration cycle to claim the bus. The
-    propogation delay of the data line between nodes is exaggurated to show
+    propagation delay of the data line between nodes is exaggerated to show
     the shoot-through nature of \bus.
   }
   \label{fig:arbitration}
@@ -260,7 +260,7 @@
     de-assert its bus request, instead electing to forward again. At time~4,
     the master node detects no winner of arbitration. The master node
     finishes the arbitration cycle as required by~\ref{sec:spec-spurious}. The
-    master node then immedaitely Interrupts the bus, indicating failure. An
+    master node then immediately Interrupts the bus, indicating failure. An
     inducing node can harvest these clock edges to wake itself. The first set
     of power edges are used to wake the {\tt Bus~Controller}, the second set
     are used by the {\tt Bus~Controller} to wake the entire node.
@@ -294,7 +294,7 @@
       \node [rotate=45] at (6*\mult, 0) {Drive ACK\\Assert Shutdown\\Node Isolate};
       \node [rotate=45] at (7*\mult, 0) {Bus Ctl Isolate\\Node Power Gate};
       \node [rotate=45] at (8*\mult, 0) {Bus Ctl Power Gate};
-      \node [rotate=45] at (9*\mult, 0) {Arm Wakeup Detctor\\Bus Idle};
+      \node [rotate=45] at (9*\mult, 0) {Arm Wakeup Detector\\Bus Idle};
     \end{scope}
 
     \foreach \n [evaluate=\n as \l using int((\n)/8)] in {0,8,...,\twidth}

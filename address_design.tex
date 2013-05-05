@@ -9,7 +9,7 @@ for a system of complex connected components. In particular, \bus expects that
 an individual member node may itself be composed of multiple functional units,
 which may each be individually addressed.
 
-Supporing multiple, addressable functional units with only one set of exposed
+Supporting multiple, addressable functional units with only one set of exposed
 \bus signal pins could be done by instantiating several copies of a
 member node on each die, but this requires a bus interface module for every
 functional unit within an integrated chip. Instead, the bottom four bits of
@@ -76,7 +76,7 @@ undefined.}
 \end{bytefield}
 \medskip
 
-The purpose of short prefixes is to uniquly identify nodes in an \bus system.
+The purpose of short prefixes is to uniquely identify nodes in an \bus system.
 Multiple nodes in a \bus instantiation {\bf must not} have the same short
 prefix.
 \begin{itemize}
@@ -123,11 +123,11 @@ All \bus nodes {\bf must} support dynamic short prefix assignments. A node may
 have a default short prefix assignment. Upon the receipt of any
 \nameref{cmd:enumerate-node} commands, a node with a default short prefix {\bf
 must} immediately invalidate its default short prefix and participate in the
-enumeration process. A node with a default short prefix that receieves an
+enumeration process. A node with a default short prefix that receives an
 \nameref{cmd:invalidate-prefix} command shall set its short prefix to
 \nameref{sec:spec-unassigned-short-prefix}. A node with a default short prefix
 shall otherwise make no distinction from a dynamically assigned short prefix
 (e.g., it shall respond to a \nameref{cmd:query-devices} command with its
-curret short prefix, the static short prefix).
+current short prefix, the static short prefix).
 \hl{An allocation scheme for default short prefixes is not yet defined.}
 

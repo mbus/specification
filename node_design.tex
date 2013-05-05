@@ -187,8 +187,8 @@ arbitration~(\ref{sec:protocol-arbitration}).
 \end{figure}
 
 \subsubsection{Forwarding}
-Forwarding is the most common state for all \bus nodes.  Observe in
-Figure~\ref{fig:logical} the very simple, short logic path from {\tt DIN} to
+Forwarding is the most common state for all \bus nodes. Observe in
+\autoref{fig:logical} the very simple, short logic path from {\tt DIN} to
 {\tt DOUT}. Nodes are obligated to forward data in less than 10~ns.
 
 \paragraph{Forwarding.\textsc{Idle}}
@@ -210,7 +210,7 @@ the rest of the transaction.
 
 \paragraph{Forwarding.\textsc{Ignore}}
 In {\sc ignore} nodes simply forward data. Nodes remain in this state until
-Interrupted. Power-concious designs may safely power gate everything
+Interrupted. Power-conscious designs may safely power gate everything
 except Interrupt detector circuitry while in {\sc ignore}.
 
 \subsubsection{Transmitting}

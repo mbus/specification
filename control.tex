@@ -33,7 +33,7 @@ channels provide a mechanism to dynamically select broadcast channel to help
 mitigate conflicts.
 
 A broadcast message that is not understood \textbf{must} be completely
-ignored. During acknowledgement, an ignorant node shall forward.
+ignored. During acknowledgment, an ignorant node shall forward.
 
 \subsubsection{Broadcast Messages and Power-Gating}
 As power-gating of nodes is a \bus design consideration, \bus also defines the
@@ -96,7 +96,7 @@ This section breaks down all of the defined \bus broadcast channels and messages
 All undefined channels are reserved and shall not be used. A node receiving a
 broadcast message for a reserved channel shall ignore the message. It {\bf
 must not} acknowledge a message on a reserved channel and {\bf must} forward
-during the acknowledgement cycle.
+during the acknowledgment cycle.
 
 All \bus broadcast messages, except those sent on \nameref{sec:channel-7},
 follow a common template. The messages are 32~bits long. The four most
@@ -213,7 +213,7 @@ This message must be sent in response to \nameref{cmd:query-devices} or
 nodes {\bf must} retry until the message is sent. When responding to
 \nameref{cmd:enumerate-node}, nodes {\bf must not} retry sending if
 arbitration is lost and {\bf must} retry sending if interrupted\footnote{
-  An iterrupt should not occur during this message. Such an interrupt would be
+  An interrupt should not occur during this message. Such an interrupt would be
   an error.
   }.
 
@@ -294,7 +294,7 @@ appropriate.}
 ~
 
 This message clears the assignment of a short prefix. The bottom 4~bits
-specifiy the node whose prefix shall be reset. A node shall reset its prefix
+specify the node whose prefix shall be reset. A node shall reset its prefix
 to \nameref{sec:spec-unassigned-short-prefix}. If the prefix to clear is set
 to \nameref{sec:spec-unassigned-short-prefix}, then all nodes shall reset
 their prefixes.
@@ -598,9 +598,9 @@ member node shall send its current short prefix:
 
 ~
 
-This message announces that an interrupt has occured on this member node. The
-semantics of a \bus level interrupt dictacte that an interrupt must be
-explicitly cleared. A member node {\bf must not} genereate another level
+This message announces that an interrupt has occurred on this member node. The
+semantics of a \bus level interrupt dictate that an interrupt must be
+explicitly cleared. A member node {\bf must not} generate another level
 interrupt message {\em for the same interrupt} until that interrupt is
 explicitly cleared. A {\em different} interrupt may occur before the first
 interrupt is cleared, in which case the bit vector {\bf must} indicate both
@@ -650,7 +650,7 @@ vector representing the current status of 24~interrupts.
 
 ~
 
-This message announces that an interrupt has occured on this member node. The
+This message announces that an interrupt has occurred on this member node. The
 semantics of a \bus edge interrupt dictate that the interrupt is implicitly
 cleared. That is, after the broadcast message announcing the interrupt has
 been sent the same interrupt is eligible to fire again. Member nodes are

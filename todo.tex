@@ -18,7 +18,7 @@ for such addresses).
 
 A bulk transfer always begins with the sending node's full address both as
 unique token and so the bulk protocol can respond if needed. Transfers begin
-with both ends' counters syncrhonized at 0~bits. If an interruption occurs,
+with both ends' counters synchronized at 0~bits. If an interruption occurs,
 the RX node saves as much as it has RX'd thus far. After the bus is available
 again the RX node is responsible for sending the TX node a message composed of
 RX\_address+bits\_thus\_far. If the RX node does not send such a message, the

@@ -77,8 +77,8 @@ controllers can silently ignore.
 
 \paragraph{Ensure that bus reset is possible}
 Stuff happens. It is important that there exists some kind of escape hatch to
-rescue / reset the bus. For deployed systems with mutli-year lifetimes, the
-ability to reset to a known state from nearly any possible errorneous state
+rescue / reset the bus. For deployed systems with multi-year lifetimes, the
+ability to reset to a known state from nearly any possible erroneous state
 becomes critical. Details of reset design are discussed
 in~\ref{sec:design-reset}~\nameref{sec:design-reset}.
 
@@ -116,7 +116,7 @@ to permanently add new devices to an existing bus.
 As \bus employs a ring style connection, injecting a new device in an existing
 bus may not be trivial. Interposition of external devices is not seen as a
 requirement for \bus to define, however, simply as something to caution system
-implementors as desirable. For one example of bus injection with minimal
+implementers as desirable. For one example of bus injection with minimal
 pad/pin overhead, consult the M3~Implementation document.
 
 \paragraph{All wires must be uni-directional}
@@ -180,13 +180,13 @@ present. \bus is not designed for a changing topology, as such discovery of
 this nature need only be performed once and the amortized cost is considered
 negligible.
 
-\paragraph{Acknowledgement granularity}
+\paragraph{Acknowledgment granularity}
 As \bus supports messages of arbitrary length, a natural question arises for
-the granularity of acknowledgements. At one extreme, designs such as I2C elect
+the granularity of acknowledgments. At one extreme, designs such as I2C elect
 to acknowledge every byte. \bus takes the opposite approach, providing only a
-single acknowledgement at the end of a transmission in an all-or-nothing
+single acknowledgment at the end of a transmission in an all-or-nothing
 fashion. The rationale for this decision again returns to simplicity and
-efficiency in design. While a receiver-driven acknowledgement cycle could
+efficiency in design. While a receiver-driven acknowledgment cycle could
 easily be added every nth bit, the relative merits of this are not great.
 Assuming a receiver exists on the bus, by not electing to Interrupt
 transmission, a receiver implicitly ACKs every bit sent. A receiver that has
@@ -204,7 +204,7 @@ becomes largely unnecessary, and \bus defines no streaming primitive.
 \paragraph{Avoid ratioed-logic, avoid timing constraints}
 
 \paragraph{Idle State Should Be High}
-For designs that aggresively power-gate components, it is easier to build
+For designs that aggressively power-gate components, it is easier to build
 designs that pull low in minimal power modes than pull high. As a consequence,
 the Idle state in \bus elects to leave all lines high.
 %We probably don't have to mention this, but it's important that they are high
@@ -224,7 +224,7 @@ must correct for more broken cases where any N nodes are not forwarding and
 return all nodes to a common and known state.
 
 \subsubsection{The Reset Detector}
-\bus's reset detector is advantageous in that it is comepletely isolated from
+\bus's reset detector is advantageous in that it is completely isolated from
 the \bus state machine. To reset \bus, the Interrupt sequence is entered. This
 entry saturates, allowing nodes to be `endlessly-interrupted' until all of the
 nodes have been interrupted. A misaligned state machine, or a timing glitch,
@@ -293,7 +293,7 @@ implementation, with the tacit assumption that if a node has something it
 wishes to transmit, it is probably already awake\footnote{
   Though, a design that wished to exploit these pulses could take advantage of
   the spurious wakeup rules described in~\ref{sec:spec-spurious}. Allow the
-  first tranmission to fail and use the avialable pulses to wake itself. This
+  first transmission to fail and use the available pulses to wake itself. This
   design would still require some care, as the node would have to begin
   forwarding its data line again before the arbitration pulse. Using the
   falling edge of the clock line as the transition from pulling data low to
@@ -334,8 +334,8 @@ the pulse that formally transitions the bus to idle as the two required edges.
 Here we attempt to draw attention to some of the systems-level issues that may
 be presented to persons using \bus.
 
-\subsubsection{Broadcast Message ``Acknowledgement''}
-For point-to-point messages, \bus acknowledgements provide a strong guarantee
+\subsubsection{Broadcast Message ``Acknowledgment''}
+For point-to-point messages, \bus acknowledgments provide a strong guarantee
 to higher layers:
 %
 \begin{quote}
