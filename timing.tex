@@ -117,15 +117,15 @@
     \\
     % TX Node
     CLK In   & CCCCC CC CC CHHHHH HC CCCC CCC\\
-    CLK Out  & CCCCC CH HH HHHHHH HH CCCC CCC\\
+    CLK Out  & CCCCC CH HH HHHHHH HC CCCC CCC\\
     Data In  & HHLLH HH HH HCCCCC CH HHHL LHH\\
     Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
              & {1D{Data 1}}{2D{Data 0}}{2D{Data 1}}
                {4D{Req Interrupt}}{6D{Interrupt}}{2D{Switch Role}}
                {2D{EoM=True}}{2D{Ctl Bit 1}}{2D{Idle}}{1D{\ldots}} \\
     \\
-    CLK In   & CCCCC CH HH HHHHHH HH CCCC CCC\\
-    CLK Out  & CCCCC CH HH HHHHHH HH CCCC CCC\\
+    CLK In   & CCCCC CH HH HHHHHH HC CCCC CCC\\
+    CLK Out  & CCCCC CH HH HHHHHH HC CCCC CCC\\
     Data In  & HHLLH HH HH HCCCCC CH HHHL LHH\\
     Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
              & {1D{Data 1}}{2D{Data 0}}{2D{Data 1}}
@@ -133,7 +133,7 @@
                {2D{Ctl Bit 0}}{2D{Ctl Bit 1}}{2D{Idle}}{1D{\ldots}} \\
     \\
     % CTL Node
-    CLK In   & CCCCC CH HH HHHHHH HH CCCC CCC\\
+    CLK In   & CCCCC CH HH HHHHHH HC CCCC CCC\\
     CLK Out  & CCCCC CC CC CHHHHH HC CCCC CCC\\
     Data In  & HHLLH HH HH HCCCCC CH HHHL LHH\\
     Data Out & HHLLH HH HH HCCCCC CH HHHL LHH\\
