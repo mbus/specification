@@ -422,7 +422,7 @@ All nodes receiving this message {\bf must} immediately wake up. The bottom
 This message instructs selected nodes to sleep. The 16~bits of data are
 treated as a bit vector, mapping short prefixes to bit indicies. That is, the
 node with short prefix {\tt 0b1101} is controlled by the second bit received
-(bit~18 in the bit vector above). If a bit is set to
+(bit~25 in the bit vector above). If a bit is set to
 {\tt 1}, the selected node {\bf must} enter sleep mode. If a bit is set to
 {\tt 0}, the selected node should not change power state. The bits for
 prefixes {\tt 0b1111} and {\tt 0b0000} are ignored.
