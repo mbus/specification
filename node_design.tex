@@ -82,17 +82,17 @@ constraints (10~ns) as member nodes.
     \item The data pins shall be connected in a round-robin fashion, the
       {\tt DOUT} of one chip connected to the {\tt DIN} of the next.
     \item The connection of data lines must form a loop when connected
-      correctly (e.g.~Figure~\ref{fig:bus}).
+      correctly (e.g.~\cref{fig:bus}).
     \item There are no requirements for the placement of nodes in the data
       loop, but the ordering will have an impact on bus arbitration. See
-      Section~\ref{sec:protocol-arbitration} for more details.
+      \cref{sec:protocol-arbitration} for more details.
   \end{itemize}
   \item {\tt CLK}
   \begin{itemize}
     \item The clock pins shall be connected in a round-robin fashion. The
       {\tt CLKOUT} of one chip connected to the {\tt CLKIN} of the next.
     \item The connection of clock lines must form a loop when connected
-      correctly (e.g.~Figure~\ref{fig:bus}).
+      correctly (e.g.~\cref{fig:bus}).
     \item The connection of clock lines must match that of data lines. That
       is, if a node N$_{a}$ connects its {\tt DOUT} to the {\tt DIN} of node
       N$_{b}$, the {\tt CLKOUT} of N$_{a}$ must be connected to the {\tt DIN}
@@ -171,7 +171,8 @@ arbitration~(\ref{sec:protocol-arbitration}).
     \caption{A sketch of the logical model of a node. The Finite State Machine
   selects between the three modes a node can be in. Top: {\em forwarding}, Mid:
   {\em transmitting}, Bot: {\em acknowledging}. This model omits some of the
-  subtleties of arbitration, see~\ref{sec:state-arbitrate} for details.
+  subtleties of arbitration,
+  see~\ref{sec:state-arbitrate}~\nameref{sec:state-arbitrate} for details.
     }
     \label{fig:logical}
   \end{minipage}
@@ -276,7 +277,7 @@ response.
 
 \paragraph{Receiving.{\sc Receive}}
 A receiving node is also obligated to forward data along the bus. In the
-sketch shown in Figure~\ref{fig:logical}, during the receiving process, a
+sketch shown in \cref{fig:logical}, during the receiving process, a
 receiving node remains in pass-thru mode until Interrupted.
 
 \paragraph{Receiving.{\sc control}}

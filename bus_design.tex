@@ -62,7 +62,7 @@ normal arbitration phase ends on this rising edge. The next two clock edges
 allow for a high-priority arbitration. As \bus priority is topology-dependent,
 we provide a priority arbitration cycle to allow a low priority member node to
 preempt transmissions. This priority mechanism is still topology-dependent,
-that is, if Node~1 in Figure~\ref{fig:arbitration} had also attempted to send
+that is, if Node~1 in \cref{fig:arbitration} had also attempted to send
 a priority message, it would have won that arbitration as well. The priority
 arbitration cycle is two clock edges (one clock cycle), the falling edge after
 arbitration is for nodes to drive their priority requests onto the bus and the
@@ -107,7 +107,7 @@ sent the complete transmission it Interrupts the bus.
 
 Legal transmissions on \bus must be byte-aligned
 (\ref{sec:spec-granularity}~\nameref{sec:spec-granularity}). The requirement
-allows receiving nodes such as node~1 and node~3 in Figure~\ref{fig:interrupt}
+allows receiving nodes such as node~1 and node~3 in \cref{fig:interrupt}
 to disambiguate the significance of the last two bits received. A legal
 transmission will end cleanly on a byte boundary if the node topologically
 follows the transmitter (e.g.~node~3) or will end on a byte+2-bit boundary if
@@ -160,7 +160,7 @@ previous Interrupt state are aborted and the net Interrupt result is
 \end{figure}
 
 The two bits after an Interrupt are defined as Control~Bits.
-Figure~\ref{fig:control-bits} is a flowchart indicating the semantic meaning
+\cref{fig:control-bits} is a flowchart indicating the semantic meaning
 of the control bits and the resulting state. The first control bit is
 unconditionally driven by the interrupting node. If a transmitting node has
 interrupted to indicate the end of transmission, it will put a {\tt 1} on the
@@ -190,7 +190,7 @@ unclassified interruptions as it carriers the least semantic meaning
 \subsection{Return to Idle}
 \label{sec:protocol-return-idle}
 After latching the final Control~Bit (time~20 in
-Figure~\ref{fig:interrupt}), one final edge (time~22) is generated to formally
+\cref{fig:interrupt}), one final edge (time~22) is generated to formally
 enter {\sc idle}. If, however, the data line is low at this edge, then it
 shall be considered the start of a new arbitration cycle instead. The master
 node will pull the clock low again in response and begin waiting for
@@ -202,7 +202,7 @@ tight timing constraints).
 
 \begin{quote}
 \textit{M3 Implementation Note:} (Referring to
-Figure~\ref{fig:interrupt}) A broadcast sleep message cannot be considered a
+\cref{fig:interrupt}) A broadcast sleep message cannot be considered a
 sleep until time~18 when the transmitter asserts that all the sent bits were
 desired to be sent. This leaves edges at time~20 and time~22 as the required
 two edges to power gate the layer.

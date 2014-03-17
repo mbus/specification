@@ -54,7 +54,7 @@ node's {\tt Bus~Controller}.
 
 \subsection{Waking the \texttt{Bus~Controller}}
 \label{sec:power-bus-controller-wakeup}
-Referring to edges from Figure~\ref{fig:arbitration}, edges 1, 2, 3, and~4
+Referring to edges from \cref{fig:arbitration}, edges 1, 2, 3, and~4
 provide the required signals. Mapping power edges to \bus protocol edges:
 
 \begin{quote}
@@ -106,7 +106,7 @@ One design point explicitly required by \bus is the acknowledgment of
 zero-length messages. Depending on application, a node may not require
 awakening for a zero-length message. Due to the nature of \bus Interrupt
 procedure, however, as many as two bits may be received that will be discarded
-(Figure~\ref{fig:interrupt}). A {\tt Bus~Controller} design that attempts to
+(\cref{fig:interrupt}). A {\tt Bus~Controller} design that attempts to
 minimize wakeups should therefore not begin the wakeup process until latching
 the {\em \nth{3}} data bit.
 
@@ -183,9 +183,9 @@ nodes to wake themselves using the falling edge of {\tt DIN} as a trigger. The
 actual means for waking the master node are outside the scope of this
 document however.
 
-Similarly, sleeping a master node is outside the scope of \bus functionality.
+Sleeping a master node is also outside the scope of \bus functionality.
 A master node must sample its {\tt DIN} line upon returning to Idle (time~9
 in \autoref{fig:shutdown}) by the rules laid out
 in~\ref{sec:protocol-return-idle}~\nameref{sec:protocol-return-idle}. If the
 {\tt DIN} line is high at that time after an implementation-defined shutdown
-message, the master node may safely enter sleep mode.
+message, the master node may enter sleep.

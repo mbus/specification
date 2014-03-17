@@ -2,30 +2,30 @@
   \centering
   \footnotesize
   \begin{tikztimingtable}[timing/wscale=6.0,timing/slope=.3]
-    %          IrrrrrrRLLL A dddddddddD L ttttttttT 0
-    CLK In   & H      HHHC C          C C         C C\\
-    CLK Out  & H      HHHC C          C C         C C\\
-    Data In  & H      HHHH H .2H.2L.6H  H .4H.6L    L\\
-    Data Out & H.5H.5L LLL L L          L .4H.6L    L\\
+    %          IrrrrrrRLLL A dddddddddD L VV ttttttttT 0
+    CLK In   & H      HHHC C          C C CC         C C\\
+    CLK Out  & H      HHHC C          C C CC         C C\\
+    Data In  & H      HHHH H .2H.2L.6H  H HH .4H.6L    L\\
+    Data Out & H.5H.5L LLL L L          L LL .4H.6L    L\\
              & \\
     \\
-    CLK In   & H      HHHC C           CC         C C\\
-    CLK Out  & H      HHHC C           CC         C C\\
-    Data In  & H.7H.3L LLL L L          L .4L.2H.4L L\\
-    Data Out & H.7H.3L LLL L L          L .4L.2H.4L L\\
+    CLK In   & H      HHHC C           CC CC         C C\\
+    CLK Out  & H      HHHC C           CC CC         C C\\
+    Data In  & H.7H.3L LLL L L          L LL .4L.2H.4L L\\
+    Data Out & H.7H.3L LLL L L          L LL .4L.2H.4L L\\
              & \\
     \\
-    CLK In   & H      HHHC C           CC         C C\\
-    CLK Out  & H      HHHC C           CC         C C\\
-    Data In  & H.8H.2L LLL L L          L .6L.2H.2L L\\
-    Data Out & H      LLLL L H          H L         L\\
+    CLK In   & H      HHHC C           CC CC         C C\\
+    CLK Out  & H      HHHC C           CC CC         C C\\
+    Data In  & H.8H.2L LLL L L          L LL .6L.2H.2L L\\
+    Data Out & H      LLLL L H          H HH L         L\\
              & \\
     \\
-    CLK In   & H      HHHC C           CC         C C\\
-    CLK Out  & H      HHHC C           CC         C C\\
-    Data In  & H.2H.8L LLL L .2L.8 H    H .2H.8L    L\\
-    Data Out & H      HHHH H .2L.8 H    H .2H.8L    L\\
-    Int Clk  & X      XXCC C           CC         C C\\
+    CLK In   & H      HHHC C           CC CC         C C\\
+    CLK Out  & H      HHHC C           CC CC         C C\\
+    Data In  & H.2H.8L LLL L .2L.8 H    H HH .2H.8L    L\\
+    Data Out & H      HHHH H .2L.8 H    H HH .2H.8L    L\\
+    Int Clk  & X      XXCC C           CC CC         C C\\
              & \\
   \extracode
     \begin{pgfonlayer}{background}
@@ -48,9 +48,11 @@
       \node [rotate=45] at (30, 0) {Arbi-\\tration};
       \node [rotate=45] at (36, 0) {Prio\\Drive};
       \node [rotate=45] at (42, 0) {Prio\\Latch};
-      \node [rotate=45] at (48, 0) {Drive\\Bit~0};
-      \node [rotate=45] at (54, 0) {Latch\\Bit~0};
-      \node [rotate=45] at (60, 0) {Drive\\Bit~1\ldots};
+      \node [rotate=45] at (48, 0) {Reserved};
+      \node [rotate=45] at (54, 0) {Reserved};
+      \node [rotate=45] at (60, 0) {Drive\\Bit~0};
+      \node [rotate=45] at (66, 0) {Latch\\Bit~0};
+      \node [rotate=45] at (72, 0) {Drive\\Bit~1\ldots};
     \end{scope}
 
     \begin{scope}
@@ -216,10 +218,10 @@
   \centering
   \footnotesize
   \begin{tikztimingtable}[timing/wscale=2.5,timing/slope=.3]
-    %       IiiiAA EE IIIIII SS X000 0II
-    Clock & HHHHCC CC CCHHHH HC CCCC CCC\\
-    Data  & HLLLHH HH HCCCCC CH HLLL LHH\\
-          & {1D{Idle}}{3D{$t_{long}$}}{5D{Arbitration}}
+    %       IiiiAA EE VV IIIIII SS X000 0II
+    Clock & HHHHCC CC CC CCHHHH HC CCCC CCC\\
+    Data  & HLLLHH HH HH HCCCCC CH HLLL LHH\\
+          & {1D{Idle}}{3D{$t_{long}$}}{7D{Arbitration}}
             {6D{Interrupt}}{7D{Control Bits}}{1D{Idle}}\\
   \extracode
     \begin{pgfonlayer}{background}
@@ -231,15 +233,15 @@
     \begin{scope}
       [font=\sc\scriptsize,shift={(-1,2)},anchor=west]
       \def\mult{2.5}
-      \node [rotate=45] at (5*\mult, 0) {Power Gate};
-      \node [rotate=45] at (6*\mult, 0) {Release Clock};
-      \node [rotate=45] at (7*\mult, 0) {Release Isolation};
-      \node [rotate=45] at (8*\mult, 0) {Release Reset};
-      \node [rotate=45] at (9*\mult, 0) {Power Gate};
+      \node [rotate=40] at (5*\mult, 0) {(SC$\rightarrow$BC) Power Gate};
+      \node [rotate=40] at (6*\mult, 0) {(SC$\rightarrow$BC) Release Clock};
+      \node [rotate=40] at (7*\mult, 0) {(SC$\rightarrow$BC) Release Iso};
+      \node [rotate=40] at (8*\mult, 0) {(SC$\rightarrow$BC) Release Reset};
+      \node [rotate=40] at (9*\mult, 0) {(BC$\rightarrow$LC) Power Gate};
+      \node [rotate=40] at (10*\mult, 0) {(BC$\rightarrow$LC) Release Clock};
+      \node [rotate=40] at (11*\mult, 0) {(BC$\rightarrow$LC) Release Iso};
 
-      \node [rotate=45] at (15*\mult, 0) {Release Clock};
-      \node [rotate=45] at (16*\mult, 0) {Release Isolation};
-      \node [rotate=45] at (17*\mult, 0) {Release Reset};
+      \node [rotate=40] at (18*\mult, 0) {(BC$\rightarrow$LC) Release Reset};
     \end{scope}
 
     \foreach \n [evaluate=\n as \l using int((\n-1)/2.5)] in {2.5,5,...,\twidth}
@@ -252,7 +254,7 @@
 {
   \setlength\fboxsep{2pt}
   \setlength\fboxrule{0pt}
-  \fbox{\includegraphics[width=.13\linewidth]{img/glitch_inducer}}
+  \fbox{\includegraphics[width=.10\linewidth]{img/glitch_inducer}}
 }
 %
   \caption{
@@ -264,7 +266,7 @@
     inducing node can harvest these clock edges to wake itself. The first set
     of power edges are used to wake the {\tt Bus~Controller}, the second set
     are used by the {\tt Bus~Controller} to wake the entire node.
-    Figure~\ref{fig:induced-inducer} shows a simple glitch inducer circuit.
+    (\subref{fig:induced-inducer}) shows a simple glitch inducer circuit.
     The {\tt INTERRUPTn} line is active low.
   }
   \label{fig:induced}

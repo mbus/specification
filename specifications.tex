@@ -32,7 +32,7 @@ transmitted before aborting a transaction due to a hung transmitter.
 The message length counter shall count the number of positive clock edges
 received after Begin~Transmission at the master node's {\tt CLK\_IN} port up
 to and including the last bit latched (Request~Interrupt in
-Figure~\ref{fig:interrupt}). The counter shall be an {\em inclusive} counter,
+\cref{fig:interrupt}). The counter shall be an {\em inclusive} counter,
 that is the master node shall not Interrupt until it receives the $N+1$th
 bit.
 
@@ -61,7 +61,7 @@ The receiver must Interrupt as soon as it is {\em certain} that it has
 exceeded its receive capacity. This detection must be performed carefully and
 must take into account that two bits beyond the complete transmission may be
 temporarily received (as is the case for Node~1 in
-Figure~\ref{fig:interrupt}). The receiving state machine should not transition
+\cref{fig:interrupt}). The receiving state machine should not transition
 into {\sc decided\_to\_interrupt} until the \nth{3}~bit of a byte that it does
 not have space for. The receiver may wait until the \nth{8}~bit to transition
 its state machine to request interrupt, but no later than that such that it is
