@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[twoside]{article}
 \usepackage[layout=letterpaper,margin=1in]{geometry}
 
 \usepackage{bold-extra} % for bf sc
@@ -53,6 +53,7 @@
 \definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
 
 \newcommand{\bus}{MBus\xspace}
+\newcommand{\mbuscopy}{MBus~\textcopyright~$2012-2014$~The Regents of the University of Michigan}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -60,10 +61,13 @@
 \svnInfo $Id$ 
 
 \pagestyle{fancyplain}
+
+\fancyfoot[LO,RE]{\footnotesize \ifnum\thepage=1 ~\else \mbuscopy \fi}
+\fancyfoot[C]{\ifnum\thepage=1 \mbuscopy \fi}
+\fancyfoot[LE,RO]{\ifnum\thepage=1 ~\else \thepage \fi}
+
 %\fancyhf{}
-\fancyfoot[L]{Revision 0.1 -- \today}
 %\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\footnotesize{\em (svn: \svnInfoFile::r\svnInfoRevision)}}
 %\fancyhead[C]{\em CONFIDENTIAL DRAFT --- DO NOT CITE OR DISTRIBUTE}
 
 \title{MBus Specification}
