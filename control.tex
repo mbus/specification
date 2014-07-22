@@ -252,10 +252,11 @@ arbitration is lost and {\bf must} retry sending if interrupted\footnote{
 
 This message assigns a short prefix to a device. All nodes that receive this
 message and do not have an assigned short prefix {\bf must} attempt to reply
-with a \nameref{cmd:query-response}. Nodes shall perform exactly one attempt
-to reply to this message. The node that wins arbitration shall be assigned the
-short prefix from this message. Nodes that lose arbitration shall remain
-unchanged.
+with a \nameref{cmd:query-response}. Nodes with a short prefix shall ignore
+the message (broadcast NAK, that is, forward). Nodes shall perform exactly one
+attempt to reply to this message. The node that wins arbitration shall be
+assigned the short prefix from this message. Nodes that lose arbitration shall
+remain unchanged.
 
 Nodes that have an assigned short prefix shall ignore this message.
 
