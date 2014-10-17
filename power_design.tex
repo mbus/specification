@@ -39,18 +39,20 @@ control design:
 \end{tabular}
 \end{quote}
 
-For the purposes of this document, we are concerned with two modules: (i) The
+For the purposes of this document, each \bus node has two modules: (i) The
 block that interfaces with the bus itself---we define this as the {\tt Bus
-Controller}---, and (ii) the node that is attached to the bus. With \bus, a
-completely power-gated node can seamlessly awaken its {\tt Bus~Controller}
-with no special assistance from the sending node or the master node. A {\tt
-Bus~Controller} can filter addresses, only waking the entire node for a message
-destined for that node. Additionally, a power-gated node with a simple
-always-on low power interrupt generator can exploit \bus features to generate
-the required edges with no specialization or externally synchronized knowledge
-of chip status. Finally, devices can reliably detect a shutdown message sent
-on the bus and use remaining control edges to shut down both the node and the
-node's {\tt Bus~Controller}.
+Controller}---, and (ii) the block that comprises the rest of the node---we
+define this as the {\tt Layer}. With \bus, a completely power-gated node can
+seamlessly awaken its {\tt Bus~Controller} with no special assistance from the
+sending node or the master node. A {\tt Bus~Controller} can filter addresses,
+only waking the {\tt Layer} for a message destined for that node.
+
+Additionally, a power-gated node with a simple always-on low power interrupt
+generator can exploit \bus features to generate the required edges with no
+specialization or externally synchronized knowledge of chip status. Finally,
+devices can reliably detect a shutdown message sent on the bus and use
+remaining control edges to shut down both the {\tt Layer} and the {\tt
+Bus~Controller}.
 
 \subsection{Waking the \texttt{Bus~Controller}}
 \label{sec:power-bus-controller-wakeup}
@@ -83,9 +85,9 @@ either Latch Control Bit~0 or Latch Control Bit~1 as the MSB of the
 destination address. After one or two more cycles, the bus would become idle
 while the local {\tt Bus~Controller} waits indefinitely for more bits. This
 condition would eventually resolve itself if any other node elected to send a
-message but could not be resolved by any other means\footnote{
+message but could not be resolved by any other means.\footnote{
   Excepting things such as a local timeout and an external reset, but such
-  a design is outside the scope of the discussion for a \bus member node.}.
+  a design is outside the scope of the discussion for a \bus member node.}
 
 As the {\tt Bus~Controller} was previously powered down, powering it down
 again before releasing isolation is by definition a null operation. As
@@ -96,7 +98,7 @@ The challenge is then that the sleep controller module that generates the
 power control edges must also be capable of detecting an Interrupt. Whether
 this level of robustness is required is left as an implementation decision.
 
-\subsection{Waking the Node}
+\subsection{Waking the Layer}
 If the {\tt Bus~Controller}'s address matches the destination address, it must
 wake whatever it is attached next up the chain, this means the clockless
 {\tt Bus~Controller} module must harvest clock edges from \bus to generate the
@@ -158,12 +160,11 @@ Specification} as an example of how to design a power-gated system.
   \figTimingInducedGlitch
 \end{figure}
 
-\subsection{Sleeping the {\tt Bus Controller}, Node}
-\bus edges can also be harvested to return both the node and the bus
-controller to sleep mode. While the exact message structure is left as
-implementation defined, \autoref{fig:shutdown} demonstrates how the control
-edges following the End~of~Message bit may be used to put both the node and
-the {\tt Bus~Controller} to sleep.
+\subsection{Sleeping the {\tt Bus Controller}, Layer}
+\bus edges can also be harvested to return both the {\tt Layer} and the
+{\tt Bus~Controller} to sleep mode. \autoref{fig:shutdown} demonstrates how
+the control edges following the End~of~Message bit may be used to put both the
+node and the {\tt Bus~Controller} to sleep.
 
 \autoref{fig:shutdown} delays the shutdown procedure until the transmitter
 asserts End~of~Message, indicating the shutdown message was not in error.

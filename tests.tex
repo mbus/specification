@@ -1,0 +1,178 @@
+\section{Test Cases}
+\label{appx-tests}
+This section documents some of the trickier corner cases in \bus design. This
+is by no means a comprehensive list of tests, but each of these cases should
+be tested to ensure compatibility across \bus implementations.
+
+For most tests, we recommend that nodes are be assigned a
+\nameref{sec:addressing-static-short-prefix} so that enumeration can be
+skipped.
+
+\subsection{Registers}
+
+\subsubsection{Dump Register Content to Memory and Restore to Other Registers}
+\label{test:reg-dump-restore}
+
+\begin{quote}
+  \texttt{A) 4 Nodes: N1 -> N2 -> N3 -> MED (-> N1)}
+\end{quote}
+
+This test dumps a node's registers to the memory of another node by requesting
+a register read that issues a streaming memory write. Some of these dumped
+registers are then written to different registers on another node by using a
+streaming memory read that issues a register write.
+
+\begin{enumerate}
+  \item Begin with N1's register data full of known, non-zero values. N2 and
+    N3 registers and memory should be zeroed.
+  \item N2 configures the memory stream address for N3:
+    \subitem \nameref{cmd:mem-stream-conf}: \hl{0x3X + 0xXXXXXXXX}
+  \item N2 requests that N1 copy 19 registers to N3's memory. Choose register
+    addresses such that both read and destination addresses wrap.
+    \subitem \nameref{cmd:reg-read}: \texttt{0x11 + 0xED\_12\_3\hl{X}\_0xF8}
+  \item Verify the memory contents of N3.
+  \item N1 requests that 9 of the registers are written to N2:
+    \subitem \nameref{cmd:mem-stream-read}: \texttt{\hl{0x??}}
+\end{enumerate}
+
+\subsection{Memory}
+
+\subsubsection{Bulk Transaction Overflow Wrapping}
+\label{test:mem-bulk-overflow}
+
+\begin{quote}
+  \texttt{A) 3 Nodes: N1 -> N2 -> MED (-> N1)}
+\end{quote}
+
+This test verifies both basic memory bulk transfer operation and that the bulk
+transfers handle overflow wrapping correctly.
+
+\begin{enumerate}
+  \item Begin with N1's memory full of known, non-zero values. N2 memory
+    should be zeroed.
+  \item N1 sends a request to N2 to read the last word and first 3 words
+    of its memory and writes it to the last 2 words and first 2 words of N1's
+    memory.
+    \subitem \nameref{cmd:mem-bulk-read}: \texttt{0x25 + 0xfffffffc\_12\_000011\_ffffffff8}
+  \item Verify the correct values from N2 are written to memory in N1.
+\end{enumerate}
+
+\begin{verbatim}
+  Test Name:            Success:
+  mem-bulk-overflow-A - Write 4 words to N2
+\end{verbatim}
+
+\subsection{Interjection Timing}
+
+\subsubsection{Third-Party Interjector for Many Registers}
+\label{test:inj-reg-long}
+
+\begin{quote}
+  \texttt{A) 4 Nodes: RX -> INJ -> TX -> MED (-> RX)}
+\end{quote}
+
+Have the TX node send a register write command that writes at least
+3~registers long. The INJ node should generate an interjection on the \nth{63}
+bit of {\bf data} with control bit~0 set to {\tt !EoM}. The effect should be
+that the transmitter sees 63 data clock edges and the receiver sees 65 data
+clock edges. At the end of the transaction, the first register should be
+written, the second register should not. The TX layer controller should
+believe that the transmission failed and it has written either 7~bytes or
+1~word (depending on implementation), but not 8~bytes or 2~words.
+
+Repeat this test, interjecting on the 64th edge. The result should be the
+same.
+
+\begin{quote}
+  \texttt{B) 4 Nodes: TX -> INJ -> RX -> MED (-> TX)}\\
+  \texttt{C) 4 Nodes: TX -> RX -> INJ -> MED (-> TX)}
+\end{quote}
+
+Repeat the same test with these node positions.
+
+Repeat these tests, interjecting on the 64th edge. The result should be the
+same.
+
+\begin{quote}
+  \texttt{D) 4 Nodes: INJ -> RX -> TX -> MED (-> INJ)}
+\end{quote}
+
+Repeat the same test but interject at the \nth{64}, \nth{65}, and \nth{66}
+data edges. For 64 and 65, the result should be the same. For 66, two
+registers should be written.
+
+\begin{verbatim}
+  Test Name:          Success:
+  inj-reg-long-A-63 - Write 1 register
+  inj-reg-long-A-64 - Write 1 register
+  inj-reg-long-B-63 - Write 1 register
+  inj-reg-long-B-64 - Write 1 register
+  inj-reg-long-C-63 - Write 1 register
+  inj-reg-long-C-64 - Write 1 register
+  inj-reg-long-D-63 - Write 1 register
+  inj-reg-long-D-64 - Write 1 register
+  inj-reg-long-D-65 - Write 1 register
+  inj-reg-long-D-66 - Write 2 registers
+\end{verbatim}
+
+\subsubsection{Third-Party Interjector at Last Register}
+\label{test:inj-reg-end}
+
+This test is the same as the previous, except the TX node should attempt to
+write exactly 2~registers.
+
+\begin{verbatim}
+  Test Name:         Success:
+  inj-reg-end-A-63 - Write 1 register
+  inj-reg-end-A-64 - Write 1 register
+  inj-reg-end-B-63 - Write 1 register
+  inj-reg-end-B-64 - Write 2 registers
+  inj-reg-end-C-63 - Write 1 register
+  inj-reg-end-C-64 - Write 2 registers
+  inj-reg-end-D-63 - Write 1 register
+  inj-reg-end-D-64 - Write 1 register
+  inj-reg-end-D-65 - Write 2 registers
+  inj-reg-end-D-66 - Write 2 registers
+\end{verbatim}
+
+\subsubsection{Third-Party Interjector for Long Memory Bulk Transfer}
+\label{test:inj-mem-bulk-long}
+
+Repeat the same tests as \nameref{test:inj-reg-long}, adding an address to the
+\bus data payload and interjecting 32~cycles later such that either one or two
+words are written to memory.
+
+\begin{verbatim}
+  Test Name:          Success:
+  inj-mem-bulk-long-A-63 - Write 1 word
+  inj-mem-bulk-long-A-64 - Write 1 word
+  inj-mem-bulk-long-B-63 - Write 1 word
+  inj-mem-bulk-long-B-64 - Write 1 word
+  inj-mem-bulk-long-C-63 - Write 1 word
+  inj-mem-bulk-long-C-64 - Write 1 word
+  inj-mem-bulk-long-D-63 - Write 1 word
+  inj-mem-bulk-long-D-64 - Write 1 word
+  inj-mem-bulk-long-D-65 - Write 1 word
+  inj-mem-bulk-long-D-66 - Write 2 words
+\end{verbatim}
+
+\subsubsection{Third-Party Interjector at End of Memory Bulk Transfer}
+\label{test:inj-mem-bulk-end}
+
+Repeat the same tests as \nameref{test:inj-reg-end}, adding an address to the
+\bus data payload and interjecting 32~cycles later such that either one or two
+words are written to memory.
+
+\begin{verbatim}
+  Test Name:         Success:
+  inj-mem-bulk-end-A-63 - Write 1 word
+  inj-mem-bulk-end-A-64 - Write 1 word
+  inj-mem-bulk-end-B-63 - Write 1 word
+  inj-mem-bulk-end-B-64 - Write 2 words
+  inj-mem-bulk-end-C-63 - Write 1 word
+  inj-mem-bulk-end-C-64 - Write 2 words
+  inj-mem-bulk-end-D-63 - Write 1 word
+  inj-mem-bulk-end-D-64 - Write 1 word
+  inj-mem-bulk-end-D-65 - Write 2 words
+  inj-mem-bulk-end-D-66 - Write 2 words
+\end{verbatim}

@@ -22,6 +22,7 @@
 
 \usepackage[all=normal,lists]{savetrees}
 
+\usepackage{rotating}
 \usepackage[endianness=big]{bytefield}
 \bytefieldsetup{boxformatting={\centering\footnotesize}}
 
@@ -53,6 +54,7 @@
 \definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
 
 \newcommand{\bus}{MBus\xspace}
+\newcommand{\proto}{MPQ\xspace}
 \newcommand{\mbuscopy}{MBus~\textcopyright~$2012-2014$~The Regents of the University of Michigan}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -110,10 +112,13 @@
 \input{address_design}
 \clearpage
 
-\input{specifications}
+\input{control}
 \clearpage
 
-\input{control}
+\input{mpq}
+\clearpage
+
+\input{specifications}
 \clearpage
 
 \input{todo}
@@ -124,6 +129,18 @@
 \label{sec:revisions}
 
 \begin{itemize}
+
+\item Revision 0.4 {\footnotesize(rXXXX)} --
+  \subitem Pull in protocol documentation to this specification
+  \subitem Register read always returns length requested, wrapping if needed
+  \subitem Memory bulk transfer always returns length requirements, wrapping
+  if needed
+  \subitem Add start address to register read
+  \subitem Add DMA start address to memory bulk read
+  \subitem Add memory stream protocol
+  \subitem Add tests appendix
+  \subitem Simplify interaction of broadcast messages and power states
+  \subitem Remove specification of broadcast channels 2 and 3
 
 \item Revision 0.3 {\footnotesize(r7650)} -- April 18, 2013
 \subitem Add full M3 team to the authors list
@@ -140,7 +157,11 @@
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\clearpage
-%\appendix
+\clearpage
+\appendix
+
+\input{tests}
+
+\input{scratchpad}
 
 \end{document}

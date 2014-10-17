@@ -1,15 +1,15 @@
-\svnInfo $Id$
+\section{\bus Protocol Design}
+\label{sec:protocol}
 
-\section{Control and Configuration Messages}
-\label{sec:control}
+To maximize device interoperability, \bus defines a higher-level protocol for
+basic point-to-point register and memory access. \bus also defines a protocol
+for broadcast messages.
 
 \bus reserves two prefixes: a {\em broadcast} prefix and an {\em extension}
-prefix. The broadcast prefix is used to command an control bus state on a
-clean channel, isolated from other users of the bus. The extension prefix is
-used in the short prefix space to identify full addresses. It is currently
-unused and reserved in the full prefix space.
+prefix.  The extension prefix is used in the short prefix space to identify
+full addresses. It is currently unused and reserved in the full prefix space.
 
-\subsection{Broadcast (Address \texttt{0x0X}, \texttt{0xf000000X})}
+\subsection{Broadcast Messages (Address \texttt{0x0X}, \texttt{0xf000000X})}
 \label{sec:control-broadcast}
 \bus defines the broadcast short prefix as {\tt 0b0000} and the broadcast full
 prefix as {\tt 0x00000}. Broadcast messages
@@ -18,16 +18,15 @@ silently dropped by nodes with small buffers. A node \textbf{must not}
 interrupt a broadcast message to indicate buffer overflow. Other interrupts
 are permitted for broadcast messages greater than 4~bytes in length.
 
-As broadcast messages by definition target all endpoints, assigning functional
-unit ID targets does not make sense. Instead, the functional unit ID field is
-used to define broadcast {\em channels}. Broadcast channel selection is used
-to differentiate between the different types of broadcast messages. \bus
-reserves half of these channels and leaves the rest as implementation defined.
+For broadcast messages, the functional unit ID field is used to define
+broadcast {\em channels}. Broadcast channel selection is used to differentiate
+between the different types of broadcast messages. \bus reserves half of these
+channels and leaves the rest as implementation-defined.
 %
 The MSB of the broadcast channel identifier (address bit~3) shall identify
 \bus broadcast operations. If the MSB is {\tt 0} it indicates an official \bus
 broadcast message as specified in this document and subsequent revisions.
-Broadcast messages with a channel MSB of {\tt 1} are implementation defined.
+Broadcast messages with a channel MSB of {\tt 1} are implementation-defined.
 It is recommended that nodes leveraging implementation-defined broadcast
 channels provide a mechanism to dynamically select broadcast channel to help
 mitigate conflicts.
@@ -36,60 +35,16 @@ A broadcast message that is not understood \textbf{must} be completely
 ignored. During acknowledgment, an ignorant node shall forward.
 
 \subsubsection{Broadcast Messages and Power-Gating}
-As power-gating of nodes is a \bus design consideration, \bus also defines the
-responsibilities of power-gated nodes for broadcast messages. The {\tt
-Bus~Controller} {\bf must} wake for every message. Wakeup shall occur during
-the arbitration phase of a message. For non-broadcast messages, the {\tt
-Bus~Controller} decides whether it will wake the node once it has received the
-entire address. To simplify {\tt Bus~Controller} design, the same constraint
-is imposed on broadcast messages: the {\tt Bus~Controller} should be able to
-decide whether it will wake the node after receiving the complete address.
-The implication is that the rules for waking nodes in response to broadcast
-messages are grouped by broadcast channel. This requirement {\bf must} hold
-true for all \bus broadcast channels and should hold true for any
-implementation-defined channels.
+Some systems may have inter-node dependencies on {\tt Layer} power state,
+e.g.\ activating a higher power regulator before a high-power component. For
+this reason, by default nodes must not change {\tt Layer} power state upon
+receipt of a broadcast message, excepting messages that explicitly change {\tt
+Layer} power state.
 
-Some messages (e.g. \nameref{cmd:query-devices}) require a response but may
-not require waking the node. The message semantics take priority over the
-channel power rules. That is, if a message must be responded to and the {\tt
-Bus~Controller} logic implementation is too simple to respond, the {\tt
-Bus~Controller} {\bf must} wake the node to respond.
-
-\medskip\noindent
-The \bus broadcast channel power rules are summarized here:
-\begin{itemize}
-  \item \nameref{sec:channel-0}
-  \begin{itemize}
-    \item Nodes responsible for performing enumeration {\bf must} be woken.
-    \item All other nodes may be woken.
-  \end{itemize}
-  \item \nameref{sec:channel-1}
-  \begin{itemize}
-    \item Nodes {\bf must} obey the indicated power request.
-    \item Nodes interested in snooping not affected by the request may be woken.
-  \end{itemize}
-  \item \nameref{sec:channel-2}
-  \begin{itemize}
-    \item The control node {\bf must} wake to handle the request.
-    \item If a node's behavior would change as a result of the request, it
-          {\bf must} wake and handle the request.
-    \item Nodes interested in snooping not affected by the request may be woken.
-  \end{itemize}
-  \item \nameref{sec:channel-4-6}
-  \begin{itemize}
-    \item Nodes capable of receiving arbitrary messages (e.g. CPU) may be
-             woken.
-    \item Fixed-function nodes (no software) {\bf must not} be woken.
-  \end{itemize}
-  \item \nameref{sec:channel-7}
-  \begin{itemize}
-    \item Nodes that ignore the Data channel {\bf must not} be woken.
-    \item All other nodes may be woken.
-  \end{itemize}
-\end{itemize}
-%
-In all cases where a node may wake up, nodes shall be assumed to not wake up
-unless explicitly stated otherwise.
+Some nodes, for example a general purpose processor that is snooping, may want
+to wake their {\tt Layer} for all messages. This is permitted, but nodes with
+non-standard broadcast power behavior must clearly document power semantics to
+be \bus compliant.
 
 \subsubsection{Broadcast Channels and Messages}
 This section breaks down all of the defined \bus broadcast channels and messages.
@@ -125,10 +80,9 @@ that should be {\em ignored}---accept any value, send as {\tt 0}.
 
 Channel~0 is used for messages related to node discovery and enumeration.
 Channel~0 messages either require a response or are a response. Channel~0
-response messages should not be sent unless solicited. Nodes that are capable
-of performing enumeration {\bf must} snoop all enumeration related messages
-(\nameref{cmd:enumerate-node}, \nameref{cmd:query-response}). If a node's
-enumeration controller is power-gated, it must be woken for these messages.
+response messages should not be sent unless solicited. The {\tt
+Bus~Controller} is responsible for handling Channel~0 messages. Channel~0
+messages should not affect {\tt Layer} power state.
 
 \subparagraph{Query Devices}
 \label{cmd:query-devices}
@@ -300,22 +254,26 @@ to \nameref{sec:spec-unassigned-short-prefix}. If the prefix to clear is set
 to \nameref{sec:spec-unassigned-short-prefix}, then all nodes shall reset
 their prefixes.
 
-\paragraph{Broadcast Channel~1: Power}
+\medskip
+\noindent
+\textit{All nodes are required to support this message.}
+
+\paragraph{Broadcast Channel~1: {\tt Layer} Power}
 \label{sec:channel-1}
 
-Channel~1 is used to query and command the power state of \bus nodes.
-Power-oblivious nodes may ignore channel~1. Power-aware nodes whose power
-model does not align well with these commands may ignore channel~1 messages
-{\em except} \nameref{cmd:all-sleep}. All nodes capable of entering a
-low-power state {\bf must} enter its lowest power state in response to an
+Channel~1 is used to query and command the {\tt Layer} power state of \bus
+nodes.  Power-oblivious nodes may ignore channel~1. Power-aware nodes whose
+power model does not align well with these commands may ignore channel~1
+messages {\em except} \nameref{cmd:all-sleep}. All nodes capable of entering a
+low-power state {\bf must} enter their lowest power state in response to an
 \nameref{cmd:all-sleep} message.
 
-Nodes are implicitly waked when a message is addressed to them, explicitly
-waking a node is unnecessary to communicate with it.
-The definition of ``wake'' and ``sleep'' are implementation-defined.
-Nodes interested in snooping power status may be woken for channel~1 messages,
-but care should be taken to ensure that a node does not wake itself up to
-snoop in the process of instructing itself to sleep.
+A node {\tt Layer} is implicitly waked when a message is addressed to it,
+explicitly issuing a wake command is unnecessary to communicate with a node.
+Nodes may build finer-grained power constructs beyond the macro {\tt Layer}
+control provided by \bus. For the purposes of \bus, a node's ``sleep'' state
+should be a minimal power state. Nodes may have different sleep
+configurations, e.g.\ different interrupts that are armed.
 
 \subparagraph{All Sleep}
 \label{cmd:all-sleep}
@@ -536,143 +494,14 @@ matches {\bf must} enter sleep.
 This message instructs selected nodes to wake. Any node whose full prefix
 matches {\bf must} wake up.
 
-\paragraph{Broadcast Channel~2: \bus Configuration}
+\paragraph{Broadcast Channels~2-7: Reserved}
 \label{sec:channel-2}
-
-The purpose of this channel is to configure any \bus parameters. Commands
-issued on channel~2 {\bf must} be targeted for the control node. By utilizing
-a broadcast channel all interested nodes can easily ``subscribe'' to
-configuration messages. Using a broadcast channel also permits nodes to
-hard-code the address for configuration messages.
-
-The current \bus specification does not define any channel~2 messages.
-Possible future messages include:
-\begin{itemize}
-  \item Maximum message length
-  \item Clock speed
-  \item $t_{long}$ value?
-  \item \ldots?
-\end{itemize}
-
-\paragraph{Broadcast Channel~3: Member Node Events}
 \label{sec:channel-3}
-
-The purpose of this channel is for member nodes to announce information to
-multiple interested parties. It also permits the simplification of a member
-node design by permitting the member node to hard-code a destination address
-for certain classes of messages (e.g. interrupts).
-
-Member node event messages {\bf must} also include a \hlc[lightergreen]{Member
-Node Identifier}---the node's current short prefix---to disambiguate member
-node events. It is possible, and acceptable, for a member node to generate a
-member node event message before enumeration has completed. In this case, a
-member node shall send its current short prefix:
-\nameref{sec:spec-unassigned-short-prefix}.
-
-
-\subparagraph{Member Node Level Interrupt}
-\label{cmd:level-interrupt}
-~
-
-~
-
-\begin{minipage}{\linewidth}
-  \begin{varwidth}{.2\linewidth}
-    \centering
-    \begin{bytefield}{8}
-      \bitheader{0-7} \\
-      \colorbitbox{lightblue}{4}{0000}
-      \colorbitbox{lightcyan}{4}{0011}
-    \end{bytefield}
-  \end{varwidth}
-+
-  \begin{varwidth}{.8\linewidth}
-    \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \colorbitbox{lightgreen}{4}{0000}
-      \colorbitbox{lightergreen}{4}{\scriptsize Member Node Short Prefix}
-      \bitbox{24}{Interrupt Status Vector}
-    \end{bytefield}
-  \end{varwidth}
-\end{minipage}
-
-~
-
-This message announces that an interrupt has occurred on this member node. The
-semantics of a \bus level interrupt dictate that an interrupt must be
-explicitly cleared. A member node {\bf must not} generate another level
-interrupt message {\em for the same interrupt} until that interrupt is
-explicitly cleared. A {\em different} interrupt may occur before the first
-interrupt is cleared, in which case the bit vector {\bf must} indicate both
-interrupts as active. Member nodes are permitted to batch or delay interrupts
-if appropriate, that is, a single level interrupt message may indicate the
-multiple interrupts have occurred.
-
-Clearing interrupts is {\bf not} a Channel~3 message, as doing so would
-require all member nodes to wake for every Channel~3 message.  As a
-consequence, systems with multiple nodes capable of clearing a member node
-interrupt should develop another means of coordinating the responsibility. A
-member node designed to have multiple potential controlling nodes should
-consider defining a broadcast control channel.
-
-\bus defines active to be logical {\tt 1}. Member nodes whose internal
-interrupts are active low must invert the signal before broadcasting the
-interrupt vector. The remaining 24~bits of this message are defined as a bit
-vector representing the current status of 24~interrupts.
-
-
-\subparagraph{Member Node Edge Interrupt}
-\label{cmd:edge-interrupt}
-~
-
-~
-
-\begin{minipage}{\linewidth}
-  \begin{varwidth}{.2\linewidth}
-    \centering
-    \begin{bytefield}{8}
-      \bitheader{0-7} \\
-      \colorbitbox{lightblue}{4}{0000}
-      \colorbitbox{lightcyan}{4}{0011}
-    \end{bytefield}
-  \end{varwidth}
-+
-  \begin{varwidth}{.8\linewidth}
-    \centering
-    \begin{bytefield}[bitwidth=1.25em]{32}
-      \bitheader{0-31} \\
-      \colorbitbox{lightgreen}{4}{0001}
-      \colorbitbox{lightergreen}{4}{\scriptsize Member Node Short Prefix}
-      \bitbox{24}{Interrupt Status Vector}
-    \end{bytefield}
-  \end{varwidth}
-\end{minipage}
-
-~
-
-This message announces that an interrupt has occurred on this member node. The
-semantics of a \bus edge interrupt dictate that the interrupt is implicitly
-cleared. That is, after the broadcast message announcing the interrupt has
-been sent the same interrupt is eligible to fire again. Member nodes are
-permitted to batch or delay interrupts if appropriate, that is, a single edge
-interrupt message may indicate multiple interrupts have occurred.
-
-\bus defines active to be logical {\tt 1}. Member nodes whose internal
-interrupts are active low must invert the signal before broadcasting the
-interrupt vector. The remaining 24~bits of this message are defined as a bit
-vector representing the current status of 24~interrupts.
-
-\paragraph{Broadcast Channels~4-6: Reserved}
-\label{sec:channel-4-6}
-
-\paragraph{Broadcast Channel~7: Data}
+\label{sec:channel-4}
+\label{sec:channel-5}
+\label{sec:channel-6}
 \label{sec:channel-7}
-Channel~7 is used to send arbitrary data to every addressable entity on the
-bus. \bus places no further restrictions or structure on channel~7 messages.
-Channel~7 is intended for use by more flexible software nodes, though any node
-may listen or transmit on channel~7.
 
-\subsection{Extension (Address \texttt{0xffffffff})}
+\subsection{Extension Messages (Address \texttt{0xffffffff})}
 This address is reserved for future extensions to \bus.
 

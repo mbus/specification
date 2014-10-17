@@ -111,13 +111,13 @@ also correspond to its topological priority.
 This constraint may be violated in systems that do not enumerate prefixes in
 order, that use the
 \nameref{cmd:invalidate-prefix} command to re-order short prefixes, or
-that use \nameref{sec:addressing-static-short-prefix} where the statically
+that use a \nameref{sec:addressing-static-short-prefix} where the statically
 assigned prefixes do not match the topology. Short prefixes cannot be used to
 affect priority. Priority is determined exclusively by physical topology.
 
 Short prefix assignments {\bf must} be preserved when nodes are powered gated.
 
-\subsubsection{Static Short Prefix Assignments}
+\subsubsection{Static Short Prefix Assignment}
 \label{sec:addressing-static-short-prefix}
 All \bus nodes {\bf must} support dynamic short prefix assignments. A node may
 have a default short prefix assignment. Upon the receipt of any
