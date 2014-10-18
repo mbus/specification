@@ -7,7 +7,8 @@ Nodes are not required to support \proto to be \bus compliant.
 registers have 8~bit addresses and are 24~bits wide. \proto memory has 32~bit
 addresses and stores data that is 32~bits wide. The register address space and
 memory address space are separate constructs, that is register address {\tt
-0x00} need not map to memory address {\tt 0x00000000}.
+0x00} need not map to memory address {\tt 0x00000000}, although aliasing is
+permitted.
 
 \subsection{Register Space}
 \label{cmd:reg}
@@ -89,8 +90,8 @@ example, if the FU\_ID is \nameref{cmd:mem-stream-write}, the effect is
 dumping the current register state to memory on the target addresss.
 {\em Tests: \ref{test:reg-dump-restore}.}
 
-\paragraph{Interjection Semantics:} If an interjection occurs during reply,
-the transaction is aborted and is {\bf not} retried.
+\paragraph{Interjection Semantics:} If the reply is interjected, the
+transaction is aborted and is {\bf not} retried.
 
 \subsection{Memory Space}
 \label{cmd:mem}
@@ -227,8 +228,8 @@ have been made during the response, the layer controller wraps and continues
 sending from address {\tt 0x00000000}.
 {\em Tests: \ref{test:mem-bulk-overflow}.}
 
-\paragraph{Interjection Semantics:} If an interjection occurs during reply,
-the transaction is aborted and is {\bf not} retried.
+\paragraph{Interjection Semantics:} If the reply is interjected, the
+transaction is aborted and is {\bf not} retried.
 
 
 \subsubsection{Memory Stream Read, Configure, or Alert}
@@ -317,8 +318,8 @@ have been made during the response, the layer controller wraps and continues
 sending from address {\tt 0x00000000}.
 {\em Tests: \ref{test:mem-stream-overflow}.}
 
-\subparagraph{Interjection Semantics:} If an interjection occurs during reply,
-the transaction is aborted and is {\bf not} retried.
+\paragraph{Interjection Semantics:} If the reply is interjected, the
+transaction is aborted and is {\bf not} retried.
 
 \paragraph{Configure (Bit 23 == 1, Bits 22-21 in (01,10,11):}
 \label{cmd:mem-stream-multi-conf}
