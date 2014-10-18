@@ -1,0 +1,100 @@
+\documentclass{article}
+
+\usepackage{color}
+\usepackage{
+  tikz,
+  tikz-timing,
+}
+\usetikzlibrary{positioning,decorations.pathreplacing}
+\usetikzlibrary{arrows}
+\pagenumbering{gobble}
+
+\newcommand{\bus}{MBus\xspace}
+
+\begin{document}
+
+\input{timing}
+
+% \figTimingInducedGlitch
+%
+% Find the figure you want and copy it here. You only want the area inside of
+% the tikztimingtable (so it doesn't print caption / etc) %
+% Then use the 'pdfcrop' utility to trim the whitespace
+
+  \centering
+  \footnotesize
+  \begin{tikztimingtable}[
+      timing/wscale=2.5,
+      timing/slope=.3,
+      timing/d/text/.style={font=\sffamily\huge},
+      timing/n/.style={rectangle},
+      timing/metachar={{M}[2]{#1S N[rectangle,scale=1.5]{#2}}},
+      ]
+    %       IiiiAA EE VV IIIIII SS X000 0II
+    Clock & HHHHCC CC CC CCHHHH HC CCCC CCC H\\
+    Data  & HLLLHH HH HH HCCCCC CH HLLL LHH H\\
+         % & \\
+         % & {.4M{}}{0.6M{$t_{long}$}}{2.1M{Arbitration}}
+         %   {2.4M{Interjection}}{2.8M{Control}}{1.8M{Idle}}\\
+         %& {1M{}}{3M{$t_{long}$}}{7M{Arbitration}}
+         %  {6M{Interrupt}}{7M{Control Bits}}{2M{Idle}}\\
+         %& {1D{}}{3D{$t_{long}$}}{7D{Arbitration}}
+         %  {6D{Interrupt}}{7D{Control Bits}}{2D{Idle}}\\
+  \extracode
+    \begin{pgfonlayer}{background}
+      \begin{scope}[semithick,dashed]
+        \vertlines[color=gray]{2.5,5,...,\twidth}
+      \end{scope}
+    \end{pgfonlayer}
+
+    \begin{scope}
+      [font=\sffamily\scriptsize,shift={(-1,2)},anchor=west]
+      \def\mult{2.5}
+      \node             at (-0.0*\mult, 3.0)  {\small\color{red}Sleep Ctl$\rightarrow$Bus Ctl};
+      \node [rotate=30] at (5*\mult, 0)  {\color{red}Release Power Gate};
+      \node [rotate=30] at (6*\mult, 0)  {\color{red}Release Clock};
+      \node [rotate=30] at (7*\mult, 0)  {\color{red}Release Iso};
+      \node [rotate=30] at (8*\mult, 0)  {\color{red}Release Reset};
+      \node [rotate=30] at (9*\mult, 0)  {\color{blue}Release Power Gate};
+      \node [rotate=30] at (10*\mult, 0) {\color{blue}Release Clock};
+      \node [rotate=30] at (11*\mult, 0) {\color{blue}Release Iso};
+
+      \node [rotate=30] at (18*\mult, 0) {\color{blue}Release Reset};
+
+      \node             at (21.0*\mult, 3.0)  {\small\color{blue}Bus Ctl$\rightarrow$Layer Ctl};
+    \end{scope}
+
+    % Ellipses and their labels for bus events
+    \begin{scope}
+      [font=\scriptsize]
+      \draw[orange,thick] (2.5, -1.5) ellipse (.75 and 1);
+      \draw(6.25, -1.5) node {$\leftarrow$Req Bus};
+
+      \draw[orange,thick] (10, -0.5) ellipse (.75 and 2);
+      \draw(16.75, -1.75) node {$\leftarrow$Resume Forwarding};
+
+      \draw (38,4) node[] (Ctl) {\bf\sffamily ``General Error''};
+      \draw[->,>=latex,gray] (Ctl) ..
+        controls
+          (40, -.5) and
+          (43, -1.25)
+        ..  (46, -1.5);
+      \draw[cyan,thick] (52.5, -1.5) ellipse (6.5 and 1.25);
+    \end{scope}
+
+    \foreach \n [evaluate=\n as \l using int((\n-1)/2.5)] in {2.5,5,...,\twidth}
+      \draw (\n,-3.0) -- +(0,-.2)
+        node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
+
+    \draw
+    [thick,decorate,decoration={brace,amplitude=5pt,mirror},xshift=0.0pt,yshift=-27.0pt](2.5,0) -- (10.0,0) node[black,midway,yshift=-0.3cm] {\footnotesize Mediator Wakeup};
+    \draw [thick,decorate,decoration={brace,amplitude=5pt,mirror},xshift=0.0pt,yshift=-27.0pt](10.0,0) -- (27.5,0) node[black,midway,yshift=-0.3cm] {\footnotesize Arbitration};
+    \draw [thick,decorate,decoration={brace,amplitude=5pt,mirror},xshift=0.0pt,yshift=-27.0pt](27.5,0) -- (42.5,0) node[black,midway,yshift=-0.3cm] {\footnotesize Mediator-Initiated Interjection};
+    \draw [thick,decorate,decoration={brace,amplitude=5pt,mirror},xshift=0.0pt,yshift=-27.0pt](42.5,0) -- (60.0,0) node[black,midway,yshift=-0.3cm] {\footnotesize Control};
+    \draw [thick,decorate,decoration={brace,amplitude=5pt,mirror},xshift=0.0pt,yshift=-27.0pt](60.0,0) -- (65.0,0) node[black,midway,yshift=-0.3cm] {\footnotesize Idle};
+
+  \end{tikztimingtable}
+
+\end{document}
+
+%  \begin{tikztimingtable}[timing/wscale=2.5,timing/slope=.3,timing/d/text/.append style={font=\huge\bfseries\sffamily\color{black}}]

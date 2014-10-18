@@ -1,5 +1,3 @@
-\svnInfo $Id$
-
 \section{Power Design}
 \label{sec:power}
 The purpose of \bus is to support very low power operation. As such, it is
@@ -145,10 +143,8 @@ master node to generate wakeup edges.
 Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines master
 node behavior in response to a glitch on the data line causing a spurious
 wakeup. By deliberately inducing such a glitch, a power-gated member node can
-generate enough pulses to wake itself up. \autoref{fig:induced-timing}
-shows an example waveform of an induced glitch, annotated with power control
-signals. \autoref{fig:induced-inducer} demonstrates a simple inducer
-circuit.
+generate enough pulses to wake itself up. \autoref{fig:glitch} shows an
+example waveform of an induced glitch, annotated with power control signals.
 
 Details on how the {\tt Bus~Controller} disambiguates between an RX-induced
 wakeup and an interrupt requested wakeup and other implementation issues are
@@ -157,10 +153,24 @@ system are highly encouraged to read the {\em \bus M3 Implementation
 Specification} as an example of how to design a power-gated system.
 
 \begin{figure}
-  \figTimingInducedGlitch
+  \centering
+  \includegraphics[width=\linewidth]{timing/power_on_glitch-crop}
+  \caption{\textbf{\bus Wakeup.} \textmd{
+      Power-gated nodes repurpose the arbitration edges to wake the bus
+      controller before data transmission starts. To self-wake, nodes can
+      initiate a null transaction (shown here) by pulling down \DAT and then
+      resuming forwarding \DAT before the arbitration edge. If no other node
+      arbitrates, the mediator will detect no winner, raise a general error,
+      and return the bus to idle.
+      Arbitration produces enough edges to wake bus controllers before
+      addressing. The null transaction produces enough edges to wake all of
+      the \bus hierarchical power domains in a manner that is transparent to
+      non-power-aware devices.
+  }}
+  \label{fig:glitch}
 \end{figure}
 
-\subsection{Sleeping the {\tt Bus Controller}, Layer}
+\subsection{Sleeping the {\tt Bus Controller}, {\tt Layer}}
 \bus edges can also be harvested to return both the {\tt Layer} and the
 {\tt Bus~Controller} to sleep mode. \autoref{fig:shutdown} demonstrates how
 the control edges following the End~of~Message bit may be used to put both the
@@ -173,7 +183,19 @@ a shutdown request can itself shut down with no further intervention or
 knowledge by the master node.
 
 \begin{figure}
-  \figTimingShutdown
+  \centering
+  \includegraphics[width=\linewidth]{timing/shutdown-crop}
+  \caption{\textbf{Shutdown Timing.} \textmd{
+    The shutdown command is not confirmed until time~5 when the transmitter
+    indicates a valid End~of~Message signal. At time~6, the bus controller
+    acknowledges shutdown, asserts the {\tt SHTDWN} signal to the sleep
+    controller, and isolates the layer controller. At time~7, the sleep
+    controller isolates the bus controller, and isolating the bus controller
+    by definition power gates the layer controller. At time~8, the sleep
+    controller power gates the bus controller, completing shutdown. At time~9
+    the bus is idle, and the sleep controller is waiting for the next wakeup.
+  }}
+  \label{fig:shutdown}
 \end{figure}
 
 \subsection{The Master Node, In Brief}

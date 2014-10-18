@@ -1,0 +1,17 @@
+tex_driver = `if [ -f /etc/redhat-release ]; then echo --xetex; else echo --luatex; fi`
+
+!render = |> pdflatex %f |> %B.pdf | %B.aux %B.log
+
+ifeq (@(TUP_PLATFORM),linux)
+!crop   = |> pdfcrop $(tex_driver) %f |> %B-crop.pdf <timinggroup>
+else
+!crop   = |> pdfcrop %f |> %B-crop.pdf <timinggroup>
+endif
+
+: arb.tex |> !render |> {rendered}
+: power_on_glitch.tex |> !render |> {rendered}
+: int.tex |> !render |> {rendered}
+: i2cs.tex |> !render |> {rendered}
+: shutdown.tex |> !render |> {rendered}
+
+: foreach {rendered} |> !crop |>

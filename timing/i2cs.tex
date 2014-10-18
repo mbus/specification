@@ -1,0 +1,196 @@
+\documentclass{article}
+
+\usepackage{xcolor}
+\colorlet{energy}{red!15!white}
+
+\usepackage{
+  tikz,
+  tikz-timing,
+}
+\usetikzlibrary{positioning}
+\pagenumbering{gobble}
+
+\usepackage{xspace}       % Intelligently add spaces after commands
+\newcommand{\iic}{I$^2$C\xspace}
+\newcommand{\bus}{MBus\xspace}
+
+\begin{document}
+
+\input{timing}
+
+% \figTimingInducedGlitch
+%
+% Find the figure you want and copy it here. You only want the area inside of
+% the tikztimingtable (so it doesn't print caption / etc)
+%
+% Then use the 'pdfcrop' utility to trim the whitespace
+  \centering
+  \begin{tikztimingtable}[timing/wscale=3.0,timing/slope=.2,timing/z/.append style={energy}]
+    SCL & HHHHH
+      L N(cl1){.5S} {.5S} [white]{0H}[black] N(ch1){.5H}{.5H}
+      L N(cl2){.5S} {.5S} [white]{0H}[black] N(ch2){.5H}{.5H}
+      [dotted] H;
+      L N(cl3){.5S} {.5S} [white]{0H}[black] N(ch3){.5H}{.5H}
+      \\
+    SDA & HHHHL
+      {.1L} N(dl1){.5S} {.5S} [white]{0H}[black] N(dh1){.5H}{.5H} {.9H}
+      {.1H} L {.9L}
+      [dotted] L;
+      {0L} N(dl2){.2S} {.2S} [white]{0Z}[black] N(dh2){.8L}{.8L} L
+      \\
+             & \\
+    SCL & HHHHH
+      {.1L} N(ucl1){1.6S} {1.6S} [white]{0H}[black] N(uch1){.3H}  {.3H}
+      {.1L} N(ucl2){1.6S} {1.6S} [white]{0H}[black] N(uch2){.3H}  {.3H}
+      [dotted] H;
+      {.1L} N(ucl3){1.6S} {1.6S} [white]{0H}[black] N(uch3){.3H}  {.3H}
+      \\
+    SDA & HHHHL
+      {.2L} N(udl1){1.6S} {1.6S} [white]{0H}[black] N(udh1){.2H}  {.2H}
+      {.2H} L {.8L}
+      [dotted] L;
+      {0L} N(udl2){.2S} {.2S} [white]{0Z}[black] N(udh2){.8L}{.8L} L
+      \\
+             & \\
+    SCL & HHHHH
+      LH
+      LH;
+      [dotted] H;
+      LH
+      \\
+    SDA & HLHHL
+      {.6L}{.4H}H
+      {.6H}{.4L}L;
+      [dotted] L;
+      {.2L}{.4H}{.4L}L
+      \\
+    Int CLK & X.6X
+      37{.2C};
+      [dotted] 5{.2C};
+      10{.2C}
+      \\
+             & \\
+  \extracode
+    % Draw rising curves
+    \begin{scope}
+      %[color=red]
+      \draw (cl1.south) ..  controls
+          ([xshift=.2em,yshift=.9em] cl1) and
+          ([xshift=-.2em,yshift=-.1em] ch1) ..
+        (ch1.north);
+      \draw (cl2.south) ..  controls
+          ([xshift=.2em,yshift=.9em] cl2) and
+          ([xshift=-.2em,yshift=-.1em] ch2) ..
+        (ch2.north);
+      \draw (cl3.south) ..  controls
+          ([xshift=.2em,yshift=.9em] cl3) and
+          ([xshift=-.2em,yshift=-.1em] ch3) ..
+        (ch3.north);
+      \draw (dl1.south) ..  controls
+          ([xshift=.2em,yshift=.9em] dl1) and
+          ([xshift=-.2em,yshift=-.1em] dh1) ..
+        (dh1.north);
+      \draw (dl2.south) ..  controls
+          ([xshift=.2em,yshift=.9em] dl2) and
+          ([xshift=-.2em,yshift=.1em] dh2) ..
+        (dh2.north);
+
+      \draw (ucl1.south) ..  controls
+          ([xshift=.2em,yshift=.9em] ucl1) and
+          ([xshift=-.2em,yshift=-.1em] uch1) ..
+        (uch1.north);
+      \draw (ucl2.south) ..  controls
+          ([xshift=.2em,yshift=.9em] ucl2) and
+          ([xshift=-.2em,yshift=-.1em] uch2) ..
+        (uch2.north);
+      \draw (ucl3.south) ..  controls
+          ([xshift=.2em,yshift=.9em] ucl3) and
+          ([xshift=-.2em,yshift=-.1em] uch3) ..
+        (uch3.north);
+      \draw (udl1.south) ..  controls
+          ([xshift=.2em,yshift=.9em] udl1) and
+          ([xshift=-.2em,yshift=-.1em] udh1) ..
+        (udh1.north);
+      \draw (udl2.south) ..  controls
+          ([xshift=.2em,yshift=.9em] udl2) and
+          ([xshift=-.2em,yshift=.1em] udh2) ..
+        (udh2.north);
+    \end{scope}
+
+    % Light red boxes over energy-hungry regions
+    \begin{pgfonlayer}{background}
+      \begin{scope}
+        [energy]
+        % Trad SCL
+        \fill (15,  0) rectangle (18, 1);
+        \fill (21,  0) rectangle (24, 1);
+        \fill (30,  0) rectangle (33, 1);
+        % Trad SDA
+        \fill (12, -2) rectangle (15.3, -1);
+        \fill (21.3, -2) rectangle (27, -1);
+        \fill (30.3, -2) rectangle (36, -1);
+        % Unbal SCL
+        \fill (15, -6) rectangle (15.3, -5);
+        \fill (21, -6) rectangle (21.3, -5);
+        \fill (30, -6) rectangle (30.3, -5);
+        % Unbal SDA
+        \fill (12, -8) rectangle (15.3, -7);
+        \fill (21.6, -8) rectangle (27, -7);
+        \fill (30.3, -8) rectangle (36, -7);
+        % Old i2c int clk
+        \fill (4.8, -16) rectangle (36, -15);
+      \end{scope}
+    \end{pgfonlayer}
+
+    % Vertical lines between cycles
+    \begin{pgfonlayer}{background}
+      \begin{scope}[semithick,dashed]
+        \vertlines[color=red]{12}
+        \vertlines[color=gray]{15,21,27,30,36}
+      \end{scope}
+    \end{pgfonlayer}
+
+    % Labels on the left edge
+    \begin{scope}
+      [font=\sffamily,shift={(-3.0em,0)},anchor=east,color=blue]
+      \node at (  0,  -0.5) {Traditional};
+      \node at (  0,  -5.3) {Proposed};
+      \node at (  0,  -6.5) {Unbalanced};
+      \node at (  0,  -8.2) {Improvement};
+      \node at (  0, -11.5) {Lee \iic};
+      \node at (  0, -13.5) {Variant~[19]};
+    \end{scope}
+
+    % Labels at the top
+    \begin{scope}
+      [font=\bf\sffamily,shift={(-1,3.5)},anchor=north,align=center]
+      \node at (13, 0) {Start};
+      \node at (19, 0) {1};
+      \node at (25, 0) {0};
+      \node at (34, 0) {ACK};
+    \end{scope}
+
+    % Mark the wakeup period of old i2c
+    \begin{scope}
+      [color=blue]
+      \draw
+        (3.0,-12) node[] (TL) {}
+        (3.0,-18) node[] (BL) {}
+        ( 10.8,-12) node[] (TR) {}
+        ( 10.8,-18) node[] (BR) {};
+        \node[right=1.1 of BL] (tlong) {\scriptsize$wakeup$};
+      \draw[<-] (BL.east) -- (tlong.west);
+      \draw[->] (tlong.east) -- (BR.west);
+      \draw[dashed] (TL) -- (BL);
+      \draw[dashed] (TR) -- (BR);
+    \end{scope}
+
+    % Number the timing lines
+    %\draw (12, -18.5) -- +(0,-.2)
+    %  node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize0}};
+    %\foreach \n [evaluate=\n as \l using int((\n-12)/3)] in {15,18,...,\twidth}
+    %  \draw (\n,-18.5) -- +(0,-.2)
+    %    node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
+  \end{tikztimingtable}
+
+\end{document}

@@ -1,0 +1,4 @@
+: bus.tex | timing/<timinggroup> img/<imagesgroup> *.cls *.bib |> \
+^ pdflatex ^ \
+pdflatex -jobname=MBus_Specification %f; pdflatex -jobname=MBus_Specification %f  |> \
+MBus_Specification.pdf | MBus_Specification.aux MBus_Specification.log MBus_Specification.out MBus_Specification.toc

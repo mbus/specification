@@ -1,0 +1,58 @@
+\documentclass{article}
+
+\usepackage{color}
+\usepackage{
+  tikz,
+  tikz-timing,
+}
+\usetikzlibrary{positioning}
+\pagenumbering{gobble}
+
+\newcommand{\bus}{MBus\xspace}
+
+\begin{document}
+
+\input{timing}
+
+% \figTimingInducedGlitch
+%
+% Find the figure you want and copy it here. You only want the area inside of
+% the tikztimingtable (so it doesn't print caption / etc)
+%
+% Then use the 'pdfcrop' utility to trim the whitespace
+
+  \centering
+  \footnotesize
+  \begin{tikztimingtable}[timing/wscale=2.5,timing/slope=.3,timing/d/text/.append style={font=\huge\bfseries\sffamily},yscale=.1cm]
+    %       IiiiAA EE VV IIIIII SS X000 0II
+    Clock & HHHHCC CC CC CCHHHH HC CCCC CCC H\\
+    Data  & HLLLHH HH HH HCCCCC CH HLLL LHH H\\
+          & {1D{}}{3D{$t_{long}$}}{7D{Arbitration}}
+            {6D{Interrupt}}{7D{Control Bits}}{2D{Idle}}\\
+  \extracode
+    \begin{pgfonlayer}{background}
+      \begin{scope}[semithick,dashed]
+        \vertlines[color=gray]{2.5,5,...,\twidth}
+      \end{scope}
+    \end{pgfonlayer}
+
+    \begin{scope}
+      [font=\sc\scriptsize,shift={(-1,2)},anchor=west]
+      \def\mult{2.5}
+      \node [rotate=40] at (5*\mult, 0)  {\color{red}(SC$\rightarrow$BC) Power Gate};
+      \node [rotate=40] at (6*\mult, 0)  {\color{red}(SC$\rightarrow$BC) Release Clock};
+      \node [rotate=40] at (7*\mult, 0)  {\color{red}(SC$\rightarrow$BC) Release Iso};
+      \node [rotate=40] at (8*\mult, 0)  {\color{red}(SC$\rightarrow$BC) Release Reset};
+      \node [rotate=40] at (9*\mult, 0)  {\color{blue}(BC$\rightarrow$LC) Power Gate};
+      \node [rotate=40] at (10*\mult, 0) {\color{blue}(BC$\rightarrow$LC) Release Clock};
+      \node [rotate=40] at (11*\mult, 0) {\color{blue}(BC$\rightarrow$LC) Release Iso};
+
+      \node [rotate=40] at (18*\mult, 0) {\color{blue}(BC$\rightarrow$LC) Release Reset};
+    \end{scope}
+
+    \foreach \n [evaluate=\n as \l using int((\n-1)/2.5)] in {2.5,5,...,\twidth}
+      \draw (\n,-4.5) -- +(0,-.2)
+        node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
+  \end{tikztimingtable}
+
+\end{document}

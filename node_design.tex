@@ -1,5 +1,3 @@
-\svnInfo $Id$
-
 \section{Node Design}
 \label{sec:node}
 The \bus defines two {\em physical} types of nodes: member nodes and a master
@@ -116,33 +114,6 @@ not have such luxury. Injection is mentioned here as it is an exceptionally
 useful tool for system bring-up and development. The means for performing
 injection should be considered as a \bus instantiation is designed.
 
-%% Old Injection Method
-\begin{comment}
-For a packaged system using \bus, simply providing an external {\tt DIN} and
-{\tt DOUT} that is normally jumpered, plus access to the {\tt CLK} line, is
-sufficient to allow transient bus elements (such as a programmer, debugger).
-
-For completely contained systems, it is desirable to also define a bus
-injection methodology that can be probed onto a chip, as well as a passive
-listening method. \bus defines two additional, optional pads that may be added
-to any node:
-
-\begin{itemize}
-  \item {\tt DSNOOP} -- Snoop, Data out
-  \item {\tt MODE}   -- Connected?, Data in
-\end{itemize}
-
-The {\tt MODE} pad is connected to a weak pull-down resistor. During device
-power-on, if the {\tt MODE} pad is found to be high, an external device is
-assumed to be connected. In this case, the {\tt DIN} pad is routed to the {\tt
-DSNOOP} pad and the {\tt MODE} pad is routed to the chip-internal {\tt DIN}
-signal. Otherwise the {\tt MODE} pad is ignored and the chip {\tt DIN} pad
-routes to both the chip-internal {\tt DIN} signal and the {\tt DSNOOP} pad.
-These functions are determined during Power-On-Reset and remain fixed until a
-future chip-Reset.
-\end{comment}
-%% END Old Injection Method
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Logical Design}
@@ -158,33 +129,37 @@ arbitration~(\ref{sec:protocol-arbitration}).
   \begin{minipage}[b]{.48\linewidth}
     \centering
     \includegraphics[width=0.5\linewidth]{img/stacked_layers}
-    \caption{High-level picture of \bus physical design. Member nodes and a
-    master node are connected in a loop, with data and clock lines forming
-    independent rings.
-    }
+    \caption{\textbf{\bus Physical Topology.} \textmd{
+        High-level picture of \bus physical design. Member nodes and a master
+        node are connected in a loop, with data and clock lines forming
+        independent rings.
+    }}
     \label{fig:bus}
   \end{minipage}
   \hspace{1 em}
   \begin{minipage}[b]{.48\linewidth}
     \centering
     \includegraphics[width=\textwidth]{img/logical}
-    \caption{A sketch of the logical model of a node. The Finite State Machine
-  selects between the three modes a node can be in. Top: {\em forwarding}, Mid:
-  {\em transmitting}, Bot: {\em acknowledging}. This model omits some of the
-  subtleties of arbitration,
-  see~\ref{sec:state-arbitrate}~\nameref{sec:state-arbitrate} for details.
-    }
+    \caption{\textbf{Logical Model.} \textmd{
+        The Finite State Machine selects between the three modes a node can be
+        in. Top: {\em forwarding}, Mid: {\em transmitting}, Bot: {\em
+        acknowledging}. This model omits some of the subtleties of
+        arbitration,
+        see~\ref{sec:state-arbitrate}~\nameref{sec:state-arbitrate} for
+        details.
+    }}
     \label{fig:logical}
   \end{minipage}
 \end{figure}
 
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{img/fsm_diagram}
-  \caption{A FSM describing the high-level logical behavior of \bus nodes.
+  \caption{\textbf{FSM describing the high-level logical behavior of \bus
+    nodes.} \textmd{
     Black arrows indicate transitions that occur on bus clock edges. Not shown
     are implicit arrows from any state to Forwarding.{\sc control}. From any
     {\sc control} state, nodes progress to {\sc idle}.
-    }
+    }}
 \end{figure}
 
 \subsubsection{Forwarding}

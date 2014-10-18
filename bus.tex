@@ -1,9 +1,11 @@
 \documentclass[twoside]{article}
 \usepackage[layout=letterpaper,margin=1in]{geometry}
 
-\usepackage{bold-extra} % for bf sc
+%\usepackage{bold-extra} % for bf sc
 
+\usepackage[font={normalsize,sf,bf}]{caption}
 \usepackage{fancyhdr}
+\usepackage{fixltx2e}
 \usepackage{xspace}
 \usepackage{cleveref}
 \usepackage{color}
@@ -55,6 +57,13 @@
 
 \newcommand{\bus}{MBus\xspace}
 \newcommand{\proto}{MPQ\xspace}
+\newcommand{\CLK}{\texttt{CLK}\xspace}
+\newcommand{\CLKIN}{\texttt{CLK\textsubscript{IN}}\xspace}
+\newcommand{\CLKOUT}{\texttt{CLK\textsubscript{OUT}}\xspace}
+\newcommand{\DAT}{\texttt{DATA}\xspace}
+\newcommand{\DATZERO}{\texttt{DATA0}\xspace}
+\newcommand{\DIN}{\texttt{DATA\textsubscript{IN}}\xspace}
+\newcommand{\DOUT}{\texttt{DATA\textsubscript{OUT}}\xspace}
 \newcommand{\mbuscopy}{MBus~\textcopyright~$2012-2014$~The Regents of the University of Michigan}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,11 +95,8 @@
   David Blaauw $<$blaauw@umich.edu$>$\\
   Prabal Dutta $<$prabal@umich.edu$>$
 }
-\date{Revision 0.3 --- April 18, 2014}
+\date{Revision 0.3+ --- Working Revision}
 \maketitle
-
-% Timing figures are defined in a separate file for readability
-\input{timing}
 
 \input{overview}
 

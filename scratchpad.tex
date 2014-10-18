@@ -292,3 +292,31 @@ Channel~7 is used to send arbitrary data to every addressable entity on the
 bus. \bus places no further restrictions or structure on channel~7 messages.
 Channel~7 is intended for use by more flexible software nodes, though any node
 may listen or transmit on channel~7.
+
+
+%% Old Injection Method
+\begin{comment}
+For a packaged system using \bus, simply providing an external {\tt DIN} and
+{\tt DOUT} that is normally jumpered, plus access to the {\tt CLK} line, is
+sufficient to allow transient bus elements (such as a programmer, debugger).
+
+For completely contained systems, it is desirable to also define a bus
+injection methodology that can be probed onto a chip, as well as a passive
+listening method. \bus defines two additional, optional pads that may be added
+to any node:
+
+\begin{itemize}
+  \item {\tt DSNOOP} -- Snoop, Data out
+  \item {\tt MODE}   -- Connected?, Data in
+\end{itemize}
+
+The {\tt MODE} pad is connected to a weak pull-down resistor. During device
+power-on, if the {\tt MODE} pad is found to be high, an external device is
+assumed to be connected. In this case, the {\tt DIN} pad is routed to the {\tt
+DSNOOP} pad and the {\tt MODE} pad is routed to the chip-internal {\tt DIN}
+signal. Otherwise the {\tt MODE} pad is ignored and the chip {\tt DIN} pad
+routes to both the chip-internal {\tt DIN} signal and the {\tt DSNOOP} pad.
+These functions are determined during Power-On-Reset and remain fixed until a
+future chip-Reset.
+\end{comment}
+%% END Old Injection Method

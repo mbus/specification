@@ -11,7 +11,19 @@ acknowledgment is negotiated. After Control, \bus returns to Idle or may
 optionally send a response message.
 
 \begin{figure}[h!]
-  \figTimingArbitration
+  \centering
+  \includegraphics[width=\linewidth]{timing/arb-crop}
+  \caption{\textbf{\bus Arbitration.} \textmd{
+    To begin a transaction, one or more nodes pull down on {\tt DOUT}.
+    Here we show node~1 and node~3 requesting the bus at nearly the same time
+    (node~1 shortly after node~3). Node~1 initially wins arbitration, but
+    node~3 uses the priority arbitration cycle to claim the bus. The
+    propagation delay of the data line between nodes is exaggerated to show
+    the shoot-through nature of \bus. Momentary glitches caused by nodes
+    transitioning from driving to forwarding are resolved before the next
+    rising clock edge.
+  }}
+  \label{fig:arbitration}
 \end{figure}
 
 \subsection{Bus~Idle}
@@ -80,7 +92,42 @@ to a transmitting node. Nodes that lost arbitration revert to
 Forwarding.{\sc Address\_Match}.
 
 \begin{figure}
-  \figTimingInterrupt
+  \centering
+  \begin{subfigure}[b]{.73\linewidth}
+    \includegraphics[width=\linewidth]{timing/int-crop}
+    \caption{Interjection timing with successful TX and ACK.}
+    \label{fig:int-timing}
+  \end{subfigure}
+  %
+  \begin{subfigure}[b]{.26\linewidth}
+    \begin{enumerate}
+      \small
+      \item After the transmitter sends all of its data it requests
+        interjection by not forwarding \CLK.
+      \item The mediator detects that a node has stopped forwarding \CLK.
+      \item The mediator stops toggling \CLK and begins toggling \DAT\ -- the
+        interjection sequence.
+      \item After interjection, the mediator begins clocking again. Node~1
+        discards the extra bits because they are not byte-aligned.
+      \item The transmitter signals a complete message by driving Control
+        Bit~0 high.
+      \item The receiver ACK's the message by driving Control Bit~1 low.
+      \item After control, the mediator stops forwarding \DAT, driving it
+        high, and returning the bus to idle.
+    \end{enumerate}
+    \caption{Interjection Events.}
+    \label{fig:int-details}
+  \end{subfigure}
+  %
+  \caption{\textbf{\bus Interjection and Control.} \textmd{
+      The \bus interjection sequence provides a reliable in-band reset signal.
+      Any node may request that the mediator interject the bus by holding
+      \CLKOUT high. The mediator detects this and generates an interjection by
+      toggling \DAT while holding \CLK high. An interjection is always
+      followed by a two-cycle control sequence that defines why the
+      interjection occurred.
+  }}
+  \label{fig:int}
 \end{figure}
 
 \subsection{Message Transmission}
@@ -148,14 +195,15 @@ previous Interrupt state are aborted and the net Interrupt result is
 
 \begin{figure}
   \includegraphics[width=\linewidth]{img/control_bits}
-  \caption{After an Interrupt, two control bits follow. The first bit is
-    always set by the interrupter and indicates whether the Interrupt was to
-    signal the end of message (EoM). If the EoM bit is high, the receiving
-    node is responsible for driving the second bit to acknowledge the message.
-    If the EoM bit is low, the interrupter is responsible for driving the
-    second bit. The TX/RX~Error (TRE) bit is set when a transmitting or
-    receiving node encounters an error.
-  }
+  \caption{\textbf{Control Bits.} \textmd{
+      After an Interrupt, two control bits follow. The first bit is always set
+      by the interrupter and indicates whether the Interrupt was to signal the
+      end of message (EoM). If the EoM bit is high, the receiving node is
+      responsible for driving the second bit to acknowledge the message.  If
+      the EoM bit is low, the interrupter is responsible for driving the
+      second bit. The TX/RX~Error (TRE) bit is set when a transmitting or
+      receiving node encounters an error.
+  }}
   \label{fig:control-bits}
 \end{figure}
 

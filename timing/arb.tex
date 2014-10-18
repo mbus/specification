@@ -1,0 +1,172 @@
+\documentclass{article}
+\usepackage[layout=letterpaper,margin=1in]{geometry}
+
+\usepackage{xcolor}
+\usepackage{
+  tikz,
+  tikz-timing,
+}
+\usetikzlibrary{positioning}
+\usetikzlibrary{arrows}
+\pagenumbering{gobble}
+\usepackage{xspace}       % Intelligently add spaces after commands
+
+\newcommand{\bus}{MBus\xspace}
+\newcommand{\DIN}{\texttt{DATA$_{\textnormal{\texttt{IN}}}$}\xspace}
+\newcommand{\DOUT}{\texttt{DATA$_{\textnormal{\texttt{OUT}}}$}\xspace}
+
+\begin{document}
+
+\input{timing}
+
+% \figTimingInducedGlitch
+%
+% Find the figure you want and copy it here. You only want the area inside of
+% the tikztimingtable (so it doesn't print caption / etc)
+%
+% Then use the 'pdfcrop' utility to trim the whitespace
+
+  \centering
+  \footnotesize
+  \begin{tikztimingtable}[timing/wscale=6.0,timing/slope=.3]
+    %          IrrrrrrRLLL A dddddddddD L VV ttttttttT 0
+    Bus Clk  & H      HHHC C           CC CC         C C\\
+    \\
+    Data In  & H      HHHH H .2H.2L.6H  H HH .4H.6L    L\\
+    Data Out & H.5H.5L LLL L L          L LL .4H.6L    L\\
+             & \\
+    Data In  & H.7H.3L LLL L L          L LL .2L.4H.4L L\\
+    Data Out & H.7H.3L LLL L L          L LL .2L.4H.4L L\\
+             & \\
+    Data In  & H.8H.2L LLL L L          L LL .4L.4H.2L L\\
+    Data Out & H      LLLL L H          H HH L         L\\
+             & \\
+    Data In  & H.2H.8L LLL L .2L.8 H    H HH .2H.8L    L\\
+    Data Out & H      HHHH H .2L.8 H    H HH .2H.8L    L\\
+%             & \\
+  \extracode
+    % Vertical timing lines
+    \begin{pgfonlayer}{background}
+      \begin{scope}[semithick,dashed]
+        \vertlines[color=gray]{6,30,36,...,\twidth}
+        \vertlines[color=red!30!white]{36,48,...,\twidth}
+      \end{scope}
+    \end{pgfonlayer}
+
+    % Node labels at the left edge of the waveform
+    \begin{scope}
+      [font=\bf\sffamily,shift={(-6.5em,-1.5)},anchor=east,color=blue]
+      \node (one) at (  0,   -3) {\normalsize 1};
+      \node       at (  3,   -3) {$\bigg\{$};
+      \node (two) at (  0,  -9) {\normalsize 2};
+      \node       at (  3,  -9) {$\bigg\{$};
+      \node (thr) at (  0, -15) {\normalsize 3};
+      \node       at (  3, -15) {$\bigg\{$};
+      \node (med) at (  1.2, -21) {\normalsize Med};
+      \node       at (  3, -21) {$\bigg\{$};
+      \draw[->,>=triangle 45] (one.south) -- (two.north);
+      \draw[->,>=triangle 45] (two.south) -- (thr.north);
+      \draw[->,>=triangle 45] (thr.south) -- (med.north);
+      \draw[->,>=triangle 45] (med.south) ..
+        controls
+          ([xshift=-3em,yshift=-6em] med.south) and
+          ([xshift=-2em,yshift=8em] one.north)
+        ..
+        (one.north);
+    \end{scope}
+
+    % Labels for timing lines at the top
+    \begin{scope}
+      [font=\sc\scriptsize,shift={(-1,5.5)},anchor=north,align=center]
+      \node [rotate=45] at (30, 0) {Arbi-\\tration};
+      \node [rotate=45] at (36, 0) {Priority\\Drive};
+      \node [rotate=45] at (42, 0) {Priority\\Latch};
+      \node [rotate=45] at (48, 0) {Reserved};
+      \node [rotate=45] at (54, 0) {Reserved};
+      \node [rotate=45] at (60, 0) {Drive\\Bit~0};
+      \node [rotate=45] at (66, 0) {Latch\\Bit~0};
+      \node [rotate=45] at (72, 0) {Drive\\Bit~1\ldots};
+    \end{scope}
+
+    % Ellipses and their labels for bus events
+    \begin{scope}
+      [font=\scriptsize]
+      \draw[red,thick] (9, -5.5) ellipse (1.25 and 1.25);
+      \draw(16.25, -5.5) node {$\leftarrow$Drive Bus Request};
+
+      \draw[cyan,thick]    (7.25,  -22.5) ellipse (1.25 and 2.5);
+      \draw(14.25, -23.75) node {$\leftarrow$Does Not Forward};
+
+      \draw[red,thick] (6, -17.5) ellipse (1.25 and 1.25);
+      \draw(13.25, -17.5) node {$\leftarrow$Drive Bus Request};
+
+      \draw[orange,thick]  (30,  -4.5) ellipse (1.25 and 2.5);
+      \draw(18.0,-4.0)  node[align=center] {Wins Arbitration b/c \DIN$=1\rightarrow$};
+      \draw[orange,thick]  (30, -16.5) ellipse (1.25 and 2.5);
+      \draw(22.0,-13.5) node[align=center] {Loses Arbitration};
+      \draw(22.75,-15.0) node[align=center] {b/c \DIN$=0\rightarrow$};
+
+      \draw[cyan,thick]    (36,  -4.5) ellipse (1.25 and 2.5);
+      \draw(36, -8.5) node[align=center,fill=white,fill opacity=.75] {Does Not\\Forward};
+      \draw[red,thick] (36, -17.5) ellipse (1.25 and 1.25);
+      \draw(27.75, -17.5) node {Drive Priority Request$\rightarrow$};
+      \draw[red,thick,dotted] (37, -23.5) ellipse (1.75 and 1.25);
+      \draw(29.5, -23.75) node {Begin Forwarding$\rightarrow$};
+
+      \draw[orange,thick]   (42,  -4.5) ellipse (1.25 and 2.5);
+      \draw(52.0,-4.0)  node[align=center] {$\leftarrow$Priority Requested, Back Off};
+      \draw[orange,thick]   (42, -16.5) ellipse (1.25 and 2.5);
+      \draw(51,-15.2) node[align=center] {$\leftarrow$Wins Priority Arbitration};
+
+      \draw[red,thick,dotted] (61.5, -5.5) ellipse (2.00 and 1.25);
+      \draw(54, -5.4) node {Begin Forwarding$\rightarrow$};
+      \draw[red,thick] (63, -17.5) ellipse (4.25 and 1.25);
+      \draw(54.75, -17.7) node {Drive Bit 0$\rightarrow$};
+    \end{scope}
+
+%    % Propogation arrows
+%    \begin{scope}
+%      [semithick,gray]
+%      \draw[->,>=latex] (60.1, -8.75*\rowdist) ..
+%        controls
+%          (59.1, -10.5*\rowdist)
+%        .. (61.2, -10.75*\rowdist);
+%      \draw[->,>=latex] (61.5, -11.75*\rowdist) ..
+%        controls
+%          (65.0, -11.25*\rowdist) and
+%          (58.0, -6.75*\rowdist)
+%        .. (62.3, -1.75*\rowdist);
+%      \draw[->,>=latex] (62.5, -2.75*\rowdist) ..
+%        controls
+%          (65.0, -2.5*\rowdist)
+%        .. (63.9, -4.75*\rowdist);
+%      \draw[->,>=latex] (64.0, -5.75*\rowdist) ..
+%        controls
+%          (66.0, -5.5*\rowdist)
+%        .. (65.1, -7.75*\rowdist);
+%    \end{scope}
+
+    % t_long label
+    \begin{scope}
+      [color=blue]
+      \draw
+        (7.2,-21) node[] (TL) {}
+        (7.2,-26.5) node[] (BL) {}
+        ( 24,  0) node[] (TR) {}
+        ( 24,-26.5) node[] (BR) {};
+      \node[right=2 of BL] (tlong) {Mediator Wakeup};
+      \draw[<-] (BL.east) -- (tlong.west);
+      \draw[->] (tlong.east) -- (BR.west);
+      \draw[dashed] (TL) -- (BL);
+      \draw[dashed] (TR) -- (BR);
+    \end{scope}
+
+    % Timing markers at the bottom
+    \draw (6, -25.0) -- +(0,-.2)
+      node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize0}};
+    \foreach \n [evaluate=\n as \l using int((\n-24)/6)] in {30,36,...,\twidth}
+      \draw (\n,-25.0) -- +(0,-.2)
+        node [below,inner sep=2pt] {\scalebox{.75}{\footnotesize\l}};
+  \end{tikztimingtable}
+
+\end{document}

@@ -1,0 +1,16 @@
+!convert    = |> convert %f %o |> %B.eps <imagespsgroup>
+!svgconvertps  = |> rsvg-convert -f ps -o %o %f  |> %B.ps <imagespsgroup>
+!svgconvertpdf = |> rsvg-convert -f pdf -o %o %f |> %B.pdf <imagesgroup>
+
+# Put all the pdfs in a bin so the output of the .eps files isn't included
+: foreach *.pdf  |>                        |> {pdfs}
+: foreach *.eps  |> epstopdf %f            |> %B.pdf <imagesgroup>
+: foreach {pdfs} |> pdftops -eps %f %B.eps |> %B.eps <imagespsgroup>
+
+: foreach *.gif |> !convert |> {geneps}
+: foreach *.jpg |> !convert |> {geneps}
+: foreach *.png |> !convert |> {geneps}
+: foreach *.svg |> !svgconvertps  |>
+: foreach *.svg |> !svgconvertpdf |>
+
+: foreach {geneps} |> epstopdf %f |> %B.pdf <imagesgroup>
