@@ -9,11 +9,11 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="684.76367"
-   height="221.35547"
+   width="696.07227"
+   height="217.47852"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.48.5 r10040"
    sodipodi:docname="control_bits.svg">
   <sodipodi:namedview
      id="base"
@@ -23,13 +23,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="390.65582"
-     inkscape:cy="61.32733"
+     inkscape:cx="402.6787"
+     inkscape:cy="56.736087"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="2560"
-     inkscape:window-height="1385"
+     inkscape:window-height="1374"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -38,8 +38,8 @@
      fit-margin-right="1"
      fit-margin-bottom="1">
     <inkscape:grid
-       originy="-894.83985px"
-       originx="55.599613px"
+       originy="-898.71681px"
+       originx="66.908207px"
        snapvisiblegridlinesonly="true"
        enabled="true"
        visible="true"
@@ -47,8 +47,8 @@
        id="grid2985"
        type="xygrid" />
     <inkscape:grid
-       originy="-894.83985px"
-       originx="55.599613px"
+       originy="-898.71681px"
+       originx="66.908207px"
        snapvisiblegridlinesonly="true"
        enabled="true"
        visible="true"
@@ -296,7 +296,7 @@
     </rdf:RDF>
   </metadata>
   <g
-     transform="translate(55.599613,63.833126)"
+     transform="translate(66.908207,63.833126)"
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
@@ -398,7 +398,7 @@
          y="152.36218"
          x="-3.8146973e-06"
          sodipodi:role="line"
-         id="tspan3112">Interrupted</tspan></text>
+         id="tspan3112">General Error</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"

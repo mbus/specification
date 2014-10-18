@@ -42,15 +42,15 @@ block that interfaces with the bus itself---we define this as the {\tt Bus
 Controller}---, and (ii) the block that comprises the rest of the node---we
 define this as the {\tt Layer}. With \bus, a completely power-gated node can
 seamlessly awaken its {\tt Bus~Controller} with no special assistance from the
-sending node or the master node. A {\tt Bus~Controller} can filter addresses,
+sending node or the mediator node. A {\tt Bus~Controller} can filter addresses,
 only waking the {\tt Layer} for a message destined for that node.
 
-Additionally, a power-gated node with a simple always-on low power interrupt
-generator can exploit \bus features to generate the required edges with no
-specialization or externally synchronized knowledge of chip status. Finally,
-devices can reliably detect a shutdown message sent on the bus and use
-remaining control edges to shut down both the {\tt Layer} and the {\tt
-Bus~Controller}.
+Additionally, a power-gated node with a simple always-on low power
+interjection generator can exploit \bus features to generate the required
+edges with no specialization or externally synchronized knowledge of chip
+status. Finally, devices can reliably detect a shutdown message sent on the
+bus and use remaining control edges to shut down both the {\tt Layer} and the
+{\tt Bus~Controller}.
 
 \subsection{Waking the \texttt{Bus~Controller}}
 \label{sec:power-bus-controller-wakeup}
@@ -73,10 +73,10 @@ may require it. A {\tt Bus~Controller} that is awoken using \bus edges will
 find its first rising clock edge to be Latch~Bit~0, the MSB of the address,
 and should design state machines appropriately.
 
-\subsubsection{Handling Interrupts During Wakeup}
+\subsubsection{Handling an Interjection During Wakeup}
 \label{sec:power-bus-controller-wakeup-int}
-By specification, Interrupts are not permitted during arbitration. If an
-Interrupt occurred, an ignorant {\tt Bus~Controller} would hang, unable to
+By specification, interjection is not permitted during arbitration. If an
+interjection occurred, an ignorant {\tt Bus~Controller} would hang, unable to
 make forward progress as the remaining edges would have been driven from
 clocking the control bits, causing the {\tt Bus~Controller} to interpret
 either Latch Control Bit~0 or Latch Control Bit~1 as the MSB of the
@@ -89,12 +89,13 @@ message but could not be resolved by any other means.\footnote{
 
 As the {\tt Bus~Controller} was previously powered down, powering it down
 again before releasing isolation is by definition a null operation. As
-isolation is released on the final falling edge of arbitration and Interrupt
-may only occur while the clock is high, a wake-up that is not Interrupted is
-safe and canceling (re-power-gating) a wake-up that is Interrupted is safe.
-The challenge is then that the sleep controller module that generates the
-power control edges must also be capable of detecting an Interrupt. Whether
-this level of robustness is required is left as an implementation decision.
+isolation is released on the final falling edge of arbitration and an
+interjection may only occur while the clock is high, a wake-up that is not
+interjected is safe and canceling (re-power-gating) a wake-up that is
+interjected is safe.  The challenge is then that the sleep controller module
+that generates the power control edges must also be capable of detecting an
+interjection. Whether this level of robustness is required is left as an
+implementation decision.
 
 \subsection{Waking the Layer}
 If the {\tt Bus~Controller}'s address matches the destination address, it must
@@ -104,43 +105,30 @@ power control signals.
 
 One design point explicitly required by \bus is the acknowledgment of
 zero-length messages. Depending on application, a node may not require
-awakening for a zero-length message. Due to the nature of \bus Interrupt
-procedure, however, as many as two bits may be received that will be discarded
-(\cref{fig:interrupt}). A {\tt Bus~Controller} design that attempts to
+awakening for a zero-length message. Due to the nature of the \bus
+interjection procedure, however, as many as two bits may be received that will
+be discarded (\cref{fig:int}). A {\tt Bus~Controller} design that attempts to
 minimize wakeups should therefore not begin the wakeup process until latching
 the {\em \nth{3}} data bit.
 
-\subsubsection{Handling Interrupts During Wakeup}
+\subsubsection{Handling an Interjection During Wakeup}
 As the control bits provide ample edges, designers have more options for
-handling interrupted wakeup. In particular, the same argument regarding wakeup
-cancellation and arbitration from~\ref{sec:power-bus-controller-wakeup-int}
-applies: if isolation has not been removed, the node may simply be
-re-power-gated without issue.
+handling an interjection during wakeup. In particular, the same argument
+regarding wakeup cancellation and arbitration
+from~\ref{sec:power-bus-controller-wakeup-int} applies: if isolation has not
+been removed, the node may simply be re-power-gated without issue.
 
 A possibly simpler implementation can unconditionally complete the wakeup
 sequence while indicating that a transaction was started, but failed.
 
 Ultimately, the important consideration is to draw attention to the fact that
-an Interrupt {\em may} occur during the {\tt Bus~Controller}'s issuing of
+an interjection {\em may} occur during the {\tt Bus~Controller}'s issuing of
 wakeup signals (at any point) and a robust {\tt Bus~Controller} implementation
-must consider and handle the cases surrounding Interrupt.
+must consider and handle the cases surrounding interjection during {\tt Layer}
+wakeup.
 
-\subsection{Waking via Local Interrupt}
-It is also desirable for a clockless, power-gated \bus node to generate an
-interrupt and send a message\footnote{
-  As example, consider an ultrasonic transducer, which can be used as a near
-  zero-energy wakeup source by harvesting energy from an ultrasonic wakeup
-  chirp.}.
-As the node now wishes to send a message, it cannot use the arbitration edges
-as wakeup edges as it must be participating in the same arbitration to wake
-itself up. Bus-level solutions, such as extra initial wakeup edges, require a
-global sense of the current ``power-state'' of the bus as well as sacrificing
-the ability of power conscious sensors to be used with power oblivious
-designs.
-
-Instead, power conscious nodes can exploit a robustness property of every \bus
-master node to generate wakeup edges.
-Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines master
+\subsection{Waking via Induced Glitch}
+Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines mediator
 node behavior in response to a glitch on the data line causing a spurious
 wakeup. By deliberately inducing such a glitch, a power-gated member node can
 generate enough pulses to wake itself up. \autoref{fig:glitch} shows an
@@ -180,7 +168,7 @@ node and the {\tt Bus~Controller} to sleep.
 asserts End~of~Message, indicating the shutdown message was not in error.
 In addition, \autoref{fig:shutdown} has the advantage that a node transmitting
 a shutdown request can itself shut down with no further intervention or
-knowledge by the master node.
+knowledge by the mediator node.
 
 \begin{figure}
   \centering
@@ -198,17 +186,17 @@ knowledge by the master node.
   \label{fig:shutdown}
 \end{figure}
 
-\subsection{The Master Node, In Brief}
+\subsection{The Mediator Node, In Brief}
 Explicitly not discussed in this document is any indication of how a
-power-gated master node is implemented. The period $t_{long}$ is permitted to
-be arbitrary in length with the express intent of allowing sleeping master
+power-gated mediator node is implemented. The period $t_{long}$ is permitted to
+be arbitrary in length with the express intent of allowing sleeping mediator
 nodes to wake themselves using the falling edge of {\tt DIN} as a trigger. The
-actual means for waking the master node are outside the scope of this
+actual means for waking the mediator node are outside the scope of this
 document however.
 
-Sleeping a master node is also outside the scope of \bus functionality.
-A master node must sample its {\tt DIN} line upon returning to Idle (time~9
+Sleeping a mediator node is also outside the scope of \bus functionality.
+A mediator node must sample its {\tt DIN} line upon returning to Idle (time~9
 in \autoref{fig:shutdown}) by the rules laid out
 in~\ref{sec:protocol-return-idle}~\nameref{sec:protocol-return-idle}. If the
 {\tt DIN} line is high at that time after an implementation-defined shutdown
-message, the master node may enter sleep.
+message, the mediator node may enter sleep.

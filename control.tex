@@ -15,7 +15,7 @@ full addresses. It is currently unused and reserved in the full prefix space.
 prefix as {\tt 0x00000}. Broadcast messages
 are permitted to be of arbitrary length. Messages longer than 32~bits may be
 silently dropped by nodes with small buffers. A node \textbf{must not}
-interrupt a broadcast message to indicate buffer overflow. Other interrupts
+interject a broadcast message to indicate buffer overflow. Interjections
 are permitted for broadcast messages greater than 4~bytes in length.
 
 For broadcast messages, the functional unit ID field is used to define
@@ -166,10 +166,9 @@ This message must be sent in response to \nameref{cmd:query-devices} or
 \nameref{cmd:enumerate-node}. When responding to \nameref{cmd:query-devices},
 nodes {\bf must} retry until the message is sent. When responding to
 \nameref{cmd:enumerate-node}, nodes {\bf must not} retry sending if
-arbitration is lost and {\bf must} retry sending if interrupted\footnote{
-  An interrupt should not occur during this message. Such an interrupt would be
-  an error.
-  }.
+arbitration is lost and {\bf must} retry sending if interjected.\footnote{
+  An interjection should not occur during this message. Such an interjection
+  would be an error.}
 
 \medskip
 \noindent

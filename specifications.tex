@@ -22,18 +22,18 @@ receiving a zero length message addressed to it {\bf must} ACK the message.
 Whether higher layers are indicated of a query message is implementation
 dependent.
 
-See~\ref{sec:spec-interrupt}~\nameref{sec:spec-interrupt} for details on the
-minimum uninterruptable message length.
+See~\ref{sec:spec-interjection}~\nameref{sec:spec-interjection} for details on
+the minimum uninterruptable message length.
 
 \subsection{Minimum Maximum Message Length}
-All \bus master nodes must permit a minimum of 1~K (1024~bits) of data to be
+All \bus mediators must permit a minimum of 1~K (1024~bits) of data to be
 transmitted before aborting a transaction due to a hung transmitter.
 
 The message length counter shall count the number of positive clock edges
-received after Begin~Transmission at the master node's {\tt CLK\_IN} port up
-to and including the last bit latched (Request~Interrupt in
-\cref{fig:interrupt}). The counter shall be an {\em inclusive} counter,
-that is the master node shall not Interrupt until it receives the $N+1$th
+received after Begin~Transmission at the mediator node's {\tt CLK\_IN} port up
+to and including the last bit latched (Request~Interjection in
+\cref{fig:int}). The counter shall be an {\em inclusive} counter,
+that is the mediator node shall not interject until it receives the $N+1$th
 bit.
 
 Commands to query and configure the upper bound are specified in
@@ -54,21 +54,21 @@ individual transmission.
 \subsection{Buffer Overflow / Flow Control}
 On the average, the expectation in a \bus system is that a transmitting node
 knows the capacity of the receiving node. If a receiving node does not have
-enough space for the current transmission, it {\bf must} Interrupt the current
+enough space for the current transmission, it {\bf must} interject the current
 transmission and indicate a receiver error (Control~Bits:~{\tt 01}).
 
-The receiver must Interrupt as soon as it is {\em certain} that it has
+The receiver must interject as soon as it is {\em certain} that it has
 exceeded its receive capacity. This detection must be performed carefully and
 must take into account that two bits beyond the complete transmission may be
-temporarily received (as is the case for Node~1 in
-\cref{fig:interrupt}). The receiving state machine should not transition
-into {\sc decided\_to\_interrupt} until the \nth{3}~bit of a byte that it does
-not have space for. The receiver may wait until the \nth{8}~bit to transition
-its state machine to request interrupt, but no later than that such that it is
-assured that it will interrupt the transmission before the transmitter
-attempts to interrupt to signal end of message even if the receiver is of
+temporarily received (as is the case for Node~1 in \cref{fig:int}). The
+receiving state machine should not transition into {\sc
+decided\_to\_interject} until the \nth{3}~bit of a byte that it does not have
+space for. The receiver may wait until the \nth{8}~bit to transition its state
+machine to request interjection, but no later than that such that it is
+assured that it will interject the transmission before the transmitter
+attempts to interject to signal end of message even if the receiver is of
 lower priority.
-% XXX This should be a testbench.. all the specs -> tb's?
+\hl{XXX This should be a specified test}
 
 \subsection{Clock Speed}
 \hl{TODO: What is appropriate specification for clock speeds?} I2C has defined
@@ -92,37 +92,36 @@ prefix shall be considered as a sentinel value where short prefixes are
 reported, indicating that the node does not currently have a short prefix
 assigned.
 
-\subsection{Interrupt Rules}
-\label{sec:spec-interrupt}
-\bus permits any node to interrupt any message for any reason. To allow for
+\subsection{Interjection Rules}
+\label{sec:spec-interjection}
+\bus permits any node to interject any message for any reason. To allow for
 minimal forward progress, however, \bus requires that nodes permit a minimum
-of 32~bits (4~bytes) be transmitted without interruption. An exception is made
+of 32~bits (4~bytes) be transmitted without interjection. An exception is made
 for the transmitting node, which is permitted to send messages shorter than
 32~bits.
 
-Nodes wishing to interrupt must wait until either 41 or 65 clocks after
+Nodes wishing to interject must wait until either 41 or 65 clocks after
 Begin~Transmission to interrupt the bus (depending on whether the current
-message was addressed to a short address or full address). The interrupting
+message was addressed to a short address or full address). The interjecting
 node must wait until it has latched the \nth{33} bit of data before attempting
-to interrupt\footnote{
-  If the node instead attempted to interrupt on the \nth{32} bit and was a
-  topologically higher-priority node, it would override the transmitter during
-  Interrupt priority arbitration, not permitting the transmitter to signal
-  End~of~Message.}.
+to interject.\footnote{
+  If the node instead attempted to interject on the \nth{32} bit and was a
+  topologically higher-priority node, it would not permit the transmitter to
+  signal End~of~Message.}
 
 \subsection{Failed Arbitration (Spurious Wakeup)}
 \label{sec:spec-spurious}
-During normal arbitration, when the arbitration is resolved the master node's
-{\tt DIN} line should be low no matter who is participating. If the master
-node finds its {\tt DIN} line is high on the arbitration edge, it would
-indicate that no one is participating. The master node must treat this as an
-error and reset the bus.
+During normal arbitration, when the arbitration is resolved the mediator
+node's {\tt DIN} line should be low no matter who is participating. If the
+mediator node finds its {\tt DIN} line is high on the arbitration edge, it
+would indicate that no one is participating. The mediator node must treat this
+as an error and reset the bus.
 
-The master node {\bf must not} immediately interrupt the bus, however. As
+The mediator node {\bf must not} immediately interject the bus, however. As
 laid out in~\ref{sec:design-power-gated}~\nameref{sec:design-power-gated}, the
 arbitration edges may be used as input to node sleep controllers. To avoid
-potential issues related to half-waking power gated nodes, the master node
-must wait until Begin~Transmission before interrupting the bus.
+potential issues related to half-waking power gated nodes, the mediator node
+must wait until Begin~Transmission before interjecting the bus.
 
-The control bits {\bf must} be driven by the master node. They {\bf must} be
+The control bits {\bf must} be driven by the mediator node. They {\bf must} be
 {\tt 00}, general error.

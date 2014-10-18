@@ -320,3 +320,19 @@ These functions are determined during Power-On-Reset and remain fixed until a
 future chip-Reset.
 \end{comment}
 %% END Old Injection Method
+
+Thought from \nameref{sec:protocol-return-idle}:
+\begin{quote}
+\textit{M3 Implementation Note:} (Referring to
+\cref{fig:int}) A broadcast sleep message cannot be considered a
+sleep until time~18 when the transmitter asserts that all the sent bits were
+desired to be sent. This leaves edges at time~20 and time~22 as the required
+two edges to power gate the layer.
+
+This could be complicated, however, if a node elects (for some reason) to send
+a response to the broadcast sleep message. The sleep controller will still
+have four edges (Arbitration, Priority~Drive, Priority~Latch,
+Begin~Transmission) to wake its bus controller, but the timing between arming
+its {\tt CLK\_IN} fall detector and the mediator node pulling {\tt CLK\_IN} low
+in response could cause the sleep controller to miss wakeup.
+\end{quote}
