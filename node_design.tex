@@ -83,7 +83,7 @@ constraints (10~ns) as member nodes.
       correctly (e.g.~\cref{fig:bus}).
     \item There are no requirements for the placement of nodes in the data
       loop, but the ordering will have an impact on bus arbitration. See
-      \cref{sec:protocol-arbitration} for more details.
+      \cref{sec:bus-arbitration} for more details.
   \end{itemize}
   \item {\tt CLK}
   \begin{itemize}
@@ -123,7 +123,7 @@ There are three {\em logical} types of \bus nodes: transmitting, receiving,
 and forwarding. \bus can be considered multi-master, any node is capable of
 transmitting to any other node. The mediator node adopts these same three
 personalities, but its behavior differs slightly during
-arbitration~(\ref{sec:protocol-arbitration}).
+arbitration~(\ref{sec:bus-arbitration}).
 
 \begin{figure}
   \begin{minipage}[b]{.48\linewidth}
@@ -219,7 +219,7 @@ goes high---where never is defined as four times the minimum clock speed of
 disconnected.
 
 Details of priority arbitration are omitted here for simplicity.
-See~\ref{sec:protocol-arbitration}~\nameref{sec:protocol-arbitration} for
+See~\ref{sec:bus-arbitration}~\nameref{sec:bus-arbitration} for
 details.
 
 \medskip
@@ -235,10 +235,10 @@ and its {\tt DIN} line never goes low, it should be considered
 
 \paragraph{Transmitting.{\sc send}}
 During {\sc send}, a transmitting node pushes bits onto the bus as described
-in~\ref{sec:protocol-transmission}~\nameref{sec:protocol-transmission}.
+in~\ref{sec:bus-transmission}~\nameref{sec:bus-transmission}.
 
 A transmitting node completes its transmission by interjecting
-(\ref{sec:protocol-interjection}~\nameref{sec:protocol-interjection}) the bus
+(\ref{sec:bus-interjection}~\nameref{sec:bus-interjection}) the bus
 and indicating the transmission is complete.
 
 \paragraph{Transmitting.{\sc control}}

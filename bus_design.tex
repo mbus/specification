@@ -1,10 +1,10 @@
 \section{Bus Design}
-\label{sec:protocol}
-During normal operation, \bus remains in Bus~Idle~(\ref{sec:protocol-idle}).
-A transmission begins with Arbitration~(\ref{sec:protocol-arbitration}), then
-Message Transmission~(\ref{sec:protocol-transmission}). The transmitter then
-Interjects~(\ref{sec:protocol-interjection}) the bus and indicates the complete
-message was sent. During the Control~(\ref{sec:protocol-control}) period
+\label{sec:bus}
+During normal operation, \bus remains in Bus~Idle~(\ref{sec:bus-idle}).
+A transmission begins with Arbitration~(\ref{sec:bus-arbitration}), then
+Message Transmission~(\ref{sec:bus-transmission}). The transmitter then
+Interjects~(\ref{sec:bus-interjection}) the bus and indicates the complete
+message was sent. During the Control~(\ref{sec:bus-control}) period
 acknowledgment is negotiated. After Control, \bus returns to Idle or may
 optionally send a response message.
 
@@ -25,12 +25,12 @@ optionally send a response message.
 \end{figure}
 
 \subsection{Bus~Idle}
-\label{sec:protocol-idle}
+\label{sec:bus-idle}
 In \bus Bus~Idle, all lines (clock and data) are high. All member nodes are in
 forwarding state and the mediator node is waiting to begin arbitration.
 
 \subsection{Arbitration}
-\label{sec:protocol-arbitration}
+\label{sec:bus-arbitration}
 To begin arbitration, the bus must be in idle state.
 
 To request to transmit on the bus, a node should pull its {\tt DOUT} line low.
@@ -129,7 +129,7 @@ Forwarding.{\sc Address\_Match}.
 \end{figure}
 
 \subsection{Message Transmission}
-\label{sec:protocol-transmission}
+\label{sec:bus-transmission}
 The falling edge after arbitration is defined as ``Begin~Transmission''. On this
 edge, the transmitting node should switch its {\tt DOUT} mux from forwarding
 {\tt DIN} to the transmit FIFO. Data is expected to be valid and stable during
@@ -159,7 +159,7 @@ follows the transmitter (e.g.~node~3) or will end on a byte+2-bit boundary if
 the node topologically precedes the transmitter (e.g.~node~1).
 
 \subsection{Interjection}
-\label{sec:protocol-interjection}
+\label{sec:bus-interjection}
 During normal operation, interjection is only permitted after the first
 32~bits of data have been transmitted
 (\ref{sec:spec-interjection}~\nameref{sec:spec-interjection}). The
@@ -188,7 +188,7 @@ occur if the bus is being ``rescued'' from some erroneous state), the new
 interjection {\bf must} present control bits {\tt 00}.
 
 \subsection{Control Bits}
-\label{sec:protocol-control}
+\label{sec:bus-control}
 
 \begin{figure}
   \includegraphics[width=\linewidth]{img/control_bits}
@@ -233,7 +233,7 @@ section, the {\sc 00: General Error} state should be used for general or
 unclassified interjections as it carriers the least semantic meaning.
 
 \subsection{Return to Idle}
-\label{sec:protocol-return-idle}
+\label{sec:bus-return-idle}
 After latching the final Control~Bit (time~20 in \cref{fig:int}), one final
 edge (time~22) is generated to formally enter {\sc idle}. If, however, the
 data line is low at this edge, then it shall be considered the start of a new

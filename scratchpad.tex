@@ -4,7 +4,7 @@ in this section are {\bf not} stable and should {\bf not} be implemented in
 current \bus designs.
 
 \paragraph{Broadcast Channel~2: \bus Configuration}
-\label{sec:channel-2}
+\label{scratch:sec:channel-2}
 
 The purpose of this channel is to configure any \bus parameters. Commands
 issued on channel~2 {\bf must} be targeted for the mediator node. By utilizing
@@ -20,7 +20,7 @@ Possible future messages include:
 \end{itemize}
 
 \paragraph{Broadcast Channel~3: Member Node Events}
-\label{sec:channel-3}
+\label{scratch:sec:channel-3}
 
 The purpose of this channel is for broadcast dissemination of events that are
 specific to one member node.  It also permits the simplification of a member
@@ -36,7 +36,7 @@ their current short prefix \nameref{sec:spec-unassigned-short-prefix}.
 
 
 \subparagraph{Member Node Level Interrupt}
-\label{cmd:level-interrupt}
+\label{scratch:cmd:level-interrupt}
 ~
 
 ~
@@ -88,7 +88,7 @@ vector representing the current status of 24~interrupts.
 
 
 \subparagraph{Member Node Edge Interrupt}
-\label{cmd:edge-interrupt}
+\label{scratch:cmd:edge-interrupt}
 ~
 
 ~
@@ -132,7 +132,7 @@ vector representing the current status of 24~interrupts.
 
 
 \subparagraph{Member Node Set Memory Stream Address LSB}
-\label{cmd:conf-mem-stream-lsb}
+\label{scratch:cmd:conf-mem-stream-lsb}
 ~
 
 ~
@@ -174,7 +174,7 @@ Instead, the node generates a \nameref{cmd:conf-mem-strem-qresp} with the
 Queried Parameter field set to {\tt 0011}.
 
 \subparagraph{Member Node Set Memory Stream Address MSB}
-\label{cmd:conf-mem-stream-msb}
+\label{scratch:cmd:conf-mem-stream-msb}
 ~
 
 ~
@@ -217,7 +217,7 @@ Queried Parameter field set to {\tt 0011}.
 
 
 \subparagraph{Member Node Set Memory Stream Length}
-\label{cmd:conf-mem-stream-len}
+\label{scratch:cmd:conf-mem-stream-len}
 ~
 
 ~
@@ -253,7 +253,7 @@ Queried Parameter field set to {\tt 0011}.
 
 
 \subparagraph{Member Node Query Memory Stream Response}
-\label{cmd:conf-mem-stream-qresp}
+\label{scratch:cmd:conf-mem-stream-qresp}
 ~
 
 ~
@@ -287,7 +287,7 @@ Queried Parameter field set to {\tt 0011}.
 
 
 \paragraph{Broadcast Channel~7: Data}
-\label{sec:channel-7}
+\label{scratch:scratch:sec:channel-7}
 Channel~7 is used to send arbitrary data to every addressable entity on the
 bus. \bus places no further restrictions or structure on channel~7 messages.
 Channel~7 is intended for use by more flexible software nodes, though any node
@@ -321,7 +321,7 @@ future chip-Reset.
 \end{comment}
 %% END Old Injection Method
 
-Thought from \nameref{sec:protocol-return-idle}:
+Thought from \nameref{sec:bus-return-idle}:
 \begin{quote}
 \textit{M3 Implementation Note:} (Referring to
 \cref{fig:int}) A broadcast sleep message cannot be considered a
