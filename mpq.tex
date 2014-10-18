@@ -41,9 +41,9 @@ treated as if it were an independent transaction.
 \paragraph{Unaligned Access:} The behavior of a message ending on a
 non-word boundary is undefined.
 %
-\paragraph{Interrupt Semantics:} Each command is applied immediately when
+\paragraph{Interjection Semantics:} Each command is applied immediately when
 it is received. A four-command message would have a $4\times32=128$~bit data
-payload. If 63~bits are received prior to interrupt, only the first command
+payload. If 63~bits are received prior to interjection, only the first command
 was applied. If 64~bits are received, the first two commands are applied.
 {\em Tests: \ref{test:inj-reg-long}, \ref{test:inj-reg-end}.}
 
@@ -89,8 +89,8 @@ example, if the FU\_ID is \nameref{cmd-mem-stream-write}, the effect is
 dumping the current register state to memory on the target addresss.
 {\em Tests: \ref{test:reg-dump-restore}.}
 
-\paragraph{Interrupt Semantics:} If an interrupt occurs during reply, the
-transaction is aborted and is {\bf not} retried.
+\paragraph{Interjection Semantics:} If an interjection occurs during reply,
+the transaction is aborted and is {\bf not} retried.
 
 \subsection{Memory Space}
 \label{cmd:mem}
@@ -152,11 +152,11 @@ address in memory ({\tt 0xfffffffc}), the destination address wraps and data
 continues to be written, beginning at address {\tt 0x00000000}.
 {\em Tests: \ref{test:mem-bulk-overflow}.}
 
-\paragraph{Interrupt Semantics:} Each word of data is written to memory
+\paragraph{Interjection Semantics:} Each word of data is written to memory
 immediately when it is received. A four-word message would have a
 $(1+4)\times32=160$~bit data payload. If 95~bits are received prior to
-interrupt, only the first word was written to memory. If 96~bits are received,
-the first two words were written to memory.
+interjection, only the first word was written to memory. If 96~bits are
+received, the first two words were written to memory.
 {\em Tests: \ref{test:inj-mem-bulk-long}, \ref{test:inj-mem-bulk-end}.}
 
 \subsubsection{Memory Bulk Read}
@@ -227,8 +227,8 @@ have been made during the response, the layer controller wraps and continues
 sending from address {\tt 0x00000000}.
 {\em Tests: \ref{test:mem-bulk-overflow}.}
 
-\paragraph{Interrupt Semantics:} If an interrupt occurs during reply, the
-transaction is aborted and is {\bf not} retried.
+\paragraph{Interjection Semantics:} If an interjection occurs during reply,
+the transaction is aborted and is {\bf not} retried.
 
 
 \subsubsection{Memory Stream Read, Configure, or Alert}
@@ -317,8 +317,8 @@ have been made during the response, the layer controller wraps and continues
 sending from address {\tt 0x00000000}.
 {\em Tests: \ref{test:mem-stream-overflow}.}
 
-\subparagraph{Interrupt Semantics:} If an interrupt occurs during reply, the
-transaction is aborted and is {\bf not} retried.
+\subparagraph{Interjection Semantics:} If an interjection occurs during reply,
+the transaction is aborted and is {\bf not} retried.
 
 \paragraph{Configure (Bit 23 == 1, Bits 22-21 in (01,10,11):}
 \label{cmd:mem-stream-multi-conf}
@@ -379,9 +379,9 @@ address in memory ({\tt 0xfffffffc}), the destination address wraps and data
 continues to be written, beginning at address {\tt 0x00000000}.
 {\em Tests: \ref{test:mem-stream-overflow}.}
 
-\paragraph{Interrupt Semantics:} Each word of data is written to memory
+\paragraph{Interjection Semantics:} Each word of data is written to memory
 immediately when it is received. A four-word message would have a
 $(1+4)\times32=160$~bit data payload. If 95~bits are received prior to
-interrupt, only the first word was written to memory. If 96~bits are received,
-the first two words were written to memory.
+interjection, only the first word was written to memory. If 96~bits are
+received, the first two words were written to memory.
 {\em Tests: \ref{test:inj-mem-stream-long}, \ref{test:inj-mem-stream-end}.}
