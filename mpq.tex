@@ -19,6 +19,7 @@ bits that identify the \hlc[lightergreen]{command type}. All
 \hlc[lightgray]{reserved} bits should be treated as RZWI.
 
 \subsubsection{Memory Stream Configuration}
+\label{cmd:conf-memory-stream}
 
 \begin{bytefield}{8}
   \bitheader{0-7} \\
@@ -269,8 +270,11 @@ interjection, only the first word was written to memory. If 96~bits are
 received, the first two words were written to memory.
 {\em Tests: \ref{test:inj-mem-bulk-long}, \ref{test:inj-mem-bulk-end}.}
 
-\subsubsection{Memory Bulk Read}
-\label{cmd:mem-bulk-read}
+\subsubsection{Memory Read, Memory Alert}
+\label{cmd:mem-read}
+\label{cmd:mem-alert}
+
+\emph{If Bit~23 is LOW, command is a Memory Read:}
 
 \begin{bytefield}{9}
   \bitheader{0-7} \\
@@ -289,10 +293,74 @@ received, the first two words were written to memory.
   \bitbox[]{2}{\tiny ~ \\ ~ \\ 20}
   \bitbox[]{2}{\tiny ~ \\ ~ \\ 19}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
+  \bitbox[]{16}{}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 31}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
+  \bitbox[]{3}{}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 24}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 23}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 20}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 19}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
   \bitbox[]{14}{}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 2}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 1}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 31}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
+  \bitbox[]{26}{}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 2}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 1}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
+  \\
+  \bitbox{8}{\tiny \bus Reply Address}
+  \bitbox{1}{\begin{sideways}{\tiny ALRT}\end{sideways}}
+  \colorbitbox{lightgray}{3}{\tiny RS\\VD}
+  \bitbox{20}{Length-1}
+  \bitbox{30}{Read Start Address}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightred}{30}{DMA Start Address on Destination Node}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \\
+  \bitbox[t]{96}{$\underbrace{\hspace{45em}}_{\text{\small \bus Data}}$}
+\end{bytefield}
+
+The first word indicates the \bus address to reply to and the length of the
+requested read in words less one. A length of~0 will reply with 1~word of
+data.
+The second word is the address in memory to read from. The bottom two
+bits of the address field are reserved and {\bf must} be transmitted as 0.
+
+The third word is {\bf optional}. If the third word is present, it is
+prepended to the reply (generating a \nameref{cmd:mem-bulk-write} command). If
+the third word is omitted, data is immediately placed on the bus (generating a
+\nameref{cmd:mem-stream-write} command).
+
+\paragraph{Overflow:} If the starting address field and subsequent length
+exceed the memory space, that is a request for address {\tt 0x100000000} would
+have been made during the response, the layer controller wraps and continues
+sending from address {\tt 0x00000000}.
+{\em Tests: \ref{test:mem-bulk-overflow}.}
+
+\paragraph{Interjection Semantics:} If the reply is interjected, the
+transaction is aborted and is {\bf not} retried.
+
+\bigskip
+\noindent
+\emph{If Bit~23 is HIGH, command is a Memory Alert:}
+
+\begin{bytefield}{9}
+  \bitheader{0-7} \\
+  \bitbox[rbt]{5}{{\dots}Prefix}
+  \bitbox{4}{0011} \\
+  \bitbox[t]{9}{\hspace{-.5em}$\underbrace{\hspace{9.5em}}_{\text{\small \bus Address}}$}
+\end{bytefield}
+~
+\begin{bytefield}[bitwidth=.4em]{64}
+%  \bitheader{0,31} \\
   \bitbox[]{2}{\tiny ~ \\ ~ \\ 31}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
   \bitbox[]{3}{}
@@ -305,156 +373,38 @@ received, the first two words were written to memory.
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
   \bitbox[]{2}{\tiny ~ \\ ~ \\ 31}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
-  \bitbox[]{26}{}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ 2}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ 1}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
-  \\
-  \bitbox{8}{\tiny \bus Reply Address}
-  \colorbitbox{lightgray}{4}{\scriptsize RS\\VD}
-  \bitbox{20}{Length-1}
-  \bitbox{30}{Read Start Address}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \bitbox{30}{DMA Start Address on Destination Node}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \\
-  \bitbox[t]{96}{$\underbrace{\hspace{44em}}_{\text{\small \bus Data}}$}
-\end{bytefield}
-
-The first word indicates the \bus address to reply to and the length of the
-requested read {\em in words} less one. A length of~0 will reply with 1~word
-of data.
-The second word is the address in memory to read from. The bottom two
-bits of the address field are reserved and {\bf must} be transmitted as 0.
-The third word specifies the memory address to issue a bulk write to.  This
-word is copied verbatim as the first word of the response data, including the
-bottom reserved bits.
-
-The response message is formatted exactly as the \nameref{cmd:mem-bulk-write}
-command, that is a 32~bit address field followed by a series of sequential
-32~bit data fields. In this way, layer~A could request a DMA read from layer~B
-that results in a DMA write to layer~C.
-
-\paragraph{Overflow:} If the starting address field and subsequent length
-exceed the memory space, that is a request for address {\tt 0x100000000} would
-have been made during the response, the layer controller wraps and continues
-sending from address {\tt 0x00000000}.
-{\em Tests: \ref{test:mem-bulk-overflow}.}
-
-\paragraph{Interjection Semantics:} If the reply is interjected, the
-transaction is aborted and is {\bf not} retried.
-
-
-\subsubsection{Memory Stream Read, Configure, or Alert}
-\label{cmd:mem-stream-multi}
-
-\begin{bytefield}{9}
-  \bitheader{0-7} \\
-  \bitbox[rbt]{5}{{\dots}Prefix}
-  \bitbox{4}{0100} \\
-  \bitbox[t]{9}{\hspace{-.5em}$\underbrace{\hspace{9.5em}}_{\text{\small \bus Address}}$}
-\end{bytefield}
-~
-\begin{bytefield}[bitwidth=.5em]{64}
-%  \bitheader{0,31} \\
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ 31}
-  \bitbox[]{5}{}
+  \bitbox[]{3}{}
   \bitbox[]{2}{\tiny ~ \\ ~ \\ 24}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 23~}\end{sideways}}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 22~}\end{sideways}}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 21~}\end{sideways}}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 20~}\end{sideways}}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 23}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 20}
   \bitbox[]{2}{\tiny ~ \\ ~ \\ 19}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
-  \bitbox[]{16}{}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
-  \bitbox[]{2}{\tiny ~ \\ ~ \\ 31}
-  \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
-  \bitbox[]{26}{}
+  \bitbox[]{14}{}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 2}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 1}
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
   \\
-  \bitbox{8}{\tiny \bus Reply Address}
-  \bitbox{1}{\footnotesize 0}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \bitbox{8}{\tiny \bus Source Address}
+  \bitbox{1}{\begin{sideways}{\tiny ALRT}\end{sideways}}
+  \colorbitbox{lightgray}{3}{\tiny RS\\VD}
   \bitbox{20}{Length-1}
-  \bitbox{30}{Read Start Address}
+  \bitbox{30}{Buffer Start Address}
   \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
   \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \bitbox[]{10}{\raggedright ~$\leftarrow$ Read}
-  \\
-  \bitbox{8}{\tiny Alert \bus Address}
-  \bitbox{1}{\footnotesize 1}
-  \bitbox{2}{\tiny 01 10 11}
-  \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
-  \bitbox{20}{Buffer Length-1}
-  \bitbox{30}{Write Start Address}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \bitbox[]{12}{\raggedright ~$\leftarrow$ Configure}
-  \\
-  \bitbox{8}{\tiny Source \bus Address}
-  \bitbox{1}{\footnotesize 1}
-  \bitbox{2}{\footnotesize 00}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \bitbox{20}{Valid Data Length-1}
-  \bitbox{30}{Valid Data Start Address}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
-  \bitbox[]{10}{\raggedright ~$\leftarrow$ Alert}
   \\
   \bitbox[t]{64}{$\underbrace{\hspace{30em}}_{\text{\small \bus Data}}$}
 \end{bytefield}
 
-Three commands share the {\tt 0100} FU\_ID. Bits~21--23 in the first word
-determine whether the command is a read, configure, or alert. A stream read
-generates a stream write. A stream configure is an isolated command with no
-response. A stream alert is generated in response to a stream write.
+The first byte specifies the node and channel that generated the alert.
 
-\paragraph{Read (Bit 23 == 0):}
-\label{cmd:mem-stream-multi-read}
-The first word indicates the \bus address to reply to and the length of the
-requested read in words less one.
-The second word received is the address in memory to read from. The bottom two
-bits of the address field are reserved and {\bf must} be transmitted as 0.
+For streaming alerts, those with a source address of the form {\tt
+8'bXXXX01XX}, the second word specifies the beginning of the buffer that
+generated the alert on the source node. Bits~19:0 of the first word indicate
+the length of the buffer with valid data. Length will either be the entire
+buffer size, or half of the buffer if {\tt DBLB} is active for this stream.
 
-The response is sent immediately and the message is formatted exactly as the
-\nameref{cmd:mem-stream-write} command, that is a series of sequential 32~bit
-data fields.
-
-\subparagraph{Overflow:} If the starting address field and subsequent length
-exceed the memory space, that is a request for address {\tt 0x100000000} would
-have been made during the response, the layer controller wraps and continues
-sending from address {\tt 0x00000000}.
-{\em Tests: \ref{test:mem-stream-overflow}.}
-
-\paragraph{Interjection Semantics:} If the reply is interjected, the
-transaction is aborted and is {\bf not} retried.
-
-\paragraph{Configure (Bit 23 == 1, Bits 22-21 in (01,10,11):}
-\label{cmd:mem-stream-multi-conf}
-Bits~22--21 specify which streaming channel is currently being configured.
-The first byte holds the \bus address that an Alert message will be sent to
-when this streaming channel's buffer is full.
-Bits~19--0 specify the maximum length of the buffer.
-The second word specifies the address in memory to begin writing to.
-Bit~20 {\tt DBLB} specifies whether double-buffering mode is active. Without
-double-buffering, an Alert is generated once the buffer is full and the buffer
-cannot be written into again until another Configure is received. With
-double-buffering, an Alert is generated once halfway through the buffer and
-again at the end of the buffer. At the end of the buffer, the address resets
-to the beginning of the buffer and continues to accept writes.
-
-\paragraph{Alert (Bit 23 == 1, Bits 22-21 == 00):}
-\label{cmd:mem-stream-multi-alert}
-The first byte holds the address of the node generating the Alert.
-The second word holds the start of the buffer in the local address space and
-the end of the first word specifies the length of the buffer that is valid.
+If bits~27:26 of the first word are not {\tt 01}, the message is undefined and
+should be ignored and NAK'd.
 
 
 \subsubsection{Memory Stream Write}
@@ -463,7 +413,8 @@ the end of the first word specifies the length of the buffer that is valid.
 \begin{bytefield}{9}
   \bitheader{0-7} \\
   \bitbox[rbt]{5}{{\dots}Prefix}
-  \bitbox{4}{\tiny 0101\\0110\\0111} \\
+  \bitbox{2}{01}
+  \colorbitbox{lightcyan}{2}{XX} \\
   \bitbox[t]{9}{\hspace{-.5em}$\underbrace{\hspace{9.5em}}_{\text{\small \bus Address}}$}
 \end{bytefield}
 ~
@@ -479,13 +430,18 @@ the end of the first word specifies the length of the buffer that is valid.
   \bitbox{32}{Data}
   \bitbox[ltb]{8}{Data\ldots}
   \\
-  \bitbox[t]{40}{$\underbrace{\hspace{19em}}_{\text{\small \bus Data}}$}
+  \bitbox[t]{40}{$\underbrace{\hspace{24em}}_{\text{\small \bus Data}}$}
 \end{bytefield}
 
-The message payload is all data. The address that the data is written to must
-have been previously configured by \nameref{cmd:mem-stream-multi-conf}. The
-destination address is automatically incremented every time a word is written.
-There is no limit on the length of this message.
+\proto nodes have up to four streaming memory channels. Each channel is
+controlled by configuration registers (\nameref{cmd:conf-memory-stream}). The
+destination of a memory stream write is specified by a combination of channel
+selection---the last two bits of the FU\_ID---and the pre-arranged
+configuration.
+
+The message payload is all data.  The destination address is automatically
+incremented every time a word is written.  There is no limit on the length of
+this message.
 
 \paragraph{Unaligned Access:} The behavior of a message ending on a
 non-word boundary is undefined.

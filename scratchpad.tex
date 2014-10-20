@@ -301,6 +301,118 @@ may listen or transmit on channel~7.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsubsection{Memory Stream Read, Configure, or Alert}
+\label{scratch:cmd:mem-stream-multi}
+
+\begin{bytefield}{9}
+  \bitheader{0-7} \\
+  \bitbox[rbt]{5}{{\dots}Prefix}
+  \bitbox{4}{0100} \\
+  \bitbox[t]{9}{\hspace{-.5em}$\underbrace{\hspace{9.5em}}_{\text{\small \bus Address}}$}
+\end{bytefield}
+~
+\begin{bytefield}[bitwidth=.5em]{64}
+%  \bitheader{0,31} \\
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 31}
+  \bitbox[]{5}{}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 24}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 23~}\end{sideways}}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 22~}\end{sideways}}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 21~}\end{sideways}}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \begin{sideways}{\tiny 20~}\end{sideways}}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 19}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
+  \bitbox[]{16}{}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
+  \bitbox[]{2}{\tiny ~ \\ ~ \\ 31}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ \tt \bf \dots}
+  \bitbox[]{26}{}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 2}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 1}
+  \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
+  \\
+  \bitbox{8}{\tiny \bus Reply Address}
+  \bitbox{1}{\footnotesize 0}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \bitbox{20}{Length-1}
+  \bitbox{30}{Read Start Address}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \bitbox[]{10}{\raggedright ~$\leftarrow$ Read}
+  \\
+  \bitbox{8}{\tiny Alert \bus Address}
+  \bitbox{1}{\footnotesize 1}
+  \bitbox{2}{\tiny 01 10 11}
+  \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
+  \bitbox{20}{Buffer Length-1}
+  \bitbox{30}{Write Start Address}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \bitbox[]{12}{\raggedright ~$\leftarrow$ Configure}
+  \\
+  \bitbox{8}{\tiny Source \bus Address}
+  \bitbox{1}{\footnotesize 1}
+  \bitbox{2}{\footnotesize 00}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \bitbox{20}{Valid Data Length-1}
+  \bitbox{30}{Valid Data Start Address}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
+  \bitbox[]{10}{\raggedright ~$\leftarrow$ Alert}
+  \\
+  \bitbox[t]{64}{$\underbrace{\hspace{30em}}_{\text{\small \bus Data}}$}
+\end{bytefield}
+
+Three commands share the {\tt 0100} FU\_ID. Bits~21--23 in the first word
+determine whether the command is a read, configure, or alert. A stream read
+generates a stream write. A stream configure is an isolated command with no
+response. A stream alert is generated in response to a stream write.
+
+\paragraph{Read (Bit 23 == 0):}
+\label{scratch:cmd:mem-stream-multi-read}
+The first word indicates the \bus address to reply to and the length of the
+requested read in words less one.
+The second word received is the address in memory to read from. The bottom two
+bits of the address field are reserved and {\bf must} be transmitted as 0.
+
+The response is sent immediately and the message is formatted exactly as the
+\nameref{cmd:mem-stream-write} command, that is a series of sequential 32~bit
+data fields.
+
+\subparagraph{Overflow:} If the starting address field and subsequent length
+exceed the memory space, that is a request for address {\tt 0x100000000} would
+have been made during the response, the layer controller wraps and continues
+sending from address {\tt 0x00000000}.
+{\em Tests: \ref{test:mem-stream-overflow}.}
+
+\paragraph{Interjection Semantics:} If the reply is interjected, the
+transaction is aborted and is {\bf not} retried.
+
+\paragraph{Configure (Bit 23 == 1, Bits 22-21 in (01,10,11):}
+\label{scratch:cmd:mem-stream-multi-conf}
+Bits~22--21 specify which streaming channel is currently being configured.
+The first byte holds the \bus address that an Alert message will be sent to
+when this streaming channel's buffer is full.
+Bits~19--0 specify the maximum length of the buffer.
+The second word specifies the address in memory to begin writing to.
+Bit~20 {\tt DBLB} specifies whether double-buffering mode is active. Without
+double-buffering, an Alert is generated once the buffer is full and the buffer
+cannot be written into again until another Configure is received. With
+double-buffering, an Alert is generated once halfway through the buffer and
+again at the end of the buffer. At the end of the buffer, the address resets
+to the beginning of the buffer and continues to accept writes.
+
+\paragraph{Alert (Bit 23 == 1, Bits 22-21 == 00):}
+\label{scratch:cmd:mem-stream-multi-alert}
+The first byte holds the address of the node generating the Alert.
+The second word holds the start of the buffer in the local address space and
+the end of the first word specifies the length of the buffer that is valid.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{tabular}{l l}
   {\em asynchronous} & Send single word message to address. \\
   {\em  synchronous} & Retrieve received single-word message. \\
@@ -314,7 +426,7 @@ may listen or transmit on channel~7.
 \end{figure}
 
 \subsubsection{Single Word Write [Write Only]}
-\label{reg-tx-single}
+\label{scratch:reg-tx-single}
 \begin{tabular}{p{9cm} c}
 \vspace{-4em}
 As a small optimization for the simple, single-word case a single memory write
@@ -368,7 +480,7 @@ for the bus controller to send the message.
 \end{figure}
 
 \subsubsection{RX Word (single-word) [Read Only]}
-\label{reg-rx-single}
+\label{scratch:reg-rx-single}
 \begin{tabular}{p{9cm} c}
 \vspace{-4em}
 Similar to TX, a shorter path to receive a single word message. If another
