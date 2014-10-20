@@ -3,6 +3,8 @@ This section contains ideas for future additions to the \bus protocol. Items
 in this section are {\bf not} stable and should {\bf not} be implemented in
 current \bus designs.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \paragraph{Broadcast Channel~2: \bus Configuration}
 \label{scratch:sec:channel-2}
 
@@ -129,6 +131,8 @@ interrupt vector. The remaining 24~bits of this message are defined as a bit
 vector representing the current status of 24~interrupts.
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \subparagraph{Member Node Set Memory Stream Address LSB}
@@ -285,6 +289,8 @@ Queried Parameter field set to {\tt 0011}.
 
 \hl{TODO: Message}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \paragraph{Broadcast Channel~7: Data}
 \label{scratch:scratch:sec:channel-7}
@@ -293,6 +299,126 @@ bus. \bus places no further restrictions or structure on channel~7 messages.
 Channel~7 is intended for use by more flexible software nodes, though any node
 may listen or transmit on channel~7.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tabular}{l l}
+  {\em asynchronous} & Send single word message to address. \\
+  {\em  synchronous} & Retrieve received single-word message. \\
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{tabular}{ c|c|l }
+  {\tt 0xA51} & \tt ~W & \nameref{reg-tx-single} \\
+  {\tt 0xA54} & \tt R~ & \nameref{reg-rx-single} \\
+\end{tabular}
+\end{figure}
+
+\subsubsection{Single Word Write [Write Only]}
+\label{reg-tx-single}
+\begin{tabular}{p{9cm} c}
+\vspace{-4em}
+As a small optimization for the simple, single-word case a single memory write
+can express all of the needed information without requiring the layer
+controller to issue another request to memory to retrieve data.
+
+As there is no hardware retry primitive, the software is still obligated to
+issue a read to determine if the message send was successful. For similar
+reasons, this message is an asynchronous message and should return control to
+the processor as soon as the layer controller accepts the request, not waiting
+for the bus controller to send the message.
+
+&
+
+\begin{tabular}{r l}
+  Bits Required & Purpose \\
+  \hline
+  \hline
+  \multicolumn{1}{l}{\em Address} & \\
+  8 & \bus Memory Map Location \\
+  4 & Command Specifier \\
+  8 & Message Destination Address \\
+  \multicolumn{1}{l}{\em Data} & \\
+  32 & Data to send on \bus \\
+\end{tabular}
+
+\\
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{centering}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt Address}
+    \colorbitbox{lightgreen}{8}{0xA5}
+    \colorbitbox{lightergreen}{4}{0x1}
+    \bitbox{12}{\em Reserved}
+    \bitbox{8}{\footnotesize Destination Address}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt ~~~Data}
+    \bitbox{32}{Data to send on \bus}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\end{centering}
+\end{figure}
+
+\subsubsection{RX Word (single-word) [Read Only]}
+\label{reg-rx-single}
+\begin{tabular}{p{9cm} c}
+\vspace{-4em}
+Similar to TX, a shorter path to receive a single word message. If another
+message is received prior to this message being read out, the new message
+should be NAK'd.
+
+The layer controller may include a small internal queue of received messages.
+In that case, the RX~Received interrupt~(\ref{int-rx-rx}) should remain
+asserted until all messages have been read out. This will ensure software
+cannot disable reception until all messages have been received.
+
+&
+
+\begin{tabular}{r l}
+  Bits Required & Purpose \\
+  \hline
+  \hline
+  \multicolumn{1}{l}{\em Address} & \\
+  8 & \bus Memory Map Location \\
+  4 & Command Specifier \\
+  \multicolumn{1}{l}{\em Data} & \\
+  32 & Data received \\
+\end{tabular}
+
+\\
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{centering}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt Address}
+    \colorbitbox{lightgreen}{8}{0xA5}
+    \colorbitbox{lightergreen}{4}{0x4}
+    \bitbox{20}{\em Reserved}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt ~~~Data}
+    \bitbox{32}{Data Received}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\end{centering}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Old Injection Method
 \begin{comment}

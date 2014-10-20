@@ -1,0 +1,313 @@
+\section{\proto Programmer's Model}
+\label{sec:programmer}
+
+In addition to \proto, \bus also defines a suggested programmer API. While
+\proto implementations are not required to adhere to this specification, it is
+highly recommended. This specification includes a lightweight software library
+built on top of this API.
+
+\begin{figure*}[!h]
+\begin{tabular}{l l}
+  {\em asynchronous} & Dropped message notification. \\
+  {\em asynchronous} & Notification of received message and type. \\
+\end{tabular}
+\end{figure*}
+
+\subsection{Overview, Memory Map, and Interrupts}
+\proto requires a $2^{24}$ region of memory mapped I/O space. By default,
+\proto uses {\tt 0xA5000000-0xA6000000}, however this may be changed by
+defining the macro {\tt MPQ\_MMIO\_PREFIX} before including {\tt mpq.h}.
+The next most significant byte is used to identify the type of request. The
+remaining five bytes are defined by each request type:
+
+\begin{tabular}{ c|c|l|l }
+  {\tt 0xA50}  & \tt RW & {\em  synchronous} & \nameref{reg-conf} \\
+  {\tt 0xA51}  & \tt R~ & {\em  synchronous} & \nameref{reg-int} \\
+  {\tt 0xA52}  & \tt ~W & {\em asynchronous} & \nameref{reg-tx-multi} \\
+  {\tt 0xA53}  & \tt R~ & {\em  synchronous} & \nameref{reg-tx-result} \\
+  {\tt 0xA55}  & \tt RW & {\em  synchronous} & \nameref{reg-rx-multi} \\
+  {\tt \vdots} & \tt ~~ &                    & \em Reserved \\
+\end{tabular}
+
+In the following sections, there are many reserved bits. These bits shall be
+considered RZWI (Read as Zero, Write Ignored). These bits are currently
+unused but are reserved for possible future use. Software should write {\tt 0}
+to reserved bits to ensure future compatibility.
+
+\subsection{Configurable Parameters}
+
+\subsubsection{Interrupt Configuration [Read/Write]}
+\label{reg-conf}
+\begin{tabular}{p{9cm} c}
+\vspace{-5em}
+Depending on the system design, it may be desirable for an interrupt to fire
+when a transmission request is completed. Given the very different nature of
+long and short requests, they are configured separately.
+
+There is no need to explicitly enable/disable receipt interrupts, as they are
+implicitly disabled if all buffer target written bits are set.
+
+&
+
+\begin{tabular}{r l}
+  Bits Required & Purpose \{Abbrv\} \\
+  \hline
+  \hline
+  \multicolumn{1}{l}{\em Address} & \\
+  8 & \bus Memory Map Location \\
+  4 & Command Specifier \\
+  \multicolumn{1}{l}{\em Data} & \\
+  1 & Long TX Complete Interrupt \{TX L\} \\
+  1 & Short TX Complete Interrupt \{TX S\} \\
+  1 & Bus dropped an RX~\ref{int-rx-drop} \{RX D\} \\
+  1 & Bus received a message~\ref{int-rx-rx} \{RX R\} \\
+\end{tabular}
+
+\\
+
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{centering}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt Address}
+    \colorbitbox{lightgreen}{8}{0xA5}
+    \colorbitbox{lightergreen}{4}{0x0}
+    \bitbox{20}{\em Reserved}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt ~~~Data}
+    \bitbox{28}{\em Reserved}
+    \bitbox{1}{\begin{sideways}{\tiny RX R}\end{sideways}}
+    \bitbox{1}{\begin{sideways}{\tiny RX D}\end{sideways}}
+    \bitbox{1}{\begin{sideways}{\tiny TX S}\end{sideways}}
+    \bitbox{1}{\begin{sideways}{\tiny TX L}\end{sideways}}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\end{centering}
+\end{figure}
+
+\pagebreak
+
+\subsection{TX Transaction Registers}
+A properly written program will only issue one transaction at a time---that
+is, every request to send a message on the bus will be followed read of the
+success of that transaction before issuing another one. If a program does
+issue two requests back-to-back, the layer controller should block the second
+request until the first is completed. The second request should unblock the
+memory bus as soon at the first request is complete and the layer controller
+is ready to begin processing the second request. A request for the last
+transaction result should reflect the second transaction, blocking if
+necessary. There is no method for such an erroneously coded program to check
+the return status of the first message.
+
+\subsubsection{Arbitrarily Long Write [Write Only]}
+\label{reg-tx-multi}
+\begin{tabular}{p{9cm} c}
+\vspace{-4.5em}
+This transaction requires a buffer to read from and a length. Instead of
+duplicating memory units and copying a buffer into the layer controller, the
+layer controller instead DMA's directly from memory. This means the layer
+controller should have enough local buffer to always stay ahead of the bus
+controller and have data prepared in case it loses memory bus arbitration.
+
+For the programmer, this means the region pointed to during this transaction
+is immutable. It is undefined what occurs if a write to the transmission
+buffer is attempted.
+
+&
+
+\begin{tabular}{r l}
+  Bits Required & Purpose \\
+  \hline
+  \hline
+  \multicolumn{1}{l}{\em Address} & \\
+  8 & \bus Memory Map Location \\
+  4 & Command Specifier \\
+  8 & Message Destination Address \\
+  8 & Number of {\em words} to send (max 256) \\
+  \multicolumn{1}{l}{\em Data} & \\
+  32 & Pointer DMA buffer start \\
+\end{tabular}
+
+\\
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{centering}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt Address}
+    \colorbitbox{lightgreen}{8}{0xA5}
+    \colorbitbox{lightergreen}{4}{0x2}
+    \bitbox{4}{\em Rsvd}
+    \bitbox{8}{Length-1}
+    \bitbox{8}{\footnotesize Destination Address}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt ~~~Data}
+    \bitbox{32}{Pointer to start of message}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\end{centering}
+\end{figure}
+
+\subsubsection{Transaction Result [Read Only]}
+\label{reg-tx-result}
+\begin{tabular}{p{9cm} c}
+\vspace{-4em}
+A register that stores the result of the previous transaction request.
+``Result'' is defined as the number of bytes successfully sent on the bus
+before a reset event occurred and whether the transaction was ACK or NAK'd.
+Note that the ACK bit will only be set if the entire transaction completed
+successfully and was ACK'd. The length field is primarily useful for a NAK'd
+transmission as a {\em hint} to the programmer of what {\em likely} went
+wrong. If a message is ACK'd, the length field must match the length of the
+request.
+
+The register should block, not returning from the read request until the bus
+transaction is complete (though see~\ref{sec:todo-amba} for some concerns). A
+read of this register before a transaction has been request will return with a
+NAK, the rest of the register contents is undefined.
+
+&
+
+\begin{tabular}{r l}
+  Bits Required & Purpose \\
+  \hline
+  \hline
+  \multicolumn{1}{l}{\em Address} & \\
+  8 & \bus Memory Map Location \\
+  4 & Command Specifier \\
+  \multicolumn{1}{l}{\em Data} & \\
+  1 & ACK (1) or NAK (0) \\
+  8 & Number of {\em words} sent \\
+\end{tabular}
+
+\\
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{centering}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt Address}
+    \colorbitbox{lightgreen}{8}{0xA5}
+    \colorbitbox{lightergreen}{4}{0x3}
+    \bitbox{20}{\em Reserved}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\begin{bytefield}{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt ~~~Data}
+    \bitbox{1}{\begin{sideways}{\tiny ACK}\end{sideways}}
+    \bitbox{15}{\em Reserved}
+    \bitbox{8}{Length-1}
+    \bitbox{8}{\em Reserved}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\end{centering}
+\end{figure}
+
+\subsection{Transaction RX}
+
+\subsubsection{RX Interrupts}
+
+\paragraph{RX Dropped}
+\label{int-rx-drop}
+A reception was dropped (bus controller sent reset / did not ACK) by the bus
+because there was not enough room to store the message. This interrupt may be
+suppressed by~\ref{reg-conf}.
+
+\paragraph{RX Received}
+\label{int-rx-rx}
+A message has been received. Depending on the expense of
+interrupts~(TODO~\ref{sec:todo-interrupts}), this may be a unique interrupt
+per RX Buffer or a single shared interrupt with a register to read where a
+message came in. This interrupt may be suppressed by~\ref{reg-conf}.
+\textbf{Disabling this interrupt will disable message reception.} The bus
+controller will NAK even single-word messages if this interrupt is disabled.
+
+\subsubsection{RX Buffer (multi-word) [Read/Write]}
+\label{reg-rx-multi}
+\begin{tabular}{p{9cm} c}
+\vspace{-6em}
+Incoming messages need to be stored somewhere, they also may take a non-zero
+time to copy out of memory, or in many cases actually copying the message may
+be a completely unnecessary and wasteful operation.
+
+The layer controller has \hl{NNNN} configurable message buffer targets. These
+targets hold a memory address and a maximum length in words. The target
+address must be word-aligned, however the bottom two bits of the address are
+reserved for possible future use. Software should take care to write in
+word-aligned addresses to this field and to clear the bottom bits when reading
+back before use in case they are used by a future implementation. When the
+layer controller uses a buffer to store a message, it sets the length of the
+received transaction, which marks that buffer as invalid for future use by the
+layer controller.
+
+Out of reset, the RX'd message length is non-zero for every target, meaning
+the layer is incapable of receiving multi-word messages directly out of reset.
+For programs not designed to receive large messages, this will set the M3
+system up to automatically NAK long transactions with no programmer
+intervention.
+
+&
+
+\begin{tabular}{r l}
+  Bits Required & Purpose \\
+  \hline
+  \hline
+  \multicolumn{1}{l}{\em Address} & \\
+  8 & \bus Memory Map Location \\
+  4 & Command Specifier \\
+  2-4 & Buffer Target Index \\
+  \multicolumn{1}{l}{\em Data} & \\
+  8 & Length of RX'd message \\
+  8 & Length of buffer (256 {\em word} max) \\
+  16 & Buffer memory address \\
+\end{tabular}
+
+\\
+\end{tabular}
+
+\begin{figure}[!h]
+\begin{centering}
+
+\begin{bytefield}[bitwidth=1em]{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt Address}
+    \colorbitbox{lightgreen}{8}{0xA5}
+    \colorbitbox{lightergreen}{4}{0x5}
+    \bitbox{16}{\em Reserved}
+    \bitbox{4}{\footnotesize Buffer Index}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\begin{bytefield}[bitwidth=1em]{32}
+  \bitheader{0-31} \\
+  \begin{leftwordgroup}{\tt ~~~Data}
+    \bitbox{8}{\footnotesize Length Received - 1}
+    \bitbox{8}{\footnotesize Buffer Length - 1}
+    \bitbox{14}{Buffer Address}
+    \bitbox{1}{\em R}
+    \bitbox{1}{\em R}
+  \end{leftwordgroup} \\
+\end{bytefield}
+
+\end{centering}
+\end{figure}
