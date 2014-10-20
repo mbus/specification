@@ -1,7 +1,8 @@
 \section{\proto: Point-to-Point Message Protocol}
 \bus also defines a common point-to-point messaging protocol: \proto.
 %For those chips kind enough to mind their P's and Q's on MBus
-Nodes are not required to support \proto to be \bus compliant.
+Nodes are not required to support \proto to be \bus compliant, however it is
+strongly encouraged.
 
 \proto defines two classes of data: register data and memory data. \proto
 registers have 8~bit addresses and are 24~bits wide. \proto memory has 32~bit
@@ -10,7 +11,7 @@ memory address space are separate constructs, that is register address {\tt
 0x00} need not map to memory address {\tt 0x00000000}, although aliasing is
 permitted.
 
-\subsection{\proto Configuration Registers}
+\subsection{\proto Configuration Registers (Reg \#240--255)}
 \label{cmd:conf}
 \proto reserves the top 16~registers ({\tt 0xf0-0xff}) for control and
 configuration. This section documents each of the registers. The top four bits
@@ -18,7 +19,87 @@ of each register address are \hlc[lightgreen]{\texttt{1111}} followed by four
 bits that identify the \hlc[lightergreen]{command type}. All
 \hlc[lightgray]{reserved} bits should be treated as RZWI.
 
-\subsubsection{Memory Stream Configuration}
+\subsubsection{Reg \#240: Register Message Control}
+\label{cmd:conf-reg-ctrl}
+
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{4}{1111}
+  \colorbitbox{lightergreen}{4}{0000}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{24}{Reserved}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x000000}}
+\\
+
+\subsubsection{Reg \#241: Bulk Memory Message Control}
+\label{cmd:conf-mem-ctrl}
+
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{4}{1111}
+  \colorbitbox{lightergreen}{4}{0001}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \bitbox{20}{Length-1}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x000000}}
+\\
+
+\subsubsection{Reg \#242--245: Reserved}
+Writes to reserved registers should be ignored. Reads from reserved registers
+should return all {\tt 0}.
+
+\subsubsection{Reg \#246--247: Memory Alert}
+\label{cmd:conf-memory-alert}
+
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{4}{1111}
+  \colorbitbox{lightergreen}{3}{011}
+  \colorbitbox{lightergreen}{1}{0}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{2}{LU}
+  \bitbox{6}{Length-1}
+  \bitbox{14}{Buffer Start Address [15:2]}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x000000}}
+\\
+
+\noindent
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{4}{1111}
+  \colorbitbox{lightergreen}{3}{011}
+  \colorbitbox{lightergreen}{1}{1}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{1}{\begin{sideways}{\tiny VLD}\end{sideways}}
+  \bitbox{1}{\begin{sideways}{\tiny ISEN}\end{sideways}}
+  \colorbitbox{lightcyan}{2}{CH}
+  \bitbox{4}{\tiny Generating Prefix}
+  \bitbox{16}{Buffer Start Address [31:16]}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x000000}}
+\\
+
+\subsubsection{Reg \#248--255: Memory Stream Configuration}
 \label{cmd:conf-memory-stream}
 
 \begin{bytefield}{8}
@@ -51,11 +132,11 @@ bits that identify the \hlc[lightergreen]{command type}. All
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \bitbox{1}{\begin{sideways}{\tiny PRS}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
-  \bitbox{4}{\tiny \bus Alert Prefix}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \bitbox{4}{\tiny Alert Dest Prefix}
   \bitbox{16}{Write Address Counter [31:16]}
 \end{bytefield}
 \hfill\textbf{Default: \texttt{0x800000}}
@@ -84,10 +165,10 @@ two registers work together to configure each channel.
       {\tt 10} & 256~words  & 256--16K~words (1K--64K~B) \\
       {\tt 11} & 4K~words   & 4K--256K~words (16K--1M~B) \\
     \end{tabular}
-  \item {\tt \{R1XX1[23]\}: Present (PRS). {\color{red}Read Only.}}
-    \subitem Indicates whether support for this channel is physically present
-    (available) on this node. If this bit is {\tt 0}, the {\tt EN} bit {\bf
-    must} be {\tt 0} and all other fields are undefined.%
+  \item {\tt \{R1XX1[23]\}: Enable (EN).}
+    \subitem Controls whether this channel is enabled. If {\tt EN} is {\tt 0},
+    a node must immediately NAK a memory stream write to this channel and
+    indicate receiver error.
     \footnote{
       Implementation Tip: Any undefined \proto registers are defined to be
       RZWI, that is a read from an undefined register will read as all 0's
@@ -96,28 +177,23 @@ two registers work together to configure each channel.
       stream channel do not require any logic to handle any memory stream
       messages, simply leave the register undefined.
     }
-    Writes to {\tt R1XX1} should write {\tt 1} to this bit.
-  \item {\tt \{R1XX1[22]\}: Enable (EN).}
-    \subitem Controls whether this channel is enabled. If {\tt EN} is {\tt 0},
-    a node must immediately NAK a memory stream write to this channel and
-    indicate receiver error.
-  \item {\tt \{R1XX1[21]\}: Wrap (WRP).}
+  \item {\tt \{R1XX1[22]\}: Wrap (WRP).}
     \subitem Defines node behavior when the end of the buffer is reached. If
     {\tt WRP} is high, the {\tt Write Address Counter} should reset to its
     original value. If {\tt WRP} is low, the {\tt Write Address Counter} value
     should be unchanged (it should thus be one past the end of the valid
     buffer) and {\tt EN} should be set to {\tt 0}.
-  \item {\tt \{R1XX1[20]\}: Double Buffer (DBLB).}
+  \item {\tt \{R1XX1[21]\}: Double Buffer (DBLB).}
     \subitem Controls double-buffering mode. If double-buffering is active,
     the node should generate an alert halfway through the buffer in addition
     to at the end of the buffer. This mode is most useful when combined with
     {\tt WRP}.
-  \item {\tt \{R1XX1[19:16]\}: \bus Alert Prefix.}
-    \subitem Defines which node to send \hl{REF} alerts to. If the alert
-    prefix is set to broadcast {\tt 0000} or full-prefix {\tt 1111}, the alert
-    is suppressed. Alerts are sent whenever the end of the buffer is reached.
-    If {\tt DBLB} is active, an alert is also sent when the halfway point of
-    the buffer is reached.
+  \item {\tt \{R1XX1[19:16]\}: Alert Dest Prefix.}
+    \subitem Defines which node to send alerts to. If the alert prefix is set
+    to broadcast {\tt 0000} or full-prefix {\tt 1111}, the alert is
+    suppressed. Alerts are sent whenever the end of the buffer is reached.  If
+    {\tt DBLB} is active, an alert is also sent when the halfway point of the
+    buffer is reached.
 \end{itemize}
 
 \subsection{Register Commands}
@@ -149,6 +225,11 @@ receives the message. Multiple registers may be written in a single \bus
 transaction by sending multiple data packets. Each 32~bit chunk of data is
 treated as if it were an independent transaction.
 
+\paragraph{Overflow:} If more data is received after writing the last register
+({\tt 0xff}), the destination address wraps and registers continue to be
+written, beginning at address {\tt 0x00}.
+{\em Tests: \ref{test:reg-write-overflow}.}
+%
 \paragraph{Unaligned Access:} The behavior of a message ending on a
 non-word boundary is undefined.
 %
