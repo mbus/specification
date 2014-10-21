@@ -11,13 +11,20 @@ memory address space are separate constructs, that is register address {\tt
 0x00} need not map to memory address {\tt 0x00000000}, although aliasing is
 permitted.
 
-\subsection{\proto Configuration Registers (Reg \#240--255)}
+\subsection{\proto Configuration Registers (Reg \#192--255)}
 \label{cmd:conf}
-\proto reserves the top 16~registers ({\tt 0xf0-0xff}) for control and
-configuration. This section documents each of the registers. The top four bits
-of each register address are \hlc[lightgreen]{\texttt{1111}} followed by four
-bits that identify the \hlc[lightergreen]{command type}. All
-\hlc[lightgray]{reserved} bits should be treated as RZWI.
+\proto reserves the top 64~registers for control and configuration. This space
+configures various \proto capabilities. Much of the space is currently
+reserved for future expansion.
+
+Attempts to write configuration for unsupported features (e.g.\ configuration
+of a memory streaming channel on a device with no memory) is undefined.
+Attempts to read unsupported features {\bf must} NAK or return all {\tt 0}.
+
+This section documents each of the registers. The top two bits of each
+register address are \hlc[lightgreen]{\texttt{11}} followed by six bits that
+identify the \hlc[lightergreen]{command type}. All \hlc[lightgray]{reserved}
+bits should be treated as RZWI.
 
 \subsubsection{Reg \#240: Register Message Control}
 \label{cmd:conf-reg-ctrl}
@@ -59,62 +66,42 @@ bits that identify the \hlc[lightergreen]{command type}. All
 Writes to reserved registers should be ignored. Reads from reserved registers
 should return all {\tt 0}.
 
-\subsubsection{Reg \#246--247: Memory Alert}
-\label{cmd:conf-memory-alert}
+\subsubsection{Reg \#239: Alert}
+\label{cmd:conf-alert}
 
 \begin{bytefield}{8}
   \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{4}{1111}
-  \colorbitbox{lightergreen}{3}{011}
-  \colorbitbox{lightergreen}{1}{0}
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{6}{101111}
 \end{bytefield}
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \bitbox{2}{LU}
-  \bitbox{6}{Length-1}
-  \bitbox{14}{Buffer Start Address [15:2]}
-  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \bitbox{8}{\scriptsize ``Alert From'' Address}
+  \colorbitbox{lightgray}{16}{Reserved}
 \end{bytefield}
 \hfill\textbf{Default: \texttt{0x000000}}
 \\
 
-\noindent
-\begin{bytefield}{8}
-  \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{4}{1111}
-  \colorbitbox{lightergreen}{3}{011}
-  \colorbitbox{lightergreen}{1}{1}
-\end{bytefield}
-~
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{1}{\begin{sideways}{\tiny VLD}\end{sideways}}
-  \bitbox{1}{\begin{sideways}{\tiny ISEN}\end{sideways}}
-  \colorbitbox{lightcyan}{2}{CH}
-  \bitbox{4}{\tiny Generating Prefix}
-  \bitbox{16}{Buffer Start Address [31:16]}
-\end{bytefield}
-\hfill\textbf{Default: \texttt{0x000000}}
-\\
+This register is written whenever another node wishes to send an alert. The
+meaning of an alert will depend on the node that sent it. All alerts share the
+same register.
 
-\subsubsection{Reg \#248--255: Memory Stream Configuration}
+\subsubsection{Reg \#240--255: Memory Stream Configuration}
 \label{cmd:conf-memory-stream}
 
 \begin{bytefield}{8}
   \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{4}{1111}
-  \colorbitbox{lightergreen}{1}{1}
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{2}{11}
   \colorbitbox{lightcyan}{2}{XX}
-  \colorbitbox{lightergreen}{1}{0}
+  \colorbitbox{lightergreen}{2}{00}
 \end{bytefield}
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \bitbox{2}{LU}
-  \bitbox{6}{Length-1}
-  \bitbox{14}{Write Address Counter [15:2]}
+  \bitbox{8}{\scriptsize Alert Address}
+  \bitbox{14}{Write Buffer [15:2]}
   \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
   \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
 \end{bytefield}
@@ -124,10 +111,27 @@ should return all {\tt 0}.
 \noindent
 \begin{bytefield}{8}
   \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{4}{1111}
-  \colorbitbox{lightergreen}{1}{1}
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{2}{11}
   \colorbitbox{lightcyan}{2}{XX}
-  \colorbitbox{lightergreen}{1}{1}
+  \colorbitbox{lightergreen}{2}{01}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{\scriptsize Reserved}
+  \bitbox{16}{Write Buffer [31:16]}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x000000}}
+\\
+
+\noindent
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{2}{11}
+  \colorbitbox{lightcyan}{2}{XX}
+  \colorbitbox{lightergreen}{2}{10}
 \end{bytefield}
 ~
 \begin{bytefield}{24}
@@ -136,10 +140,26 @@ should return all {\tt 0}.
   \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
   \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \bitbox{4}{\tiny Alert Dest Prefix}
-  \bitbox{16}{Write Address Counter [31:16]}
+  \bitbox{20}{Buffer Length-1}
 \end{bytefield}
-\hfill\textbf{Default: \texttt{0x800000}}
+\hfill\textbf{Default: \texttt{0x000000}}
+\\
+
+\noindent
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{2}{11}
+  \colorbitbox{lightcyan}{2}{XX}
+  \colorbitbox{lightergreen}{2}{11}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{4}{\scriptsize Reserved}
+  \bitbox{20}{Buffer Offset}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x000000}}
 \\
 
 In \proto each node has up to four independent, identical memory streaming
@@ -147,29 +167,20 @@ In \proto each node has up to four independent, identical memory streaming
 two registers work together to configure each channel.
 
 \begin{itemize}
-  \item {\tt \{R1XX1[15:0], R1XX0[15:2], 2'b00\}: Write Address Counter.}
-    \subitem Points to the current address in memory that the next word will
-    be written to. Upon receipt of a word, the word is first written to the
-    currently pointed to address. This register is then incremented. After
-    incrementing the register, other actions may take place depending on other
-    configuration flags.
-  \item {\tt \{R1XX0[23:22]\}: Length Unit (LU).}
-    \subitem Controls how the subsequent length field is interpreted.
-  \item {\tt \{R1XX0[21:16]\}: Length-1.}
+  \item {\tt \{RXX01[15:0], RXX00[15:2], 2'b00\}: Write Buffer.}
+    \subitem Pointer to the beginning of a buffer in memory.
+  \item {\tt \{RXX00[23:16]\}: Alert Address.}
+    \subitem Defines alerts are sent. If the alert prefix (bits 23:20) are set
+    to the full-prefix indicator {\tt 1111}, the alert is suppressed.
+    \subitem Alerts are sent whenever the end of the buffer is reached.  If
+    {\tt DBLB} is active, an alert is also sent when the halfway point of the
+    buffer is reached.
+  \item {\tt \{RXX10[19:0]\}: Buffer Length-1.}
     \subitem Defines the length of the buffer.
-    \begin{tabular}{r|r|l}
-      {\tt LU} & Resolution & Range \\
-      \hline
-      {\tt 00} & 1~word     & 1--64~words (4--256~B) \\
-      {\tt 01} & 16~words   & 16--1K~words (64--4K~B) \\
-      {\tt 10} & 256~words  & 256--16K~words (1K--64K~B) \\
-      {\tt 11} & 4K~words   & 4K--256K~words (16K--1M~B) \\
-    \end{tabular}
-  \item {\tt \{R1XX1[23]\}: Enable (EN).}
+  \item {\tt \{RXX10[23]\}: Enable (EN).}
     \subitem Controls whether this channel is enabled. If {\tt EN} is {\tt 0},
-    a node must immediately NAK a memory stream write to this channel and
-    indicate receiver error.
-    \footnote{
+    a node must NAK a memory stream write to this channel and indicate
+    receiver error.\footnote{
       Implementation Tip: Any undefined \proto registers are defined to be
       RZWI, that is a read from an undefined register will read as all 0's
       (and a write ignored). Upon a read, this will return {\tt 0} for {\tt
@@ -177,23 +188,17 @@ two registers work together to configure each channel.
       stream channel do not require any logic to handle any memory stream
       messages, simply leave the register undefined.
     }
-  \item {\tt \{R1XX1[22]\}: Wrap (WRP).}
+  \item {\tt \{RXX10[22]\}: Wrap (WRP).}
     \subitem Defines node behavior when the end of the buffer is reached. If
     {\tt WRP} is high, the {\tt Write Address Counter} should reset to its
     original value. If {\tt WRP} is low, the {\tt Write Address Counter} value
     should be unchanged (it should thus be one past the end of the valid
     buffer) and {\tt EN} should be set to {\tt 0}.
-  \item {\tt \{R1XX1[21]\}: Double Buffer (DBLB).}
+  \item {\tt \{RXX10[21]\}: Double Buffer (DBLB).}
     \subitem Controls double-buffering mode. If double-buffering is active,
     the node should generate an alert halfway through the buffer in addition
     to at the end of the buffer. This mode is most useful when combined with
     {\tt WRP}.
-  \item {\tt \{R1XX1[19:16]\}: Alert Dest Prefix.}
-    \subitem Defines which node to send alerts to. If the alert prefix is set
-    to broadcast {\tt 0000} or full-prefix {\tt 1111}, the alert is
-    suppressed. Alerts are sent whenever the end of the buffer is reached.  If
-    {\tt DBLB} is active, an alert is also sent when the halfway point of the
-    buffer is reached.
 \end{itemize}
 
 \subsection{Register Commands}

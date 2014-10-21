@@ -301,6 +301,15 @@ may listen or transmit on channel~7.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    \begin{tabular}{r|r|l}
+      {\tt LU} & Resolution & Range \\
+      \hline
+      {\tt 00} & 1~word     & 1--64~words (4--256~B) \\
+      {\tt 01} & 16~words   & 16--1K~words (64--4K~B) \\
+      {\tt 10} & 256~words  & 256--16K~words (1K--64K~B) \\
+      {\tt 11} & 4K~words   & 4K--256K~words (16K--1M~B) \\
+    \end{tabular}
+
 \subsubsection{Memory Stream Read, Configure, or Alert}
 \label{scratch:cmd:mem-stream-multi}
 
