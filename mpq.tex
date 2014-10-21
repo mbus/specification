@@ -125,15 +125,20 @@ two registers work together to configure each channel.
     \subitem Defines the length of the buffer.
   \item {\tt \{R10[23]\}: Enable (EN).}
     \subitem Controls whether this channel is enabled. If {\tt EN} is {\tt 0},
-    a node must NAK a memory stream write to this channel and indicate
-    receiver error.\footnote{
+    a node must not modify memory in response to a memory stream message.%
+    \footnote{
       Implementation Tip: Any undefined \proto registers are defined to be
       RZWI, that is a read from an undefined register will read as all 0's
       (and a write ignored). Upon a read, this will return {\tt 0} for {\tt
-      PRS} and {\tt EN} as required.  Nodes that do not implement a memory
-      stream channel do not require any logic to handle any memory stream
-      messages, simply leave the register undefined.
+      EN} as required.  Nodes that do not implement a memory stream channel do
+      not require any logic to handle any memory stream messages, simply leave
+      the register undefined.
     }
+    \subitem {\bf Acknowledement/Interjection:} The behavior of a stream write
+    when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
+    interject and indicate receiver error, however they may exhibit any
+    behavior, including ACK'ing the transaction and silently ignoring it.
+    {\em This behavior is subject to change in future revisions of \proto.}
   \item {\tt \{R10[22]\}: Wrap (WRP).}
     \subitem Defines node behavior when the end of the buffer is reached. If
     {\tt WRP} is high, the {\tt Write Address Counter} should reset to its
@@ -158,10 +163,33 @@ two registers work together to configure each channel.
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \colorbitbox{lightgray}{24}{Reserved}
+  \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+  \colorbitbox{lightgray}{23}{Reserved}
 \end{bytefield}
-\hfill\textbf{Default: \texttt{0x000000}}
+\hfill\textbf{Default: \texttt{0x800000}}
 \\
+
+\begin{itemize}
+  \item {\tt \{R[23]\}: Enable (EN).}
+    \subitem Controls whether register writes to this device are enabled. If
+    {\tt EN} is {\tt 0}, attempts to write registers~\#0--247 are silently
+    ignored.
+    \subitem {\bf Note:} Registers~\#248--255 ({\tt b'11111XXX}) can always be
+    written.
+    \subitem {\bf Acknowledement/Interjection:} Since a single register write
+    transaction could write both enabled and disabled registers, a node should
+    not interject when a disabled register is written. A node should ACK to
+    indicate that the transmission was received successfully, even if nothing
+    is actually written.
+    {\em This behavior is subject to change in future revisions of \proto.}
+    \subitem {\color{red} \bf Warning:} If {\tt EN} is disabled, it cannot be
+    re-enabled by a write to this register since register writes are disabled.
+    Access can be recovered using \nameref{cmd:conf-reg-reset}, however this
+    will reset all registers.
+    \subitem \hl{TODO} What about a local write (e.g. a register write via an
+    interrupt from the CPU)? Should probably always allow those. Does that
+    make sense as an exception?
+\end{itemize}
 
 \subsubsection{Reg \#242: Bulk Memory Message Control}
 \label{cmd:conf-mem-ctrl}
@@ -189,8 +217,13 @@ The register controls the response of this chip upon the receipt of a
 \begin{itemize}
   \item {\tt \{R[23]\}: Enable (EN).}
     \subitem Controls whether bulk memory transactions written to this device
-    are enabled. If {\tt EN} is {\tt 0}, a node must NAK a memory bulk write
-    and indicate receiver error.
+    are enabled. If {\tt EN} is {\tt 0}, a node must not modify the contents
+    of memory in response to a bulk memory transaction.
+    \subitem {\bf Acknowledement/Interjection:} The behavior of a bulk write
+    when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
+    interject and indicate receiver error, however they may exhibit any
+    behavior, including ACK'ing the transaction and silently ignoring it.
+    {\em This behavior is subject to change in future revisions of \proto.}
   \item {\tt \{R[22]\}: Control Active (CACT).}
     \subitem If this bit is high, this register's length field acts as a limit
     for the maximum permitted bulk message length. A bulk message is allowed
@@ -214,15 +247,19 @@ The register controls the response of this chip upon the receipt of a
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \bitbox{8}{\scriptsize ``Alert From'' Address}
-  \colorbitbox{lightgray}{16}{Reserved}
+  \bitbox{24}{Alert Payload}
 \end{bytefield}
 \hfill\textbf{Default: \texttt{0x000000}}
 \\
 
 This register is written whenever another node wishes to send an alert. The
-meaning of an alert will depend on the node that sent it. All alerts share the
-same register.
+alert payload format is specified by the type of alert. For most alerts, the
+top 8~bits specify the address of the node and functional unit that generated
+the alert.
+
+All alerts share the same register. Multiple back-to-back alert messages are
+permitted. Implementations should either handle alerts faster than the bus
+speed or copy alerts to a local queue.
 
 \subsubsection{Reg \#255: Action Register}
 \label{cmd:conf-reg-reset}

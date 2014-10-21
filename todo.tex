@@ -10,27 +10,7 @@ complexity. While they are not in the current design, some methods for
 designing them are considered here such that they are still feasible for
 future implementation in a backwards-compatible manner.
 
-\subsubsection{Resuming Interrupted Transfers}
-\label{sec:todo-extensions-resume}
-Consider a separate `bulk-transfer' address such that nodes which support
-resumable transfers have two addresses (and a corresponding broadcast query
-for such addresses).
-
-A bulk transfer always begins with the sending node's full address both as
-unique token and so the bulk protocol can respond if needed. Transfers begin
-with both ends' counters synchronized at 0~bits. If an interruption occurs,
-the RX node saves as much as it has RX'd thus far. After the bus is available
-again the RX node is responsible for sending the TX node a message composed of
-RX\_address+bits\_thus\_far. If the RX node does not send such a message, the
-TX node may solicit one; if the RX node has dropped the suspended transaction
-for any reason, it simply responds 0~bits.
-
-Nodes that wish to permit multiple simultaneous bulk transfers could expose
-several bulk addresses. If an A$\rightarrow$B transfer is interrupted and C
-attempts a C$\rightarrow$B transfer, B would indicate busy by interrupting
-immediately after the bulk address was received with a {\tt 01} RX~Error
-Interrupt sequence.
-
-\paragraph{Full addresses not unique?} Probably fair to make the assertion
-that only one functional unit per node can accept bulk transfers. Repurpose
-the functional unit id field to contain the short prefix?
+\subsubsection{Automatically fragment long \proto messages}
+Add a configuration register for a maximum message length, maybe one for each
+message type, that limits maximum transaction length. Requests to send
+messages over this length should be automatically fragmented by the sender.
