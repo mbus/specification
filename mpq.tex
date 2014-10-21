@@ -120,7 +120,35 @@ two registers work together to configure each channel.
     \subitem Alerts are sent whenever the end of the buffer is reached.  If
     {\tt DBLB} is active, an alert is also sent when the halfway point of the
     buffer is reached.
-    \subitem \hl{TODO NEXT: Solidfy Alert Message.}
+    \subitem When a memory stream alert occurs, a node sends the following
+    message:
+    \subitem
+    \subitem
+      \begin{bytefield}{8}
+        \bitheader{0-7} \\
+        \bitbox{8}{Alert Address} \\
+        \bitbox[t]{8}{\hspace{-.5em}$\underbrace{\hspace{8.5em}}_{\text{\small \bus Address}}$}
+      \end{bytefield}
+      ~
+      \begin{bytefield}{32}
+        \bitheader{0-31} \\
+        \bitbox{8}{11111110}
+        \bitbox{8}{\scriptsize Alerting Stream Channel}
+        \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+        \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
+        \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
+        \bitbox{1}{\begin{sideways}{\tiny OVFL}\end{sideways}}
+        \colorbitbox{lightgray}{12}{Reserved} \\
+        \bitbox[t]{32}{$\underbrace{\hspace{33em}}_{\text{\small \bus Data}}$}
+      \end{bytefield}
+    \subitem The Alert Address is specified by bits~23:16 in~R00. The top
+    8~bits of data are currently fixed to \nameref{cmd:conf-alert}. The {\tt
+    EN} bit reports the current state of the {\tt EN} bit of the alerting
+    channel when the alert was sent. The {\tt WRP} and {\tt DBLB} bits
+    indicate whether an alert was sent because the wrap and/or double-buffer
+    threashold was reached. The {\tt OVFL} bit indicates when an overflow has
+    occurred, that is a node with a pending alert with {\tt WRP} or {\tt DBLB}
+    set needed to send another alert before the first was sent.
   \item {\tt \{R10[19:0]\}: Buffer Length-1.}
     \subitem Defines the length of the buffer.
   \item {\tt \{R10[23]\}: Enable (EN).}
