@@ -26,13 +26,18 @@ register address are \hlc[lightgreen]{\texttt{11}} followed by six bits that
 identify the \hlc[lightergreen]{command type}. All \hlc[lightgray]{reserved}
 bits should be treated as RZWI.
 
-\subsubsection{Reg \#240: Register Message Control}
+\subsubsection{Reserved Registers}
+All registers not specified here are reserved.
+Writes to reserved registers should be ignored. Reads from reserved registers
+should return all {\tt 0}.
+
+\subsubsection{Reg \#232: Register Message Control}
 \label{cmd:conf-reg-ctrl}
 
 \begin{bytefield}{8}
   \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{4}{1111}
-  \colorbitbox{lightergreen}{4}{0000}
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{6}{101000}
 \end{bytefield}
 ~
 \begin{bytefield}{24}
@@ -42,29 +47,45 @@ bits should be treated as RZWI.
 \hfill\textbf{Default: \texttt{0x000000}}
 \\
 
-\subsubsection{Reg \#241: Bulk Memory Message Control}
+\subsubsection{Reg \#233: Bulk Memory Message Control}
 \label{cmd:conf-mem-ctrl}
 
 \begin{bytefield}{8}
   \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{4}{1111}
-  \colorbitbox{lightergreen}{4}{0001}
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{6}{101001}
 \end{bytefield}
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
   \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+  \bitbox{1}{\begin{sideways}{\tiny CACT}\end{sideways}}
   \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
   \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \bitbox{20}{Length-1}
+  \bitbox{20}{Length Limit-1}
 \end{bytefield}
-\hfill\textbf{Default: \texttt{0x000000}}
+\hfill\textbf{Def: \texttt{0x800000}}, \texttt{0x000000} if no mem
 \\
 
-\subsubsection{Reg \#242--245: Reserved}
-Writes to reserved registers should be ignored. Reads from reserved registers
-should return all {\tt 0}.
+The register controls the response of this chip upon the receipt of a
+\nameref{cmd:mem-bulk-write} command.
+
+\begin{itemize}
+  \item {\tt \{R[23]\}: Enable (EN).}
+    \subitem Controls whether bulk memory transactions written to this device
+    are enabled. If {\tt EN} is {\tt 0}, a node must NAK a memory bulk write
+    and indicate receiver error.
+  \item {\tt \{R[22]\}: Control Active (CACT).}
+    \subitem If this bit is high, this register's length field acts as a limit
+    for the maximum permitted bulk message length. A bulk message is allowed
+    to write until this message limit is reached. If more data comes, the
+    message {\bf must} be NAK'd. The receiver should interject with receiver
+    error as soon as it knows the length limit has been exceeded.
+  \item {\tt \{R[19:0]\}: Length Limit.}
+    \subitem The maximum permitted length in words of a memory bulk write
+    message to any address.
+\end{itemize}
+
 
 \subsubsection{Reg \#239: Alert}
 \label{cmd:conf-alert}
