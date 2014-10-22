@@ -378,7 +378,9 @@ The register controls the response of this chip upon the receipt of a
   \bitbox{1}{\begin{sideways}{\tiny RSTR}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny RSTB}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny RSTS}\end{sideways}}
-  \colorbitbox{lightgray}{17}{Reserved}
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{1}{\begin{sideways}{\tiny INTO}\end{sideways}}
+  \colorbitbox{lightgray}{8}{Reserved}
 \end{bytefield}
 \hfill\textbf{$<$No Storage$>$}
 \\
@@ -403,7 +405,7 @@ a register action request in the same transaction is undefined.
         implementation-defined, however this request should be the most
         aggresive form of reset available.
     \end{itemize}
-  \item \texttt{\{R[19]\}: Reset Register Registers (RSTR).}
+  \item \texttt{\{R[19]\}: Reset Register Registers (RSTR).} \hl{FIXME}
     \begin{itemize}
       \item Reset \proto configuration registers that affect register protocol
         behavior to their default value.
@@ -420,6 +422,10 @@ a register action request in the same transaction is undefined.
       \item Reset \proto configuration registers that affect memory stream
         transfers to their default value.
       \item Resets \#224--239.
+    \end{itemize}
+  \item \texttt{\{R[8]\}: Interrupt Owner (INTO).}
+    \begin{itemize}
+      \item Asserts the Layer Owner Interrupt.
     \end{itemize}
 \end{itemize}
 
