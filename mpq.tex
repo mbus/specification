@@ -272,6 +272,9 @@ two registers work together to configure each channel.
           buffering is active for this stream and there was already a pending
           alert with the {\tt DBLB} bit set.
       \end{itemize}
+    \item \hl{TODO: What happens if a node wishes to alert itself? e.g. a CPU
+        that puts itself to sleep but wants to be interrupted when 1,000
+      samples have been written to memory?}
     \end{itemize}
   \item {\tt \{R10[19:0]\}: Buffer Length-1.}
     \begin{itemize}
