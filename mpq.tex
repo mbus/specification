@@ -1,3 +1,5 @@
+\newcommand{\mpqrecord}{{\bf \color{blue} Record}\xspace}
+
 \section{\proto: Point-to-Point Message Protocol}
 \bus also defines a common point-to-point messaging protocol: \proto.
 %For those chips kind enough to mind their P's and Q's on MBus
@@ -13,24 +15,125 @@ permitted.
 
 \subsection{\proto Registers (Reg \#192--255)}
 \label{cmd:conf}
-\proto reserves the top 64~registers for control and configuration. This space
-configures various \proto capabilities. Much of the space is currently
-reserved for future expansion.
+\begin{minipage}{\linewidth}
+  \begin{varwidth}[b]{.6\linewidth}
 
+\proto reserves the top 64~registers for control and configuration.
+
+\medskip
+This space configures various \proto capabilities. Much of the space is
+currently reserved for future expansion.
+
+\medskip
 Attempts to write configuration for unsupported features (e.g.\ configuration
 of a memory streaming channel on a device with no memory) is undefined.
 Attempts to read unsupported features {\bf must} NAK or return all {\tt 0}.
 
-This section documents each of the registers. The top two bits of each
+\medskip
+This section documents each of the registers. The top two bits of each \proto
 register address are \hlc[lightgreen]{\texttt{11}} followed by six bits that
 identify the \hlc[lightergreen]{command type}. All \hlc[lightgray]{reserved}
 bits should be treated as RZWI.
+  \end{varwidth}
+~
+  \begin{varwidth}[t]{.4\linewidth}
+\centering
+\begin{bytefield}[bitwidth=0.5em]{24}
+  \bitbox[]{8}{~}\bitbox[]{24}{\bf \proto Register Map}\\
+  \begin{rightwordgroup}{\begin{sideways}\small Tie to {\tt 0}\end{sideways}}
+    \memsectionhuge{\#192}{\#222}{16}{Reserved}
+  \end{rightwordgroup}\\
+  \begin{rightwordgroup}{\begin{sideways}\small Retentive\end{sideways}}
+    \bitbox[]{8}{\tt\#223}\wordbox{1}{\proto Configuration}\\
+    \memsection{\#224}{\#239}{8}{Memory Stream Configuration Registers}\\
+    \memsection{\#240}{\#247}{4}{Status Registers\\{\color{red}Read Only}}
+  \end{rightwordgroup}\\
+  \begin{rightwordgroup}{\begin{sideways}\small Non-Retentive\end{sideways}}
+    \memsection{\#248}{\#255}{4}{Action Registers}
+  \end{rightwordgroup}
+\end{bytefield}
+  \end{varwidth}
+\end{minipage}
 
 \subsubsection{Reserved Registers}
 All registers not specified here are reserved.
 Writes to reserved registers should be ignored. Reads from reserved registers
 should return all {\tt 0}.
 
+\subsubsection{Reg \#223: \proto Record and Interrupt Control}
+\label{cmd:conf-proto-int}
+
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{6}{011111}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % MEM STRM RD CH3
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % MEM STRM RD CH2
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % MEM STRM RD CH1
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % MEM STRM RD CH0
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % MEM RD
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % MEM BULK WR
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % REG RD
+  \bitbox{1}{\begin{sideways}{\tiny INT}\end{sideways}}
+  %\bitbox{1}{\begin{sideways}{\tiny REC}\end{sideways}} % REG WR
+\end{bytefield}
+%\hfill\textbf{Default: \texttt{0xXXXXXX}}
+\hfill\textbf{Default: \texttt{0x0000XX}}
+\\
+
+%Each \proto FU\_ID command has an associated \mpqrecord action. Every time a
+%node completes a command, it checks the associated command {\tt REC} bit. If
+%high, the \mpqrecord action is performed. Next the node checks the command's
+%{\tt INT} bit. If high, the layer owner is interrupted.
+%
+%Bits~0 and~1 control FU\_ID~0, bits~2 and~3 control FU\_ID~1, and so on.
+%
+%\paragraph{Default Value:} The default value of this register is
+%implementation-dependent. If not otherwise specified by an implementation
+%document, the default action is to both record and interrupt for any
+%implemented subsystem. As example, a node with support for registers, bulk
+%memory, and streaming memory channels~0 and~1 would have a default value of
+%{\tt 0x03ffff}.
+
+Each time a node completes a \proto command, it checks the associated command
+{\tt INT} bit. If high, the layer owner is interrupted.
+
+\paragraph{Default Value:} The default value is implementation dependent.
+\hl{Default on for CPU, off for others?}
+
+\hl{TODO: Do we care about }\mpqrecord\hl{ if {\tt INT} is low? Separate
+control?}
+
+\hl{TODO: For read requests does it make more sense for the interrupt to stop
+  the request and pass it to the layer owner instead? How does this interact
+with the various {\tt EN} bits?}
 
 \subsubsection{Reg \#224--239: Memory Stream Configuration}
 \label{cmd:conf-memory-stream}
@@ -113,110 +216,95 @@ two registers work together to configure each channel.
 
 \begin{itemize}
   \item {\tt \{R01[15:0], R00[15:2], 2'b00\}: Write Buffer.}
-    \subitem Pointer to the beginning of a buffer in memory.
+    \begin{itemize}
+      \item Pointer to the beginning of a buffer in memory.
+    \end{itemize}
   \item {\tt \{R00[23:16]\}: Alert Address.}
-    \subitem Defines alerts are sent. If the alert prefix (bits 23:20) are set
-    to the full-prefix indicator {\tt 1111}, the alert is suppressed.
-    \subitem Alerts are sent whenever the end of the buffer is reached.  If
-    {\tt DBLB} is active, an alert is also sent when the halfway point of the
-    buffer is reached.
-    \subitem When a memory stream alert occurs, a node sends the following
-    message:
-    \subitem
-    \subitem
-      \begin{bytefield}{8}
-        \bitheader{0-7} \\
-        \bitbox{8}{Alert Address} \\
-        \bitbox[t]{8}{\hspace{-.5em}$\underbrace{\hspace{8.5em}}_{\text{\small \bus Address}}$}
-      \end{bytefield}
-      ~
-      \begin{bytefield}{32}
-        \bitheader{0-31} \\
-        \bitbox{8}{11111110}
-        \bitbox{8}{\scriptsize Alerting Stream Channel}
-        \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
-        \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
-        \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
-        \bitbox{1}{\begin{sideways}{\tiny OVFL}\end{sideways}}
-        \colorbitbox{lightgray}{12}{Reserved} \\
-        \bitbox[t]{32}{$\underbrace{\hspace{33em}}_{\text{\small \bus Data}}$}
-      \end{bytefield}
-    \subitem The Alert Address is specified by bits~23:16 in~R00. The top
-    8~bits of data are currently fixed to \nameref{cmd:conf-alert}. The {\tt
-    EN} bit reports the current state of the {\tt EN} bit of the alerting
-    channel when the alert was sent. The {\tt WRP} and {\tt DBLB} bits
-    indicate whether an alert was sent because the wrap and/or double-buffer
-    threashold was reached. The {\tt OVFL} bit indicates when an overflow has
-    occurred, that is a node with a pending alert with {\tt WRP} or {\tt DBLB}
-    set needed to send another alert before the first was sent.
+    \begin{itemize}
+      \item Defines alerts are sent. If the alert prefix (bits 23:20) are set
+        to the full-prefix indicator {\tt 1111}, the alert is suppressed.
+      \item Alerts are sent whenever the end of the buffer is reached.  If
+        {\tt DBLB} is active, an alert is also sent when the halfway point of
+        the buffer is reached.
+      \item When a memory stream alert occurs, a node sends the following
+        message:
+
+        \medskip
+        \begin{bytefield}{8}
+          \bitheader{0-7} \\
+          \bitbox{8}{Alert Address} \\
+          \bitbox[t]{8}{\hspace{-.5em}$\underbrace{\hspace{8.5em}}_{\text{\small \bus Address}}$}
+        \end{bytefield}
+        ~
+        \begin{bytefield}{32}
+          \bitheader{0-31} \\
+          \bitbox{8}{11111001}
+          \bitbox{8}{\scriptsize Alerting Stream Channel}
+          \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+          \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
+          \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
+          \bitbox{1}{\begin{sideways}{\tiny OVFL}\end{sideways}}
+          \colorbitbox{lightgray}{12}{Reserved} \\
+          \bitbox[t]{32}{$\underbrace{\hspace{33em}}_{\text{\small \bus Data}}$}
+        \end{bytefield}
+      \begin{itemize}
+        \item The Alert Address is specified by bits~23:16 in~R00.
+        \item The top 8~bits of data are currently fixed to {\tt 11111011 (249)}.
+        \item The {\tt Alerting Stream Channel} is made up of this node's
+          short prefix, followed by {\tt 01}, followed by the channel that
+          generated the alert---this should be the same address used to write
+          to this stream channel.
+        \item The {\tt EN} bit reports the current state of the {\tt EN} bit
+          of the alerting channel when the alert was sent.
+        \item The {\tt WRP} bit is set if the write that generated this alert
+          reached the end of the stream buffer.
+        \item The {\tt DBLB} bit is set if the write that generated this alert
+          reached the halfway point of the stream buffer and double-buffering
+          is active for this stream.
+        \item The {\tt OVFL} bit is set if the write that generated this alert
+          reached the end of the stream buffer and there was already a pending
+          alert with the {\tt WRP} bit set or if the write that generated this
+          alert reached the halfway point of the stream buffer and double
+          buffering is active for this stream and there was already a pending
+          alert with the {\tt DBLB} bit set.
+      \end{itemize}
+    \end{itemize}
   \item {\tt \{R10[19:0]\}: Buffer Length-1.}
-    \subitem Defines the length of the buffer.
+    \begin{itemize}
+      \item Defines the length of the buffer.
+    \end{itemize}
   \item {\tt \{R10[23]\}: Enable (EN).}
-    \subitem Controls whether this channel is enabled. If {\tt EN} is {\tt 0},
-    a node must not modify memory in response to a memory stream message.%
-    \footnote{
-      Implementation Tip: Any undefined \proto registers are defined to be
-      RZWI, that is a read from an undefined register will read as all 0's
-      (and a write ignored). Upon a read, this will return {\tt 0} for {\tt
-      EN} as required.  Nodes that do not implement a memory stream channel do
-      not require any logic to handle any memory stream messages, simply leave
-      the register undefined.
-    }
-    \subitem {\bf Acknowledement/Interjection:} The behavior of a stream write
-    when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
-    interject and indicate receiver error, however they may exhibit any
-    behavior, including ACK'ing the transaction and silently ignoring it.
-    {\em This behavior is subject to change in future revisions of \proto.}
+    \begin{itemize}
+      \item Controls whether this channel is enabled. If {\tt EN} is {\tt 0},
+        a node must not modify memory in response to a memory stream message.%
+        \footnote{
+          Implementation Tip: Any undefined \proto registers are defined to be
+          RZWI, that is a read from an undefined register will read as all 0's
+          (and a write ignored). Upon a read, this will return {\tt 0} for
+          {\tt EN} as required.  Nodes that do not implement a memory stream
+          channel do not require any logic to handle any memory stream
+          messages, simply leave the register undefined.
+        }
+      \item {\bf Acknowledement/Interjection:} The behavior of a stream write
+        when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
+        interject and indicate receiver error, however they may exhibit any
+        behavior, including ACK'ing the transaction and silently ignoring it.
+    \end{itemize}
   \item {\tt \{R10[22]\}: Wrap (WRP).}
-    \subitem Defines node behavior when the end of the buffer is reached. If
-    {\tt WRP} is high, the {\tt Write Address Counter} should reset to its
-    original value. If {\tt WRP} is low, the {\tt Write Address Counter} value
-    should be unchanged (it should thus be one past the end of the valid
-    buffer) and {\tt EN} should be set to {\tt 0}.
+    \begin{itemize}
+      \item Defines node behavior when the end of the buffer is reached. If
+        {\tt WRP} is high, the {\tt Write Address Counter} should reset to its
+        original value. If {\tt WRP} is low, the {\tt Write Address Counter}
+        value should be unchanged (it should thus be one past the end of the
+        valid buffer) and {\tt EN} should be set to {\tt 0}.
+    \end{itemize}
   \item {\tt \{R10[21]\}: Double Buffer (DBLB).}
-    \subitem Controls double-buffering mode. If double-buffering is active,
-    the node should generate an alert halfway through the buffer in addition
-    to at the end of the buffer. This mode is most useful when combined with
-    {\tt WRP}.
-\end{itemize}
-
-\subsubsection{Reg \#240: Register Message Control}
-\label{cmd:conf-reg-ctrl}
-
-\begin{bytefield}{8}
-  \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{2}{11}
-  \colorbitbox{lightergreen}{6}{110000}
-\end{bytefield}
-~
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
-  \colorbitbox{lightgray}{23}{Reserved}
-\end{bytefield}
-\hfill\textbf{Default: \texttt{0x800000}}
-\\
-
-\begin{itemize}
-  \item {\tt \{R[23]\}: Enable (EN).}
-    \subitem Controls whether register writes to this device are enabled. If
-    {\tt EN} is {\tt 0}, attempts to write registers~\#0--247 are silently
-    ignored.
-    \subitem {\bf Note:} Registers~\#248--255 ({\tt b'11111XXX}) can always be
-    written.
-    \subitem {\bf Acknowledement/Interjection:} Since a single register write
-    transaction could write both enabled and disabled registers, a node should
-    not interject when a disabled register is written. A node should ACK to
-    indicate that the transmission was received successfully, even if nothing
-    is actually written.
-    {\em This behavior is subject to change in future revisions of \proto.}
-    \subitem {\color{red} \bf Warning:} If {\tt EN} is disabled, it cannot be
-    re-enabled by a write to this register since register writes are disabled.
-    Access can be recovered using \nameref{cmd:conf-reg-reset}, however this
-    will reset all registers.
-    \subitem \hl{TODO} What about a local write (e.g. a register write via an
-    interrupt from the CPU)? Should probably always allow those. Does that
-    make sense as an exception?
+    \begin{itemize}
+      \item Controls double-buffering mode. If double-buffering is active, the
+        node should generate an alert halfway through the buffer in addition
+        to at the end of the buffer. This mode is most useful when combined
+        with {\tt WRP}.
+    \end{itemize}
 \end{itemize}
 
 \subsubsection{Reg \#242: Bulk Memory Message Control}
@@ -244,50 +332,31 @@ The register controls the response of this chip upon the receipt of a
 
 \begin{itemize}
   \item {\tt \{R[23]\}: Enable (EN).}
-    \subitem Controls whether bulk memory transactions written to this device
-    are enabled. If {\tt EN} is {\tt 0}, a node must not modify the contents
-    of memory in response to a bulk memory transaction.
-    \subitem {\bf Acknowledement/Interjection:} The behavior of a bulk write
-    when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
-    interject and indicate receiver error, however they may exhibit any
-    behavior, including ACK'ing the transaction and silently ignoring it.
-    {\em This behavior is subject to change in future revisions of \proto.}
+    \begin{itemize}
+      \item Controls whether bulk memory transactions written to this device
+        are enabled. If {\tt EN} is {\tt 0}, a node must not modify the
+        contents of memory in response to a bulk memory transaction.
+      \item {\bf Acknowledement/Interjection:} The behavior of a bulk write
+        when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
+        interject and indicate receiver error, however they may exhibit any
+        behavior, including ACK'ing the transaction and silently ignoring it.
+    \end{itemize}
   \item {\tt \{R[22]\}: Control Active (CACT).}
-    \subitem If this bit is high, this register's length field acts as a limit
-    for the maximum permitted bulk message length. A bulk message is allowed
-    to write until this message limit is reached. If more data comes, the
-    message {\bf must} be NAK'd. The receiver should interject with receiver
-    error as soon as it knows the length limit has been exceeded.
+    \begin{itemize}
+      \item If this bit is high, this register's length field acts as a limit
+        for the maximum permitted bulk message length. A bulk message is
+        allowed to write until this message limit is reached. If more data
+        comes, the message {\bf must} be NAK'd. The receiver should interject
+        with receiver error as soon as it knows the length limit has been
+        exceeded.
+    \end{itemize}
   \item {\tt \{R[19:0]\}: Length Limit.}
-    \subitem The maximum permitted length in words of a memory bulk write
-    message to any address.
+    \begin{itemize}
+      \item The maximum permitted length in words of a memory bulk write
+        message to any address.
+    \end{itemize}
 \end{itemize}
 
-
-\subsubsection{Reg \#254: Alert}
-\label{cmd:conf-alert}
-
-\begin{bytefield}{8}
-  \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{2}{11}
-  \colorbitbox{lightergreen}{6}{111110}
-\end{bytefield}
-~
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{24}{Alert Payload}
-\end{bytefield}
-\hfill\textbf{Default: \texttt{0x000000}}
-\\
-
-This register is written whenever another node wishes to send an alert. The
-alert payload format is specified by the type of alert. For most alerts, the
-top 8~bits specify the address of the node and functional unit that generated
-the alert.
-
-All alerts share the same register. Multiple back-to-back alert messages are
-permitted. Implementations should either handle alerts faster than the bus
-speed or copy alerts to a local queue.
 
 \subsubsection{Reg \#255: Action Register}
 \label{cmd:conf-reg-reset}
@@ -325,21 +394,29 @@ a register action request in the same transaction is undefined.
 
 \begin{itemize}
   \item \texttt{\{R[23]\}: Reset (RST).}
-    \subitem Reset the entire node. The exact result of a reset is
-    implementation-defined, however this request should be the most aggresive
-    form of reset available.
+    \begin{itemize}
+      \item Reset the entire node. The exact result of a reset is
+        implementation-defined, however this request should be the most
+        aggresive form of reset available.
+    \end{itemize}
   \item \texttt{\{R[19]\}: Reset Register Registers (RSTR).}
-    \subitem Reset \proto configuration registers that affect register
-    protocol behavior to their default value.
-    \subitem Resets \#240.
+    \begin{itemize}
+      \item Reset \proto configuration registers that affect register protocol
+        behavior to their default value.
+      \item Resets \#240.
+    \end{itemize}
   \item \texttt{\{R[18]\}: Reset Bulk Registers (RSTB).}
-    \subitem Reset \proto configuration registers that affect memory bulk
-    transfers to their default value.
-    \subitem Resets \#242.
+    \begin{itemize}
+      \item Reset \proto configuration registers that affect memory bulk
+        transfers to their default value.
+      \item Resets \#242.
+    \end{itemize}
   \item \texttt{\{R[17]\}: Reset Stream Registers (RSTS).}
-    \subitem Reset \proto configuration registers that affect memory stream
-    transfers to their default value.
-    \subitem Resets \#224--239.
+    \begin{itemize}
+      \item Reset \proto configuration registers that affect memory stream
+        transfers to their default value.
+      \item Resets \#224--239.
+    \end{itemize}
 \end{itemize}
 
 \subsection{Register Commands}
@@ -370,6 +447,17 @@ bits~24-31. The write occurs immediately, as soon as the layer controller
 receives the message. Multiple registers may be written in a single \bus
 transaction by sending multiple data packets. Each 32~bit chunk of data is
 treated as if it were an independent transaction.
+
+\paragraph{\mpqrecord:} Upon command completion, write local registers:
+
+\medskip
+{\bf Reg \#248:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{4}{0000}
+  \colorbitbox{lightgray}{12}{Reserved}
+  \bitbox{8}{\scriptsize Register Address Written}
+\end{bytefield}
 
 \paragraph{Overflow:} If more data is received after writing the last register
 ({\tt 0xff}), the destination address wraps and registers continue to be
@@ -420,6 +508,26 @@ by~1 for each register.
 The response will always respond with the requested number of registers. If a
 request for register \#256 would have been made, the request wraps and begins
 from register \#0. The destination register address wraps similarly.
+
+\paragraph{\mpqrecord:} Upon command completion, write local registers:
+
+\medskip
+{\bf Reg \#248:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{4}{0001}
+  \colorbitbox{lightgray}{12}{Reserved}
+  \bitbox{8}{\scriptsize Start Address Read From}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#249:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{8}{\scriptsize Length-1}
+  \bitbox{8}{\scriptsize \bus Address Replied To}
+  \bitbox{8}{\scriptsize Address Written on Destination}
+\end{bytefield}
 
 \paragraph{Note:} The \bus address to reply to {\bf must} be copied
 exactly. The FU\_ID is not required to be \nameref{cmd:reg-write}. For
@@ -481,6 +589,41 @@ transmitted as 0. Subsequent words are treated as data. The first word of data
 is written to the specified address. The next word of data is written to
 address+4 (the next word in memory) and so on. There is no limit on the length
 of this message.
+
+\paragraph{\mpqrecord:} Upon command completion, write local registers:
+
+\medskip
+{\bf Reg \#248:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{4}{0010}
+  \colorbitbox{lightgray}{4}{Reserved}
+  \bitbox{14}{\scriptsize Start Address Written To [15:2]}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#249:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{16}{\scriptsize Start Address Written To [31:16]}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#250:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{4}{Reserved}
+  \bitbox{20}{\scriptsize Length Written-1}
+\end{bytefield}
+
+\medskip
+{\em Implementation Note:} These registers may be updated while the command is
+running, so long as they have the correct value once it completes. They are a
+good place to store the pointer and counter while the command is active
+instead of instantiating dedicated counter and address registers.
 
 \paragraph{Unaligned Access:} The behavior of a message ending on a
 non-word boundary is undefined.
@@ -563,6 +706,57 @@ prepended to the reply (generating a message with a
 data is immediately placed on the bus (generating a message with a
 \nameref{cmd:mem-stream-write} formatted payload).
 
+
+\paragraph{\mpqrecord:} Upon command completion, write local registers:
+
+\medskip
+{\bf Reg \#248:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{4}{0011}
+  \colorbitbox{lightgray}{4}{Reserved}
+  \bitbox{14}{\scriptsize Start Address Read From [15:2]}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#249:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{16}{\scriptsize Start Address Read From [31:16]}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#250:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{4}{Reserved}
+  \bitbox{20}{\scriptsize Length Read-1}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#251:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{14}{\scriptsize DMA Address Written To [15:2]}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#252:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{16}{\scriptsize DMA Address Written To [31:16]}
+\end{bytefield}
+
+\hl{TODO: Message length isn't passed here, how to know if target address is
+included?}
+
 \paragraph{Overflow:} If the starting address field and subsequent length
 exceed the memory space, that is a request for address {\tt 0x100000000} would
 have been made during the response, the layer controller wraps and continues
@@ -608,6 +802,36 @@ The message payload is all data.  The destination address is automatically
 incremented every time a word is written.  There is no limit on the length of
 this message.
 
+\paragraph{\mpqrecord:} Upon command completion, write local registers:
+
+\medskip
+{\bf Reg \#248:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{2}{01}
+  \colorbitbox{lightcyan}{2}{XX}
+  \colorbitbox{lightgray}{4}{Reserved}
+  \bitbox{14}{\scriptsize Start Address Written To [15:2]}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#249:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{16}{\scriptsize Start Address Written To [31:16]}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#250:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{4}{Reserved}
+  \bitbox{20}{\scriptsize Length Written-1}
+\end{bytefield}
+
 \paragraph{Unaligned Access:} The behavior of a message ending on a
 non-word boundary is undefined.
 
@@ -622,3 +846,13 @@ $(1+4)\times32=160$~bit data payload. If 95~bits are received prior to
 interjection, only the first word was written to memory. If 96~bits are
 received, the first two words were written to memory.
 {\em Tests: \ref{test:inj-mem-stream-long}, \ref{test:inj-mem-stream-end}.}
+
+
+\subsection{Broadcast Snooping}
+\label{cmd:snoop}
+
+
+\subsection{Undefined Commands}
+\label{cmd:undef}
+If command with an unknown FU\_ID is received, \proto behavior is completely
+undefined.

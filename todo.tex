@@ -14,3 +14,74 @@ future implementation in a backwards-compatible manner.
 Add a configuration register for a maximum message length, maybe one for each
 message type, that limits maximum transaction length. Requests to send
 messages over this length should be automatically fragmented by the sender.
+
+\subsubsection{Full Address Support in \proto}
+\label{sec:todo-full-addr}
+Currently there is no way to generate a response that sends a message to a
+full address. A full prefix is 24~bits long. The following are some possible
+methods to support full addresses:
+\begin{enumerate}
+  \item {\bf Use new FU\_IDs.} Easiest solution, but uses a lot of the
+    remaining FU\_IDs. Could do something creative such as the full prefix
+    (24~bits) is sent and then the next 3~or 4~bits map the remaining words
+    onto one of the existing FU\_IDs. This wastes at least the 4~bits that
+    previously specified the short prefix.
+  \item {\bf Full Prefix Register(s).} Store a full prefix in a register.
+    Since registers are also 24~bits, they can hold a full prefix exactly.
+    This is actually a little unfortunate, since a destination FU\_ID also
+    needs to be specified. While the short prefix {\tt 1111} in the current
+    message can be used as a sentinel, something needs to indicate which
+    register the full prefix should be read from. The FU\_ID field could be
+    repurposed to this end, but then there is nothing to specify the FU\_ID of
+    the eventual message. This could spill over to two registers, but that is
+    an inefficient use of registers. Full prefix registers also become another
+    contested, shared resource with this scheme.
+  \item {\bf Optional Extra Word.} Use the existing short prefix as a
+    sentinel. If set to {\tt 1111}, the (next, last) word will be the full
+    prefix. Since the short prefix is the first 4~bits, could also just
+    ``replace'' the first word of the message with a full address---this has
+    nice symmetry with how short/full prefixes are interpreted on the bus. In
+    any of these cases, an extra 8~bits become available for some other
+    purpose. The runtime variable length message can be tricky to implement.
+    Injecting an extra word into the middle of a message makes it harder for
+    simple devices with fixed send buffers to support these messages.
+\end{enumerate}
+
+\subsubsection{Reg \#240: Register Message Control}
+\label{cmd:conf-reg-ctrl}
+
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{6}{110000}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+  \colorbitbox{lightgray}{23}{Reserved}
+\end{bytefield}
+\hfill\textbf{Default: \texttt{0x800000}}
+\\
+
+\begin{itemize}
+  \item {\tt \{R[23]\}: Enable (EN).}
+    \subitem Controls whether register writes to this device are enabled. If
+    {\tt EN} is {\tt 0}, attempts to write registers~\#0--247 are silently
+    ignored.
+    \subitem {\bf Note:} Registers~\#248--255 ({\tt b'11111XXX}) can always be
+    written.
+    \subitem {\bf Acknowledement/Interjection:} Since a single register write
+    transaction could write both enabled and disabled registers, a node should
+    not interject when a disabled register is written. A node should ACK to
+    indicate that the transmission was received successfully, even if nothing
+    is actually written.
+    {\em This behavior is subject to change in future revisions of \proto.}
+    \subitem {\color{red} \bf Warning:} If {\tt EN} is disabled, it cannot be
+    re-enabled by a write to this register since register writes are disabled.
+    Access can be recovered using \nameref{cmd:conf-reg-reset}, however this
+    will reset all registers.
+    \subitem \hl{TODO} What about a local write (e.g. a register write via an
+    interrupt from the CPU)? Should probably always allow those. Does that
+    make sense as an exception?
+\end{itemize}

@@ -47,6 +47,35 @@
 \newcommand{\colorbitbox}[3]{%
 \rlap{\bitbox{#2}{\color{#1}\rule{\width}{\height}}}%
 \bitbox{#2}{#3}}
+
+% From bytefield package documentation:
+%   facilitates the creation of memory maps. Start address at the bottom,
+%   end address at the top.
+%   syntax:
+%   \memsection{end address}{start address}{height in lines}{text in box}
+\newcommand{\memsection}[4]{%
+  % define the height of the memsection
+  \bytefieldsetup{bitheight=#3\baselineskip}%
+  \bitbox[]{8}{%
+    \texttt{#1}% print end address
+    \\
+    % do some spacing
+    \vspace{#3\baselineskip}
+    \vspace{-2\baselineskip}
+    \vspace{-#3pt}
+    \texttt{#2}% print start address
+  }%
+  \bitbox{24}{#4}% print box with caption
+}
+\newcommand{\memsectionhuge}[4]{%
+  \bitbox[]{8}{\texttt{#1}}
+  \wordbox[lrt]{1}{#4} \\
+  \bitbox[]{8}{\dots}
+  \skippedwords \\
+  \bitbox[]{8}{\texttt{#2}}
+  \wordbox[lrb]{1}{#4}
+}
+
 \definecolor{lightblue}{RGB}{0,204,255}
 \definecolor{lightcyan}{rgb}{0.84,1,1}
 \definecolor{lightgreen}{rgb}{0.64,1,0.71}
