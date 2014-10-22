@@ -135,6 +135,10 @@ control?}
   the request and pass it to the layer owner instead? How does this interact
 with the various {\tt EN} bits?}
 
+\hl{TODO: What are the ways in which a command that comes in the interrupt
+  port from the layer should differ from a command that comes from the bus?
+Separate interrupt control?}
+
 \subsubsection{Reg \#224--239: Memory Stream Configuration}
 \label{cmd:conf-memory-stream}
 
@@ -850,7 +854,40 @@ received, the first two words were written to memory.
 
 \subsection{Broadcast Snooping}
 \label{cmd:snoop}
+\nameref{sec:channel-0} and \nameref{sec:channel-1} are built into the \bus
+protocol which runs below \proto. However, it is possible that a \proto node
+may wish to snoop broadcast traffic (in particular,
+\nameref{cmd:query-response}).
 
+If broadcast snooping is active \hl{TODO: Configuration register for this.
+Possibly some other filters such as channels?}, whenever a broadcast message
+is received:
+
+\paragraph{\mpqrecord:} Upon broadcast reception, write local registers:
+
+\medskip
+{\bf Reg \#248:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{4}{0000}
+  \bitbox{4}{\scriptsize Broadcast Channel}
+  \bitbox{16}{\scriptsize Broadcast Message [15:0]}
+\end{bytefield}
+
+\medskip
+{\bf Reg \#249:}
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \colorbitbox{lightgray}{8}{Reserved}
+  \bitbox{16}{\scriptsize Broadcast Message [31:16]}
+\end{bytefield}
+
+\hl{TODO: Splitting words across two 24-bit registers all of the time is
+  getting a little annoying. I'm not really interested in re-visitng the
+  24-bit register decision; there are a number of reasons that was a good
+  choice. I am curious, however, if we can do something intelligent that maps
+  MMIO accesses from the CPU intelligently so that every MMIO read isn't
+wasting 8 bits reading nothing.}
 
 \subsection{Undefined Commands}
 \label{cmd:undef}
