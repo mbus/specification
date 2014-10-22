@@ -171,7 +171,7 @@ Separate interrupt control?}
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \colorbitbox{lightgray}{8}{\scriptsize Reserved}
+  \bitbox{8}{\scriptsize Alert Register to Write}
   \bitbox{16}{Write Buffer [31:16]}
 \end{bytefield}
 \hfill\textbf{Default: \texttt{0x000000}}
@@ -242,7 +242,7 @@ two registers work together to configure each channel.
         ~
         \begin{bytefield}{32}
           \bitheader{0-31} \\
-          \bitbox{8}{11111001}
+          \bitbox{8}{\scriptsize Alert Register To Write}
           \bitbox{8}{\scriptsize Alerting Stream Channel}
           \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
           \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
@@ -253,7 +253,7 @@ two registers work together to configure each channel.
         \end{bytefield}
       \begin{itemize}
         \item The Alert Address is specified by bits~23:16 in~R00.
-        \item The top 8~bits of data are currently fixed to {\tt 11111011 (249)}.
+        \item The top 8~bits of data are are specified by bits~23:16 in R01.
         \item The {\tt Alerting Stream Channel} is made up of this node's
           short prefix, followed by {\tt 01}, followed by the channel that
           generated the alert---this should be the same address used to write
