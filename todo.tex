@@ -47,6 +47,15 @@ methods to support full addresses:
     simple devices with fixed send buffers to support these messages.
 \end{enumerate}
 
+\subsubsection{Finer-grained DMA control}
+\label{sec:todo-fine-grain-dma}
+Currently DMA is all-or-nothing. This is how pretty much all M0 DMA
+controllers work, but it's not the best. It would be neat to explore an IOMPU
+concept (analagous to A-series IOMMUs). Another option could be to pass the
+request to the core as an interrupt, but I actually think that's more
+complicated.
+
+
 \subsubsection{Reg \#240: Register Message Control}
 \label{cmd:conf-reg-ctrl}
 

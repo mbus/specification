@@ -32,8 +32,8 @@ Attempts to read unsupported features {\bf must} NAK or return all {\tt 0}.
 \medskip
 This section documents each of the registers. The top two bits of each \proto
 register address are \hlc[lightgreen]{\texttt{11}} followed by six bits that
-identify the \hlc[lightergreen]{command type}. All \hlc[lightgray]{reserved}
-bits should be treated as RZWI.
+identify the \hlc[lightergreen]{type}. All \hlc[lightgray]{reserved} bits
+should be treated as RZWI.
   \end{varwidth}
 ~
   \begin{varwidth}[t]{.4\linewidth}
@@ -126,14 +126,10 @@ Each time a node completes a \proto command, it checks the associated command
 {\tt INT} bit. If high, the layer owner is interrupted.
 
 \paragraph{Default Value:} The default value is implementation dependent.
-\hl{Default on for CPU, off for others?}
+It current defaults to all interrupts off ({\tt 0x000000}).
 
-\hl{TODO: Do we care about }\mpqrecord\hl{ if {\tt INT} is low? Separate
-control?}
-
-\hl{TODO: For read requests does it make more sense for the interrupt to stop
-  the request and pass it to the layer owner instead? How does this interact
-with the various {\tt EN} bits?}
+\paragraph{Note:} See \nameref{sec:todo-fine-grain-dma} for possible future
+security considerations.
 
 \hl{TODO: What are the ways in which a command that comes in the interrupt
   port from the layer should differ from a command that comes from the bus?
@@ -225,8 +221,9 @@ two registers work together to configure each channel.
     \end{itemize}
   \item {\tt \{R00[23:16]\}: Alert Address.}
     \begin{itemize}
-      \item Defines alerts are sent. If the alert prefix (bits 23:20) are set
-        to the full-prefix indicator {\tt 1111}, the alert is suppressed.
+      \item Defines where alerts are sent. If the alert prefix (bits 23:20)
+        are set to the full-prefix indicator {\tt 1111}, the alert is
+        suppressed.
       \item Alerts are sent whenever the end of the buffer is reached.  If
         {\tt DBLB} is active, an alert is also sent when the halfway point of
         the buffer is reached.
@@ -252,12 +249,14 @@ two registers work together to configure each channel.
           \bitbox[t]{32}{$\underbrace{\hspace{33em}}_{\text{\small \bus Data}}$}
         \end{bytefield}
       \begin{itemize}
-        \item The Alert Address is specified by bits~23:16 in~R00.
-        \item The top 8~bits of data are are specified by bits~23:16 in R01.
-        \item The {\tt Alerting Stream Channel} is made up of this node's
-          short prefix, followed by {\tt 01}, followed by the channel that
-          generated the alert---this should be the same address used to write
-          to this stream channel.
+        \item The \bus Address is set to the {\tt Alert Address} specified by
+          bits~23:16 in {\tt R1110XX00}.
+        \item The top 8~bits of data are set to the {\tt Alert Register to
+          Write} specified by bits~23:16 in {\tt R1110XX01}.
+        \item The next 8~bits are the {\tt Alerting Stream Channel}, made up
+          of this node's short prefix, followed by {\tt 01}, followed by the
+          channel that generated the alert---this should be the same address
+          used to write to this stream channel.
         \item The {\tt EN} bit reports the current state of the {\tt EN} bit
           of the alerting channel when the alert was sent.
         \item The {\tt WRP} bit is set if the write that generated this alert
@@ -408,11 +407,11 @@ a register action request in the same transaction is undefined.
         implementation-defined, however this request should be the most
         aggresive form of reset available.
     \end{itemize}
-  \item \texttt{\{R[19]\}: Reset Register Registers (RSTR).} \hl{FIXME}
+  \item \texttt{\{R[19]\}: Reset \proto Registers (RSTR).}
     \begin{itemize}
       \item Reset \proto configuration registers that affect register protocol
         behavior to their default value.
-      \item Resets \#240.
+      \item Resets \#223--247.
     \end{itemize}
   \item \texttt{\{R[18]\}: Reset Bulk Registers (RSTB).}
     \begin{itemize}
@@ -461,16 +460,17 @@ receives the message. Multiple registers may be written in a single \bus
 transaction by sending multiple data packets. Each 32~bit chunk of data is
 treated as if it were an independent transaction.
 
-\paragraph{\mpqrecord:} Upon command completion, write local registers:
-
-\medskip
-{\bf Reg \#248:}
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{4}{0000}
-  \colorbitbox{lightgray}{12}{Reserved}
-  \bitbox{8}{\scriptsize Register Address Written}
-\end{bytefield}
+\begin{mdframed}[backgroundcolor=lightcyan]
+  \mpqrecord and Interrupt each write.
+  \hfill
+  {\bf Reg \#248:}
+  \begin{bytefield}{24}
+    \bitheader{0-23} \\
+    \bitbox{4}{0000}
+    \colorbitbox{lightgray}{12}{Reserved}
+    \bitbox{8}{\scriptsize Register Address Written}
+  \end{bytefield}
+\end{mdframed}
 
 \paragraph{Overflow:} If more data is received after writing the last register
 ({\tt 0xff}), the destination address wraps and registers continue to be
@@ -522,25 +522,28 @@ The response will always respond with the requested number of registers. If a
 request for register \#256 would have been made, the request wraps and begins
 from register \#0. The destination register address wraps similarly.
 
-\paragraph{\mpqrecord:} Upon command completion, write local registers:
-
-\medskip
-{\bf Reg \#248:}
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{4}{0001}
-  \colorbitbox{lightgray}{12}{Reserved}
-  \bitbox{8}{\scriptsize Start Address Read From}
-\end{bytefield}
-
-\medskip
-{\bf Reg \#249:}
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{8}{\scriptsize Length-1}
-  \bitbox{8}{\scriptsize \bus Address Replied To}
-  \bitbox{8}{\scriptsize Address Written on Destination}
-\end{bytefield}
+\begin{mdframed}[backgroundcolor=lightcyan]
+  \hfill
+  \medskip
+  {\bf Reg \#248:}
+  \begin{bytefield}{24}
+    \bitheader{0-23} \\
+    \bitbox{4}{0001}
+    \colorbitbox{lightgray}{12}{Reserved}
+    \bitbox{8}{\scriptsize Start Address Read From}
+  \end{bytefield}
+\\
+\mpqrecord and Interrupt when reply done.
+  \hfill
+  \medskip
+  {\bf Reg \#249:}
+  \begin{bytefield}{24}
+    \bitheader{0-23} \\
+    \bitbox{8}{\scriptsize Length-1}
+    \bitbox{8}{\scriptsize \bus Address Replied To}
+    \bitbox{8}{\scriptsize Address Written on Destination}
+  \end{bytefield}
+\end{mdframed}
 
 \paragraph{Note:} The \bus address to reply to {\bf must} be copied
 exactly. The FU\_ID is not required to be \nameref{cmd:reg-write}. For
