@@ -660,6 +660,9 @@ of this message.
       \bitbox{20}{\scriptsize Length Written-1}
     \end{bytefield}
   \end{minipage}
+\end{mdframed}
+}
+\recordMemBulkWrite
 
 \medskip
 \noindent
@@ -667,9 +670,6 @@ of this message.
 running, so long as they have the correct value once it completes. They are a
 good place to store the pointer and counter while the command is active
 instead of instantiating dedicated counter and address registers.
-\end{mdframed}
-}
-\recordMemBulkWrite
 
 \paragraph{Unaligned Access:} The behavior of a message ending on a
 non-word boundary is undefined.
@@ -933,24 +933,33 @@ If broadcast snooping is active \hl{TODO: Configuration register for this.
 Possibly some other filters such as channels?}, whenever a broadcast message
 is received:
 
-\paragraph{\mpqrecord:} Upon broadcast reception, write local registers:
+\newcommand{\recordSnoop}{%
+\begin{mdframed}[backgroundcolor=lightercyan]
+  \begin{minipage}[b]{.35\linewidth}
+    \mpqrecord command information.
+    Interrupt after message completes.
+  \end{minipage}
+  \hfill
+  \begin{minipage}[b]{.6\linewidth}
+    {\bf Reg \#248:}
+    \begin{bytefield}{24}
+      \bitheader{0-23} \\
+      \bitbox{4}{0000}
+      \bitbox{4}{\scriptsize Broadcast Channel}
+      \bitbox{16}{\scriptsize Broadcast Message [15:0]}
+    \end{bytefield}
 
-\medskip
-{\bf Reg \#248:}
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{4}{0000}
-  \bitbox{4}{\scriptsize Broadcast Channel}
-  \bitbox{16}{\scriptsize Broadcast Message [15:0]}
-\end{bytefield}
-
-\medskip
-{\bf Reg \#249:}
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \colorbitbox{lightgray}{8}{Reserved}
-  \bitbox{16}{\scriptsize Broadcast Message [31:16]}
-\end{bytefield}
+    \medskip
+    {\bf Reg \#249:}
+    \begin{bytefield}{24}
+      \bitheader{0-23} \\
+      \colorbitbox{lightgray}{8}{Reserved}
+      \bitbox{16}{\scriptsize Broadcast Message [31:16]}
+    \end{bytefield}
+  \end{minipage}
+\end{mdframed}
+}
+\recordSnoop
 
 \hl{TODO: Splitting words across two 24-bit registers all of the time is
   getting a little annoying. I'm not really interested in re-visitng the
@@ -972,17 +981,15 @@ unknown FU\_IDs.
 \newpage
 \subsection{Summary of Status Registers}
 
-\paragraph{Register Write}
 \recordRegWrite
 
-\paragraph{Register Read}
 \recordRegRead
 
-\paragraph{Memory Bulk Write}
 \recordMemBulkWrite
 
-\paragraph{Memory Read}
 \recordMemRead
 
-\paragraph{Memory Stream Write}
 \recordMemStreamWrite
+
+\recordSnoop
+
