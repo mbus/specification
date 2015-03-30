@@ -171,6 +171,10 @@
 \begin{itemize}
 
 \item Revision 0.4 {\footnotesize(rXXXX)} --
+  \subitem Define MPQ register map, record semantics, and layer interrupt
+  interface
+  \subitem Reduce maximum memory message length from $2^{20}$ to $2^{16}$,
+  reserving recovered bits
   \subitem Pull in protocol documentation to this specification
   \subitem Register read always returns length requested, wrapping if needed
   \subitem Memory bulk transfer always returns length requirements, wrapping
@@ -205,6 +209,7 @@
 
 \input{tests}
 
+\newpage
 \input{scratchpad}
 
 \end{document}

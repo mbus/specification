@@ -16,7 +16,7 @@ permitted.
 \subsection{\proto Registers (Reg \#192--255)}
 \label{cmd:conf}
 \begin{minipage}{\linewidth}
-  \begin{varwidth}[b]{.6\linewidth}
+  \begin{varwidth}[b]{.55\linewidth}
 
 \proto reserves the top 64~registers for control and configuration.
 
@@ -40,19 +40,40 @@ The \proto controller stores state about its current operation in the status
 registers, \#240--247. Each \proto operation describes what the \proto
 controller will \mpqrecord and when it will trigger an interrupt.
 \nameref{cmd:conf-proto-int} controls what events generate interrupts.
+
+\bigskip
+\textbf{Compact Mapping Concept:}\\
+\emph{This is only an idea:}
+\proto registers are 24~bits wide but CPU machine word width is usually
+32~bits. This means we could add a 4:3 mapping of \proto registers to MMIO
+registers. The \proto registers are designed with this somewhat in mind. In
+particular:
+\begin{itemize}
+    \footnotesize
+  \item \texttt{MMIO\_0: \{R3[23:16], R2[23:16], R1[23:16], R0[23:16]\}}
+  \item \texttt{MMIO\_1: \{R1[15:0], R0[15:0]\}}
+  \item \texttt{MMIO\_2: \{R3[15:0], R2[15:0]\}}
+\end{itemize}
   \end{varwidth}
 ~
-  \begin{varwidth}[t]{.4\linewidth}
+  \begin{varwidth}[t]{.45\linewidth}
 \centering
-\begin{bytefield}[bitwidth=0.5em]{24}
+\begin{bytefield}[bitwidth=0.6em]{24}
   \bitbox[]{8}{~}\bitbox[]{24}{\bf \proto Register Map}\\
   \begin{rightwordgroup}{\begin{sideways}\small Tie to {\tt 0}\end{sideways}}
-    \memsectionhuge{\#192}{\#222}{16}{Reserved}
+    \memsectionhuge{\#192}{\#215}{16}{Reserved}
   \end{rightwordgroup}\\
   \begin{rightwordgroup}{\begin{sideways}\small Retentive\end{sideways}}
-    \bitbox[]{8}{\tt\#223}\wordbox{1}{\proto Configuration}\\
-    \memsection{\#224}{\#239}{8}{Memory Stream Configuration Registers}\\
-    \memsection{\#240}{\#247}{4}{Status Registers\\{\color{red}Read Only}}
+    \bitbox[]{8}{\tt\#216}\wordbox{1}{\hyperref[cmd:conf-mem-ctrl]{Bulk Memory Message Control}}\\
+    \bitbox[]{8}{\tt\#217}\wordbox{1}{Reserved}\\
+    \bitbox[]{8}{\tt\#218}\wordbox{1}{Reserved}\\
+    \bitbox[]{8}{\tt\#219}\wordbox{1}{Reserved}\\
+    \bitbox[]{8}{\tt\#220}\wordbox{1}{\hyperref[cmd:conf-proto-int]{\proto Record and Interrupt Control}}\\
+    \bitbox[]{8}{\tt\#221}\wordbox{1}{Reserved}\\
+    \bitbox[]{8}{\tt\#222}\wordbox{1}{Reserved}\\
+    \bitbox[]{8}{\tt\#223}\wordbox{1}{Reserved}\\
+    \memsection{\#224}{\#239}{8}{\hyperref[cmd:conf-memory-stream]{Memory Stream Configuration Registers}}\\
+    \memsection{\#240}{\#247}{4}{Status Registers\\\emph{Read Only}\\(\hyperref[cmd:status-register-summary]{summary})}
   \end{rightwordgroup}\\
   \begin{rightwordgroup}{\begin{sideways}\small Non-Retentive\end{sideways}}
     \memsection{\#248}{\#255}{4}{Action Registers}
@@ -66,7 +87,63 @@ All registers not specified here are reserved.
 Writes to reserved registers should be ignored. Reads from reserved registers
 should return all {\tt 0}.
 
-\subsubsection{Reg \#223: \proto Record and Interrupt Control}
+\newpage
+
+\subsubsection{Reg \#216: Bulk Memory Message Control}
+\label{cmd:conf-mem-ctrl}
+
+\begin{bytefield}{8}
+  \bitheader{0-7} \\
+  \colorbitbox{lightgreen}{2}{11}
+  \colorbitbox{lightergreen}{6}{110010}
+\end{bytefield}
+~
+\begin{bytefield}{24}
+  \bitheader{0-23} \\
+  \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
+  \bitbox{1}{\begin{sideways}{\tiny CACT}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \bitbox{16}{Length Limit-1}
+\end{bytefield}
+\hfill\textbf{Def: \texttt{0x800000}}, \texttt{0x000000} if no mem
+\\
+
+The register controls the response of this chip upon the receipt of a
+\nameref{cmd:mem-bulk-write} command.
+
+\begin{itemize}
+  \item {\tt \{R[23]\}: Enable (EN).}
+    \begin{itemize}
+      \item Controls whether bulk memory transactions written to this device
+        are enabled. If {\tt EN} is {\tt 0}, a node must not modify the
+        contents of memory in response to a bulk memory transaction.
+      \item {\bf Acknowledement/Interjection:} The behavior of a bulk write
+        when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
+        interject and indicate receiver error, however they may exhibit any
+        behavior, including ACK'ing the transaction and silently ignoring it.
+    \end{itemize}
+  \item {\tt \{R[22]\}: Control Active (CACT).}
+    \begin{itemize}
+      \item If this bit is high, this register's length field acts as a limit
+        for the maximum permitted bulk message length. A bulk message is
+        allowed to write until this message limit is reached. If more data
+        comes, the message {\bf must} be NAK'd. The receiver should interject
+        with receiver error as soon as it knows the length limit has been
+        exceeded.
+    \end{itemize}
+  \item {\tt \{R[15:0]\}: Length Limit.}
+    \begin{itemize}
+      \item The maximum permitted length in words of a memory bulk write
+        message to any address.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Reg \#220: \proto Record and Interrupt Control}
 \label{cmd:conf-proto-int}
 
 \begin{bytefield}{8}
@@ -141,6 +218,8 @@ security considerations.
   port from the layer should differ from a command that comes from the bus?
 Separate interrupt control?}
 
+\newpage
+
 \subsubsection{Reg \#224--239: Memory Stream Configuration}
 \label{cmd:conf-memory-stream}
 
@@ -194,7 +273,11 @@ Separate interrupt control?}
   \bitbox{1}{\begin{sideways}{\tiny WRP}\end{sideways}}
   \bitbox{1}{\begin{sideways}{\tiny DBLB}\end{sideways}}
   \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \bitbox{20}{Buffer Length-1}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
+  \bitbox{16}{Buffer Length-1}
 \end{bytefield}
 \hfill\textbf{Default: \texttt{0x000000}}
 \\
@@ -210,8 +293,8 @@ Separate interrupt control?}
 ~
 \begin{bytefield}{24}
   \bitheader{0-23} \\
-  \colorbitbox{lightgray}{4}{\scriptsize Reserved}
-  \bitbox{20}{Buffer Offset}
+  \colorbitbox{lightgray}{8}{\scriptsize Reserved}
+  \bitbox{16}{Buffer Offset}
 \end{bytefield}
 \hfill\textbf{Default: \texttt{0x000000}}
 \\
@@ -281,7 +364,7 @@ two registers work together to configure each channel.
         that puts itself to sleep but wants to be interrupted when 1,000
       samples have been written to memory?}
     \end{itemize}
-  \item {\tt \{R10[19:0]\}: Buffer Length-1.}
+  \item {\tt \{R10[15:0]\}: Buffer Length-1.}
     \begin{itemize}
       \item Defines the length of the buffer.
     \end{itemize}
@@ -317,56 +400,7 @@ two registers work together to configure each channel.
         to at the end of the buffer. This mode is most useful when combined
         with {\tt WRP}.
     \end{itemize}
-\end{itemize}
-
-\subsubsection{Reg \#242: Bulk Memory Message Control}
-\label{cmd:conf-mem-ctrl}
-
-\begin{bytefield}{8}
-  \bitheader{0-7} \\
-  \colorbitbox{lightgreen}{2}{11}
-  \colorbitbox{lightergreen}{6}{110010}
-\end{bytefield}
-~
-\begin{bytefield}{24}
-  \bitheader{0-23} \\
-  \bitbox{1}{\begin{sideways}{\tiny EN}\end{sideways}}
-  \bitbox{1}{\begin{sideways}{\tiny CACT}\end{sideways}}
-  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
-  \bitbox{20}{Length Limit-1}
-\end{bytefield}
-\hfill\textbf{Def: \texttt{0x800000}}, \texttt{0x000000} if no mem
-\\
-
-The register controls the response of this chip upon the receipt of a
-\nameref{cmd:mem-bulk-write} command.
-
-\begin{itemize}
-  \item {\tt \{R[23]\}: Enable (EN).}
-    \begin{itemize}
-      \item Controls whether bulk memory transactions written to this device
-        are enabled. If {\tt EN} is {\tt 0}, a node must not modify the
-        contents of memory in response to a bulk memory transaction.
-      \item {\bf Acknowledement/Interjection:} The behavior of a bulk write
-        when {\tt EN} is {\tt 0} is undefined. Receivers are encouraged to
-        interject and indicate receiver error, however they may exhibit any
-        behavior, including ACK'ing the transaction and silently ignoring it.
-    \end{itemize}
-  \item {\tt \{R[22]\}: Control Active (CACT).}
-    \begin{itemize}
-      \item If this bit is high, this register's length field acts as a limit
-        for the maximum permitted bulk message length. A bulk message is
-        allowed to write until this message limit is reached. If more data
-        comes, the message {\bf must} be NAK'd. The receiver should interject
-        with receiver error as soon as it knows the length limit has been
-        exceeded.
-    \end{itemize}
-  \item {\tt \{R[19:0]\}: Length Limit.}
-    \begin{itemize}
-      \item The maximum permitted length in words of a memory bulk write
-        message to any address.
-    \end{itemize}
+  \item \hl{TODO: Document Buffer Offset}
 \end{itemize}
 
 
@@ -437,6 +471,10 @@ a register action request in the same transaction is undefined.
     \end{itemize}
 \end{itemize}
 
+
+
+\newpage
+
 \subsection{Register Commands}
 \label{cmd:reg}
 \proto register space is an 8~bit addressable array of 24~bit wide registers.
@@ -472,11 +510,12 @@ treated as if it were an independent transaction.
     \mpqrecord and generate interrupt after each register write.
   \end{minipage}
   \hfill
-  {\bf Reg \#248:}
+  {\bf Reg \#240:}
   \begin{bytefield}{24}
     \bitheader{0-23} \\
+    \bitbox{4}{\scriptsize 4~MSB of\\Prefix}
     \bitbox{4}{0000}
-    \colorbitbox{lightgray}{12}{Reserved}
+    \colorbitbox{lightgray}{8}{Reserved}
     \bitbox{8}{\scriptsize Register Address Written}
   \end{bytefield}
 \end{mdframed}
@@ -533,6 +572,12 @@ The response always sends the requested length. If a request for register
 \#256 would have been made, the request wraps and begins from register \#0.
 The destination register address wraps similarly.
 
+\paragraph{Note:} The \bus address to reply to {\bf must} be copied
+exactly. The FU\_ID is not required to be \nameref{cmd:reg-write}. For
+example, if the FU\_ID is \nameref{cmd:mem-stream-write}, the effect is
+dumping the current register state to memory on the target addresss.
+{\em Tests: \ref{test:reg-dump-restore}.}
+
 \newcommand{\recordRegRead}{%
 \begin{mdframed}[backgroundcolor=lightercyan]
   \begin{minipage}[b]{.35\linewidth}
@@ -541,32 +586,27 @@ The destination register address wraps similarly.
   \end{minipage}
   \hfill
   \begin{minipage}[b]{.6\linewidth}
-    {\bf Reg \#248:}
+    {\bf Reg \#240:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
+      \bitbox{4}{\scriptsize 4~MSB of\\Prefix}
       \bitbox{4}{0001}
-      \colorbitbox{lightgray}{12}{Reserved}
-      \bitbox{8}{\scriptsize Start Address Read From}
+      \bitbox{8}{\scriptsize \bus Address Replied To}
+      \bitbox{8}{\scriptsize Address Written on Destination}
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#249:}
+    {\bf Reg \#241:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
+      \colorbitbox{lightgray}{8}{Reserved}
       \bitbox{8}{\scriptsize Length-1}
-      \bitbox{8}{\scriptsize \bus Address Replied To}
-      \bitbox{8}{\scriptsize Address Written on Destination}
+      \bitbox{8}{\scriptsize Start Address Read From}
     \end{bytefield}
   \end{minipage}
 \end{mdframed}
 }
 \recordRegRead
-
-\paragraph{Note:} The \bus address to reply to {\bf must} be copied
-exactly. The FU\_ID is not required to be \nameref{cmd:reg-write}. For
-example, if the FU\_ID is \nameref{cmd:mem-stream-write}, the effect is
-dumping the current register state to memory on the target addresss.
-{\em Tests: \ref{test:reg-dump-restore}.}
 
 \paragraph{Interjection Semantics:} If the reply is interjected, the
 transaction is aborted and is {\bf not} retried.
@@ -634,18 +674,18 @@ of this message.
   \end{minipage}
   \hfill
   \begin{minipage}[b]{.6\linewidth}
-    {\bf Reg \#248:}
+    {\bf Reg \#240:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
+      \bitbox{4}{\scriptsize 4~MSB of\\Prefix}
       \bitbox{4}{0010}
-      \colorbitbox{lightgray}{4}{Reserved}
       \bitbox{14}{\scriptsize Start Address Written To [15:2]}
       \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
       \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#249:}
+    {\bf Reg \#241:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \colorbitbox{lightgray}{8}{Reserved}
@@ -653,11 +693,14 @@ of this message.
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#250:}
+    \textbf{Reg \#242, \#243 not written.}
+
+    \medskip
+    {\bf Reg \#244:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
-      \colorbitbox{lightgray}{4}{Reserved}
-      \bitbox{20}{\scriptsize Length Written-1}
+      \colorbitbox{lightgray}{8}{Reserved}
+      \bitbox{16}{\scriptsize Length Written-1}
     \end{bytefield}
   \end{minipage}
 \end{mdframed}
@@ -730,8 +773,8 @@ received, the first two words were written to memory.
   \bitbox[]{1}{\tiny ~ \\ ~ \\ 0}
   \\
   \bitbox{8}{\tiny \bus Reply Address}
-  \colorbitbox{lightgray}{4}{\tiny RS\\VD}
-  \bitbox{20}{Length-1}
+  \colorbitbox{lightgray}{8}{\scriptsize RSVD}
+  \bitbox{16}{Length-1}
   \bitbox{30}{Read Start Address}
   \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
   \colorbitbox{lightgray}{1}{\footnotesize \tt Z}
@@ -766,18 +809,18 @@ data is immediately placed on the bus (generating a message with a
   \end{minipage}
   \hfill
   \begin{minipage}[b]{.6\linewidth}
-    {\bf Reg \#248:}
+    {\bf Reg \#240:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
+      \bitbox{4}{\scriptsize 4~MSB of\\Prefix}
       \bitbox{4}{0011}
-      \colorbitbox{lightgray}{4}{Reserved}
       \bitbox{14}{\scriptsize Start Address Read From [15:2]}
       \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
       \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#249:}
+    {\bf Reg \#241:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \colorbitbox{lightgray}{8}{Reserved}
@@ -785,15 +828,7 @@ data is immediately placed on the bus (generating a message with a
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#250:}
-    \begin{bytefield}{24}
-      \bitheader{0-23} \\
-      \colorbitbox{lightgray}{4}{Reserved}
-      \bitbox{20}{\scriptsize Length Read-1}
-    \end{bytefield}
-
-    \medskip
-    {\bf Reg \#251:}
+    {\bf Reg \#242:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \colorbitbox{lightgray}{8}{Reserved}
@@ -803,11 +838,19 @@ data is immediately placed on the bus (generating a message with a
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#252:}
+    {\bf Reg \#243:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \colorbitbox{lightgray}{8}{Reserved}
       \bitbox{16}{\scriptsize DMA Address Written To [31:16]}
+    \end{bytefield}
+
+    \medskip
+    {\bf Reg \#244:}
+    \begin{bytefield}{24}
+      \bitheader{0-23} \\
+      \colorbitbox{lightgray}{8}{Reserved}
+      \bitbox{16}{\scriptsize Length Read-1}
     \end{bytefield}
   \end{minipage}
 \end{mdframed}
@@ -874,19 +917,19 @@ this message.
   \end{minipage}
   \hfill
   \begin{minipage}[b]{.6\linewidth}
-    {\bf Reg \#248:}
+    {\bf Reg \#240:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
+      \bitbox{4}{\scriptsize 4~MSB of\\Prefix}
       \bitbox{2}{01}
       \colorbitbox{lightcyan}{2}{XX}
-      \colorbitbox{lightgray}{4}{Reserved}
       \bitbox{14}{\scriptsize Start Address Written To [15:2]}
       \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
       \colorbitbox{lightgray}{1}{\begin{sideways}{\tiny RSV}\end{sideways}}
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#249:}
+    {\bf Reg \#241:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \colorbitbox{lightgray}{8}{Reserved}
@@ -894,11 +937,14 @@ this message.
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#250:}
+    \textbf{Reg \#242, \#243 not written.}
+
+    \medskip
+    {\bf Reg \#244:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
-      \colorbitbox{lightgray}{4}{Reserved}
-      \bitbox{20}{\scriptsize Length Written-1}
+      \colorbitbox{lightgray}{8}{Reserved}
+      \bitbox{16}{\scriptsize Length Written-1}
     \end{bytefield}
   \end{minipage}
 \end{mdframed}
@@ -941,7 +987,7 @@ is received:
   \end{minipage}
   \hfill
   \begin{minipage}[b]{.6\linewidth}
-    {\bf Reg \#248:}
+    {\bf Reg \#240:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \bitbox{4}{0000}
@@ -950,7 +996,7 @@ is received:
     \end{bytefield}
 
     \medskip
-    {\bf Reg \#249:}
+    {\bf Reg \#241:}
     \begin{bytefield}{24}
       \bitheader{0-23} \\
       \colorbitbox{lightgray}{8}{Reserved}
@@ -980,6 +1026,7 @@ unknown FU\_IDs.
 
 \newpage
 \subsection{Summary of Status Registers}
+\label{cmd:status-register-summary}
 
 \recordRegWrite
 
