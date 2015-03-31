@@ -40,20 +40,6 @@ The \proto controller stores state about its current operation in the status
 registers, \#240--247. Each \proto operation describes what the \proto
 controller will \mpqrecord and when it will trigger an interrupt.
 \nameref{cmd:conf-proto-int} controls what events generate interrupts.
-
-\bigskip
-\textbf{Compact Mapping Concept:}\\
-\emph{This is only an idea:}
-\proto registers are 24~bits wide but CPU machine word width is usually
-32~bits. This means we could add a 4:3 mapping of \proto registers to MMIO
-registers. The \proto registers are designed with this somewhat in mind. In
-particular:
-\begin{itemize}
-    \footnotesize
-  \item \texttt{MMIO\_0: \{R3[23:16], R2[23:16], R1[23:16], R0[23:16]\}}
-  \item \texttt{MMIO\_1: \{R1[15:0], R0[15:0]\}}
-  \item \texttt{MMIO\_2: \{R3[15:0], R2[15:0]\}}
-\end{itemize}
   \end{varwidth}
 ~
   \begin{varwidth}[t]{.45\linewidth}
