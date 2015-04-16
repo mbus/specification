@@ -45,6 +45,8 @@ arbitration), member nodes must forward the clock signal.
 
 By the end of the period $t_{long}$, the effect of the arbitration is
 achieved. A member node is in one of three possible states:
+
+\begin{quote}
 \begin{enumerate}
   \item Clock low, {\tt DIN} high, {\tt DOUT} high -- Lost arbitration
     (didn't participate)
@@ -52,6 +54,9 @@ achieved. A member node is in one of three possible states:
   \item Clock low, {\tt DIN} low, {\tt DOUT} low -- Lost arbitration
     (either lost, or didn't participate)
 \end{enumerate}
+\end{quote}
+
+\noindent
 The rising edge of clock that follows $t_{long}$ commits the results of
 arbitration and all participating member nodes advance their state machines
 appropriately.
@@ -99,7 +104,7 @@ Forwarding.{\sc Address\_Match}.
   %
   \begin{subfigure}[b]{.26\linewidth}
     \begin{enumerate}
-      \small
+      \footnotesize \sf
       \item After the transmitter sends all of its data it requests
         interjection by not forwarding \CLK.
       \item The mediator detects that a node has stopped forwarding \CLK.

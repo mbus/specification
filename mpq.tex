@@ -993,13 +993,6 @@ is received:
 }
 \recordSnoop
 
-\hl{TODO: Splitting words across two 24-bit registers all of the time is
-  getting a little annoying. I'm not really interested in re-visitng the
-  24-bit register decision; there are a number of reasons that was a good
-  choice. I am curious, however, if we can do something intelligent that maps
-  MMIO accesses from the CPU intelligently so that every MMIO read isn't
-wasting 8 bits reading nothing.}
-
 \subsection{Undefined Commands}
 \label{cmd:undef}
 If command with an unknown FU\_ID is received, \proto behavior is completely

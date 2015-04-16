@@ -66,6 +66,7 @@ provide the required signals. Mapping power edges to \bus protocol edges:
 \end{tabular}
 \end{quote}
 
+\noindent
 In practice, most {\tt Bus~Controller} implementations will not require the
 {\tt RELEASE\_CLK} signal as the \bus clock is (by definition) sufficient for
 all bus operations, however it is included in considerations for designs that
@@ -127,20 +128,7 @@ wakeup signals (at any point) and a robust {\tt Bus~Controller} implementation
 must consider and handle the cases surrounding interjection during {\tt Layer}
 wakeup.
 
-\subsection{Waking via Induced Glitch}
-Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines mediator
-node behavior in response to a glitch on the data line causing a spurious
-wakeup. By deliberately inducing such a glitch, a power-gated member node can
-generate enough pulses to wake itself up. \autoref{fig:glitch} shows an
-example waveform of an induced glitch, annotated with power control signals.
-
-Details on how the {\tt Bus~Controller} disambiguates between an RX-induced
-wakeup and an interrupt requested wakeup and other implementation issues are
-outside the scope of this document, but persons developing a power-gated
-system are highly encouraged to read the {\em \bus M3 Implementation
-Specification} as an example of how to design a power-gated system.
-
-\begin{figure}
+\begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{timing/power_on_glitch-crop}
   \caption{\textbf{\bus Wakeup.} \textmd{
@@ -158,19 +146,20 @@ Specification} as an example of how to design a power-gated system.
   \label{fig:glitch}
 \end{figure}
 
-\subsection{Sleeping the {\tt Bus Controller}, {\tt Layer}}
-\bus edges can also be harvested to return both the {\tt Layer} and the
-{\tt Bus~Controller} to sleep mode. \autoref{fig:shutdown} demonstrates how
-the control edges following the End~of~Message bit may be used to put both the
-node and the {\tt Bus~Controller} to sleep.
+\subsection{Waking via Induced Glitch}
+Section~\ref{sec:spec-spurious}~\nameref{sec:spec-spurious} defines mediator
+node behavior in response to a glitch on the data line causing a spurious
+wakeup. By deliberately inducing such a glitch, a power-gated member node can
+generate enough pulses to wake itself up. \autoref{fig:glitch} shows an
+example waveform of an induced glitch, annotated with power control signals.
 
-\autoref{fig:shutdown} delays the shutdown procedure until the transmitter
-asserts End~of~Message, indicating the shutdown message was not in error.
-In addition, \autoref{fig:shutdown} has the advantage that a node transmitting
-a shutdown request can itself shut down with no further intervention or
-knowledge by the mediator node.
+Details on how the {\tt Bus~Controller} disambiguates between an RX-induced
+wakeup and an interrupt requested wakeup and other implementation issues are
+outside the scope of this document, but persons developing a power-gated
+system are highly encouraged to read the {\em \bus M3 Implementation
+Specification} as an example of how to design a power-gated system.
 
-\begin{figure}
+\begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{timing/shutdown-crop}
   \caption{\textbf{Shutdown Timing.} \textmd{
@@ -185,6 +174,18 @@ knowledge by the mediator node.
   }}
   \label{fig:shutdown}
 \end{figure}
+
+\subsection{Sleeping the {\tt Bus Controller}, {\tt Layer}}
+\bus edges can also be harvested to return both the {\tt Layer} and the
+{\tt Bus~Controller} to sleep mode. \autoref{fig:shutdown} demonstrates how
+the control edges following the End~of~Message bit may be used to put both the
+node and the {\tt Bus~Controller} to sleep.
+
+\autoref{fig:shutdown} delays the shutdown procedure until the transmitter
+asserts End~of~Message, indicating the shutdown message was not in error.
+In addition, \autoref{fig:shutdown} has the advantage that a node transmitting
+a shutdown request can itself shut down with no further intervention or
+knowledge by the mediator node.
 
 \subsection{The Mediator Node, In Brief}
 Explicitly not discussed in this document is any indication of how a

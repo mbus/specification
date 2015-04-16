@@ -57,10 +57,14 @@ other purposes
 remaining range, bits~4-23, are available to be utilized as full prefixes.
 If a node has more than 16 functional units, it may have multiple full
 prefixes. These full prefixes should be sequential.
+
+\begin{quote}
 \begin{itemize}
 \item The full prefix {\tt 0x00000} is reserved as the broadcast prefix.
 \end{itemize}
+\end{quote}
 
+\noindent
 The full prefixes ranging {\tt 0x00000-0x0000F} are reserved for legacy M3
 devices. \hl{An allocation scheme for new full prefixes is currently
 undefined.}
@@ -79,10 +83,15 @@ undefined.}
 The purpose of short prefixes is to uniquely identify nodes in an \bus system.
 Multiple nodes in a \bus instantiation {\bf must not} have the same short
 prefix.
+
+\begin{quote}
 \begin{itemize}
 \item The short prefix {\tt 0b0000} is reserved as the broadcast prefix.
 \item The short prefix {\tt 0b1111} is reserved to distinguish full addresses.
 \end{itemize}
+\end{quote}
+
+\noindent
 This leaves a remainder of 14 unique short prefixes. These short prefixes map
 to actual nodes instantiated in a \bus system. If there are multiple copies of
 the same node type (e.g. several external memory chips), each instance is

@@ -1,13 +1,14 @@
 \documentclass[twoside]{article}
 \usepackage[layout=letterpaper,margin=1in]{geometry}
 
+\usepackage[protrusion=true,expansion=true,kerning,spacing]{microtype} % better type, spacing
+
 %\usepackage{bold-extra} % for bf sc
 
 \usepackage[font={normalsize,sf,bf}]{caption}
 \usepackage{fancyhdr}
 \usepackage{fixltx2e}
 \usepackage{xspace}
-\usepackage{cleveref}
 \usepackage{color}
 \usepackage{graphicx}
 \usepackage{subcaption}
@@ -43,7 +44,11 @@
 
 \usepackage[nofancy]{svninfo}
 
-\usepackage[colorlinks=true,bookmarksopen=true,bookmarksopenlevel=2]{hyperref}
+\usepackage[colorlinks=true,citecolor=violet,urlcolor=blue,bookmarksopen=true,bookmarksopenlevel=2]{hyperref}
+\hypersetup{pdfstartview=FitH} % Sets default zoom to 100% width
+
+% And, of course, cleveref must be loaded last-last (read: after hyperref)
+\usepackage[capitalise,nameinlink,noabbrev]{cleveref}     % Do the right thing with fig/table references
 
 \newcommand{\colorbitbox}[3]{%
 \rlap{\bitbox{#2}{\color{#1}\rule{\width}{\height}}}%
@@ -95,7 +100,8 @@
 \newcommand{\DATZERO}{\texttt{DATA0}\xspace}
 \newcommand{\DIN}{\texttt{DATA\textsubscript{IN}}\xspace}
 \newcommand{\DOUT}{\texttt{DATA\textsubscript{OUT}}\xspace}
-\newcommand{\mbuscopy}{MBus~\textcopyright~$2012-2015$~The Regents of the University of Michigan}
+%\newcommand{\mbuscopy}{MBus~\textcopyright~$2012-2015$~The Regents of the University of Michigan}
+\newcommand{\mbuscopy}{MBus~\textcopyright~$2012-2015$~The \bus Team and the Regents of the University of Michigan.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -111,6 +117,8 @@
 %\fancyhf{}
 %\fancyfoot[C]{\thepage}
 %\fancyhead[C]{\em CONFIDENTIAL DRAFT --- DO NOT CITE OR DISTRIBUTE}
+
+\fancyhead[C]{\color{red} \textbf{\ifnum\thepage=1 ~ \else DRAFT -- Rev 0.3+ \fi}}
 
 \title{MBus Specification}
 %\author{Pat Pannuto, Yoonmyung Lee, Ye-Sheng Kuo, ZhiYoong Foo, Ben Kempke,
@@ -132,9 +140,6 @@
 \input{overview}
 
 \tableofcontents
-\clearpage
-
-\input{requirements}
 \clearpage
 
 \input{node_design}
@@ -206,6 +211,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \appendix
+
+\input{requirements}
+\clearpage
 
 \input{tests}
 

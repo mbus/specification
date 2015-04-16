@@ -26,7 +26,7 @@ See~\ref{sec:spec-interjection}~\nameref{sec:spec-interjection} for details on
 the minimum uninterruptable message length.
 
 \subsection{Minimum Maximum Message Length}
-All \bus mediators must permit a minimum of 1~K (1024~bits) of data to be
+All \bus mediators must permit a minimum of 1\,K (1024\,bits) of data to be
 transmitted before aborting a transaction due to a hung transmitter.
 
 The message length counter shall count the number of positive clock edges
@@ -40,10 +40,10 @@ Commands to query and configure the upper bound are specified in
 \nameref{sec:channel-2}.
 
 \subsection{Retransmission}
-There is no hardware re-transmission primitive. The hardware provides a
-transaction-level message acknowledgment, indicating whether the complete
+There is no required hardware re-transmission primitive. The hardware provides
+a transaction-level message acknowledgment, indicating whether the complete
 message was received or not. Retransmission of failed messages is left to
-software.
+implementations and/or software.
 
 \subsection{Minimum Buffer Size}
 All \bus nodes are required to support both short and full
@@ -72,7 +72,7 @@ lower priority.
 
 \subsection{Clock Speed}
 \hl{TODO: What is appropriate specification for clock speeds?} I2C has defined
-`speed-classes'; SPI is a free-for-all; UART \& co has bauds...
+`speed-classes'; SPI is a free-for-all; UART \& co has semi-agreed on bauds...
 
 \subsection{Addressing}
 \label{sec:spec-address}
