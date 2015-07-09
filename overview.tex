@@ -2,9 +2,14 @@
 \bus is an ultra-low power system bus. The original design was motivated by
 the Michigan Micro Mote~(M3) project. The goal of \bus, however, is to be a
 general purpose bus for hyper-constrained systems. \bus requires four pins per
-node, uses purely digital logic, supports arbitrary length transfers, and
+node, uses only push-pull logic, supports arbitrary length transfers, and
 features a low-latency priority channel and robust acknowledgments. \bus
 member nodes do not require a local clock and are capable of completely
 clockless operation. \bus requires one more capable node to act as a bus {\em
 mediator} node, whose primary duties are providing the \bus clock and
 mediating arbitration.
+
+\bigskip
+\noindent
+The authoritative home of this specification is \url{http://mbus.io}. Updates
+and errata shall be posted there.

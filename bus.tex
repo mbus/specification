@@ -50,6 +50,15 @@
 % And, of course, cleveref must be loaded last-last (read: after hyperref)
 \usepackage[capitalise,nameinlink,noabbrev]{cleveref}     % Do the right thing with fig/table references
 
+% http://tex.stackexchange.com/questions/94892/how-to-use-short-subsection-title-in-header-but-not-in-table-of-contents
+\newcommand{\markedsection}[2]{\section[#2]{#2%
+\sectionmark{#1}}
+\sectionmark{#1}}
+
+\newcommand{\markedsubsection}[2]{\subsection[#2]{#2%
+\subsectionmark{#1}}
+\subsectionmark{#1}}
+
 \newcommand{\colorbitbox}[3]{%
 \rlap{\bitbox{#2}{\color{#1}\rule{\width}{\height}}}%
 \bitbox{#2}{#3}}
@@ -118,23 +127,24 @@
 %\fancyfoot[C]{\thepage}
 %\fancyhead[C]{\em CONFIDENTIAL DRAFT --- DO NOT CITE OR DISTRIBUTE}
 
-\fancyhead[C]{\color{red} \textbf{\ifnum\thepage=1 ~ \else DRAFT -- Rev 0.3+ \fi}}
+%\fancyhead[C]{\color{red} \textbf{\ifnum\thepage=1 ~ \else DRAFT -- Rev 0.3+ \fi}}
+\fancyhead[C]{\textbf{\ifnum\thepage=1 ~ \else Rev 1.0-alpha \fi}}
 
 \title{MBus Specification}
 %\author{Pat Pannuto, Yoonmyung Lee, Ye-Sheng Kuo, ZhiYoong Foo, Ben Kempke,
 %David Blaauw, Prabal Dutta\\$<$ppannuto@umich.edu$>$}
 \author{%
-  {\em $<$mbus-team@umich.edu$>$}\\
-  \\
-  Pat Pannuto $<$ppannuto@umich.edu$>$\\
-  Yoonmyung Lee $<$sori@umich.edu$>$\\
-  Ye-Sheng Kuo $<$samkuo@umich.edu$>$\\
-  ZhiYoong Foo $<$zhiyoong@umich.edu$>$\\
-  Ben Kempke $<$bpkempke@umich.edu$>$\\
-  David Blaauw $<$blaauw@umich.edu$>$\\
-  Prabal Dutta $<$prabal@umich.edu$>$
+ {\em \href{mailto:mbus-team@umich.edu}{\color{black}{$<$mbus-team@umich.edu$>$}} }\\
+  \small
+  Pat Pannuto,
+  Yoonmyung Lee,
+  Ye-Sheng Kuo,
+  ZhiYoong Foo,
+  Ben Kempke,
+  David Blaauw,
+  and Prabal Dutta
 }
-\date{Revision 0.3+ --- Working Revision}
+\date{Revision 1.0-alpha \\~\\Last Updated: June 14, 2015}
 \maketitle
 
 \input{overview}
@@ -175,36 +185,8 @@
 
 \begin{itemize}
 
-\item Revision 0.4 {\footnotesize(rXXXX)} --
-  \subitem Define MPQ register map, record semantics, and layer interrupt
-  interface
-  \subitem Reduce maximum memory message length from $2^{20}$ to $2^{16}$,
-  reserving recovered bits
-  \subitem Pull in protocol documentation to this specification
-  \subitem Register read always returns length requested, wrapping if needed
-  \subitem Memory bulk transfer always returns length requirements, wrapping
-  if needed
-  \subitem Add start address to register read
-  \subitem Add DMA start address to memory bulk read
-  \subitem Add memory stream protocol
-  \subitem Add tests appendix
-  \subitem Simplify interaction of broadcast messages and power states
-  \subitem Remove specification of broadcast channels 2 and 3
-  \subitem Interrupt $\rightarrow$ interjection
-  \subitem Master $\rightarrow$ mediator
-  \subitem Pull MPQ programmer model into this spec
-
-\item Revision 0.3 {\footnotesize(r7650)} -- April 18, 2013
-\subitem Add full M3 team to the authors list
-\subitem Add reserved edges to arbitration
-
-\item Revision 0.2 {\footnotesize(r4516)} -- May 6, 2013
-\subitem Add Broadcast Channel 3
-\subitem Clean up some of the more dated requirements text
-\subitem Terminology change, ``control'' to ``master'' node
-
-\item Revision 0.1 {\footnotesize(r4333)} -- Apr 22, 2012
-\subitem Initial revision
+\item Revision 1.0-alpha -- June 14, 2015
+  \subitem Initial Public Release
 
 \end{itemize}
 
@@ -212,12 +194,12 @@
 \clearpage
 \appendix
 
-\input{requirements}
-\clearpage
+%\input{requirements}
+%\clearpage
 
 \input{tests}
 
-\newpage
-\input{scratchpad}
+%\newpage
+%\input{scratchpad}
 
 \end{document}
