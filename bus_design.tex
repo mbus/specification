@@ -188,7 +188,7 @@ The next two clock edges define the control bits.
 \subsubsection{Nesting Interjections}
 In normal operation, interjections are not permitted to ``nest'', that is, the
 bus may not be interjected while the control bits are being sent. If an
-interjection sequence occurs during an existing interjections (which may only
+interjection sequence occurs during an existing interjection (which may only
 occur if the bus is being ``rescued'' from some erroneous state), the new
 interjection {\bf must} present control bits {\tt 00}.
 
